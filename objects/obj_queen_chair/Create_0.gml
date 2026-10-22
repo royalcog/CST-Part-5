@@ -23,6 +23,11 @@ fly_sound    = snd_wing;
 
 hop_sound    = snd_smallswing;
 
+// the fireball out of its bottom, so you can tell it's flying (drawn behind the chair, lined up on the same canvas)
+flame_sprite   = spr_queen_chair_flame;
+flame_alpha    = 1;
+flame_fly_grow = 0.6;    // it stretches this much longer while the chair's flying off
+
 // --- state ---
 state    = "idle";       // idle -> summon -> hover -> dip -> wait -> fly -> gone
 t        = 0;
@@ -30,7 +35,9 @@ home_y   = y;            // where it hovers
 from_y   = y;
 base_y   = y;            // y before the bob
 bob      = 0;
-riders   = [];           // { inst, dx, dy, hopping, t, len, h, fx, fy, land_sprite, done }
+riders   = [];           // { inst, dx, dy, hopping, t, len, h, fx, fy, land_sprite, merge_sprite, done }
+flame_frame  = 0;
+flame_yscale = 1;
 on_gone  = undefined;
 
 /// floats down from where it is now to hover at _y
@@ -51,8 +58,9 @@ seat_point = function(_dx, _dy)
 }
 
 /// _inst hops from where it's standing onto the chair. _land_sprite (or noone) once it's on.
-/// _on_done is called the moment it lands
-add_rider = function(_inst, _dx, _dy, _frames, _height, _land_sprite = noone, _on_done = undefined)
+/// _merge_sprite (or noone): instead of staying on as a rider, _inst disappears into the chair and the chair
+/// becomes that sprite (Queen sitting in it). _on_done is called the moment it lands
+add_rider = function(_inst, _dx, _dy, _frames, _height, _land_sprite = noone, _on_done = undefined, _merge_sprite = noone)
 {
     if (!instance_exists(_inst)) { if (_on_done != undefined) _on_done(); return; }
     var _f = scr_get_feet(_inst);
@@ -60,7 +68,7 @@ add_rider = function(_inst, _dx, _dy, _frames, _height, _land_sprite = noone, _o
         inst: _inst, dx: _dx, dy: _dy,
         hopping: true, t: 0, len: max(1, _frames), h: _height,
         fx: _f.x, fy: _f.y,
-        land_sprite: _land_sprite, done: _on_done
+        land_sprite: _land_sprite, merge_sprite: _merge_sprite, done: _on_done
     });
     _inst.image_speed = 0;
     if (hop_sound != noone) audio_play_sound(hop_sound, 1, false, 0.7, 0, random_range(0.95, 1.1));

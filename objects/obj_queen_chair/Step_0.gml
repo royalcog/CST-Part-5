@@ -71,13 +71,28 @@ for (var i = 0; i < array_length(riders); i++)
         if (_k >= 1)
         {
             _r.hopping = false;
-            if (_r.land_sprite != noone) scr_set_sprite_keep_feet(_r.inst, _r.land_sprite);
-            set_feet(_r.inst, _s.x, _s.y);
+            if (_r.merge_sprite != noone)
+            {
+                // they're part of the chair now
+                sprite_index = _r.merge_sprite;
+                image_index  = 0;
+                instance_destroy(_r.inst);
+            }
+            else
+            {
+                if (_r.land_sprite != noone) scr_set_sprite_keep_feet(_r.inst, _r.land_sprite);
+                set_feet(_r.inst, _s.x, _s.y);
+            }
             if (_r.done != undefined) { var _cb = _r.done; _r.done = undefined; _cb(); }
         }
     }
     else set_feet(_r.inst, _s.x, _s.y);
 }
+
+// the fireball underneath
+flame_frame += sprite_get_speed(flame_sprite) / game_get_speed(gamespeed_fps);
+var _grow = (state == "fly") ? 1 + flame_fly_grow * clamp(t / 20, 0, 1) : 1;
+flame_yscale = lerp(flame_yscale, _grow, 0.2);
 
 // same shadow as everyone else on the platform
 if (instance_exists(obj_shadow_tint))

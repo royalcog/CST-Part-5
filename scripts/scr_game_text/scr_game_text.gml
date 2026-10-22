@@ -12,12 +12,13 @@ function scr_game_text(_text_id)
 {
 	switch (_text_id)
 	{
+		// ---------------- Part 5: rm_two (obj_rm_two_p5 opens self_1, Z opens the rest)
 		case "self_1":
 			global.cutscene_lock = true;   // Queen walks in after this
 			scr_text("* Susie!", "lancer", 12);
 			scr_text("* ...", "susie", 31);
 			scr_text("* Lancer?", "susie", 14);
-				scr_obj_sprite_on_page(obj_susie, spr_susie_walk_down, false);
+				scr_call_on_page(function() { scr_set_sprite_keep_body(obj_susie, spr_susie_walk_down_upset); }, 1, global.page_number - 1);
 			scr_text("* Are you guys okay?", "lancer", 10);
 			scr_text("* We're fine, just...", "susie", 32);
 			scr_text("* ...", "susie", 31);
@@ -25,7 +26,7 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "lancer", 11);
 			scr_text("* W-Why?", "lancer", 12);
 			scr_text("* This Titan is going to wipe out Castle Town if we don't put all our effort in.", "ralsei", 35);
-				scr_obj_sprite_on_page(obj_ralsei, spr_ralsei_walk_down, false);
+				scr_call_on_page(function() { scr_set_sprite_keep_body(obj_ralsei, spr_ralsei_walk_down_neutral); }, 1, global.page_number - 1);
 			scr_text("* But...", "lancer", 11);
 			scr_text("* I can be helpful!", "lancer", 1);
 			scr_text("* I can help you guys beat up this thing, and...", "lancer", 9);
@@ -40,7 +41,7 @@ function scr_game_text(_text_id)
 		case "self_2":
 			global.cutscene_lock = true;   // Lancer and Queen get on the chair after this
 			scr_text("* I Took Care Of Our King Problem", "queen", 9);
-				scr_call_on_page(function() { with (obj_queen) scr_set_sprite_keep_feet(id, spr_queen_walk_left); }, 1, global.page_number - 1);
+				scr_call_on_page(function() { with (obj_queen) scr_set_sprite_keep_feet(id, spr_queen_walk_left_unhappy); }, 1, global.page_number - 1);
 			scr_text("* ...", "lancer", 11);
 			scr_text("* Don't Worry He's Just Taking A Nap", "queen", 23);
 			scr_text("* Anyways Is This That Titan Thing Your Were Talking About", "queen", 0);
@@ -73,11 +74,11 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "ralsei", 45);
 			scr_text("* Let's...", "ralsei", 34);
 			scr_text("* Let's go up there, Susie.", "ralsei", 40);
-				scr_obj_sprite_on_page(obj_ralsei, spr_ralsei_walk_left_neutral, false);
+				scr_call_on_page(function() { scr_set_sprite_keep_body(obj_ralsei, spr_ralsei_walk_left_neutral); }, 1, global.page_number - 1);
 			scr_text("* ...", "susie", 31);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_rm_two_p5) pull_feather(); }, 0);
 		break;
-		
+
 		// ---------------- Part 5: the tower climb (obj_plat_controller opens self_5)
 		case "self_5":
 			scr_text("* This should get us up faster than just climbing...", "susie", 30);

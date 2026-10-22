@@ -19,6 +19,14 @@ queen_walk  = 1.5;
 intro_wait  = 60;                // frames after the room's fade-in before Lancer shows up
 queen_wait  = 20;                // frames after Queen stops before Z works again
 
+// --- tuning: poses ---
+lancer_left_sprite  = spr_lancer_left_sad;
+lancer_right_sprite = spr_lancer_right_sad;
+lancer_ride_sprite  = spr_lancer_dt_unhappy;     // once he's on the chair
+queen_right_sprite  = spr_queen_walk_right_unhappy;
+queen_left_sprite   = spr_queen_walk_left_unhappy;
+queen_chair_sprite  = spr_queen_chair_lookdown;  // the chair turns into this when she sits (she's part of it then)
+
 // --- tuning: the chair ---
 chair_x      = cx + 250;         // its origin (the seat)
 chair_y      = 400;
@@ -69,15 +77,15 @@ set_feet = function(_o, _x, _y)
     _o.y += _y - _f.y;
 }
 
-/// _o faces _spr (frame 0, not animating) without its feet moving
+/// _o faces _spr (frame 0, not animating) without its feet moving.
+/// Susie & Ralsei line up by their visible feet (some of their sprites have a spare row at the bottom)
 face = function(_o, _spr)
 {
-    if (instance_exists(_o)) scr_set_sprite_keep_feet(_o, _spr);
+    if (!instance_exists(_o)) return;
+    if (_o.object_index == obj_susie || _o.object_index == obj_ralsei) scr_set_sprite_keep_body(_o, _spr);
+    else scr_set_sprite_keep_feet(_o, _spr);
 }
 
-unlock = function() { global.cutscene_lock = false; }
-
-// ---------------------------------------------------------------- Case 1
 /// Lancer walks up from the bottom of the screen, then self_1 opens
 lancer_enter = function()
 {
@@ -86,7 +94,7 @@ lancer_enter = function()
     _l.sprite_index = spr_lancer_up;
     _l.image_speed  = 0;
     set_feet(_l, lancer_x, offscreen_y);
-    scr_walk_feet_to(_l, spr_lancer_left, spr_lancer_right, spr_lancer_up, spr_lancer_down, lancer_x, lancer_y, lancer_walk,
+    scr_walk_feet_to(_l, lancer_left_sprite, lancer_right_sprite, spr_lancer_up, spr_lancer_down, lancer_x, lancer_y, lancer_walk,
         function()
         {
             create_textbox("self_1");
@@ -102,38 +110,37 @@ queen_enter = function()
     _q.sprite_index = spr_queen_walk_up;
     _q.image_speed  = 0;
     set_feet(_q, queen_x, offscreen_y + 60);
-    scr_walk_feet_to(_q, spr_queen_walk_left, spr_queen_walk_right, spr_queen_walk_up, spr_queen_walk_down, queen_x, queen_y, queen_walk,
+    scr_walk_feet_to(_q, queen_left_sprite, queen_right_sprite, spr_queen_walk_up, spr_queen_walk_down_unhappy, queen_x, queen_y, queen_walk,
         function()
         {
-            face(obj_lancer, spr_lancer_right);
+            face(obj_lancer, lancer_right_sprite);
             scr_call_after_frames(function() { unlock(); }, queen_wait);
         });
 }
 
-// ---------------------------------------------------------------- Case 2
 /// on Queen's "Chair You Guys Up": the chair floats down next to her, and she turns to it
 summon_chair = function()
 {
     if (instance_exists(chair)) return;
     chair = instance_create_depth(chair_x, chair_from_y, -3050, obj_queen_chair);   // behind Lancer and Queen, in front of Susie & Ralsei
     chair.summon(chair_y);
-    face(obj_queen, spr_queen_walk_right);
+    face(obj_queen, queen_right_sprite);
 }
 
-/// after self_2: Lancer walks over and hops on (its arm), then Queen hops on (the seat)
+/// after self_2: Lancer walks over and hops on (its arm), then Queen hops on and becomes part of the chair
 board_chair = function()
 {
     if (!instance_exists(chair)) summon_chair();
-    scr_walk_feet_to(obj_lancer, spr_lancer_left, spr_lancer_right, spr_lancer_up, spr_lancer_down, lancer_board.x, lancer_board.y, lancer_walk,
+    scr_walk_feet_to(obj_lancer, lancer_left_sprite, lancer_right_sprite, spr_lancer_up, spr_lancer_down, lancer_board.x, lancer_board.y, lancer_walk,
         function()
         {
-            chair.add_rider(obj_lancer, lancer_seat.dx, lancer_seat.dy, lancer_hop.frames, lancer_hop.h, spr_lancer_down,
+            chair.add_rider(obj_lancer, lancer_seat.dx, lancer_seat.dy, lancer_hop.frames, lancer_hop.h, lancer_ride_sprite,
                 function()
                 {
                     scr_call_after_frames(function()
                     {
-                        chair.add_rider(obj_queen, queen_seat.dx, queen_seat.dy, queen_hop.frames, queen_hop.h, spr_queen_walk_down,
-                            function() { unlock(); });
+                        chair.add_rider(obj_queen, queen_seat.dx, queen_seat.dy, queen_hop.frames, queen_hop.h, noone,
+                            function() { unlock(); }, queen_chair_sprite);
                     }, board_gap);
                 });
         });
