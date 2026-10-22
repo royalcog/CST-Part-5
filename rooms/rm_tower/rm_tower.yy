@@ -9,9 +9,9 @@
   "isDnd":false,
   "layers":[
     {"$GMRTileLayer":"","%Name":"Tiles_Deco","depth":0,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"layers":[],"name":"Tiles_Deco","properties":[],"resourceType":"GMRTileLayer","resourceVersion":"2.0","tiles":{"SerialiseHeight":75,"SerialiseWidth":22,"TileCompressedData":[
-          -1552,-2147483648,1,12,-16,-2147483648,6,12,-2147483648,14,-2147483648,-2147483648,12,-16,-2147483648,
-          6,12,-2147483648,14,-2147483648,-2147483648,12,-12,-2147483648,10,12,-2147483648,14,-2147483648,18,-2147483648,
-          20,-2147483648,-2147483648,18,-31,-2147483648,
+          -1531,-2147483648,-9,7,-12,-2147483648,1,12,-16,-2147483648,6,12,-2147483648,14,-2147483648,-2147483648,
+          12,-16,-2147483648,6,12,-2147483648,14,-2147483648,-2147483648,12,-12,-2147483648,10,12,-2147483648,
+          14,-2147483648,18,-2147483648,20,-2147483648,-2147483648,18,-31,-2147483648,
         ],"TileDataFormat":1,},"tilesetId":{"name":"tlst_flowergarden","path":"tilesets/tlst_flowergarden/tlst_flowergarden.yy",},"userdefinedDepth":false,"visible":true,"x":0,"y":0,},
     {"$GMRTileLayer":"","%Name":"Tiles_Ledge","depth":100,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"layers":[],"name":"Tiles_Ledge","properties":[],"resourceType":"GMRTileLayer","resourceVersion":"2.0","tiles":{"SerialiseHeight":75,"SerialiseWidth":22,"TileCompressedData":[
           -1527,-2147483648,-3,0,-10,6,-7,-2147483648,3,6,7,8,-15,-2147483648,-3,0,-19,-2147483648,3,6,7,8,-38,

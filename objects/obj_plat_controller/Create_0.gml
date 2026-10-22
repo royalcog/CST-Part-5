@@ -106,3 +106,65 @@ cam_x = _c.x;
 cam_y = _c.y;
 camera_set_view_pos(view_camera[0], cam_x, cam_y);
 if (instance_exists(obj_camera_controller)) { obj_camera_controller.cam_x = cam_x; obj_camera_controller.cam_y = cam_y; }
+
+
+// --- tiles that change while someone's standing on/in them (the flower garden) ---
+press_layers = ["Tiles_Solid", "Tiles_Ledge", "Tiles_Deco"];   // layers to check (missing ones are skipped)
+press_tiles  = [6, 7, 8, 12, 13, 14, 18, 19, 20];
+press_shift  = 3;
+pressed      = {};      // "tilemap:col:row" -> what that tile was, to put it back
+
+press_maps = [];
+for (var i = 0; i < array_length(press_layers); i++)
+    if (layer_exists(press_layers[i])) array_push(press_maps, layer_tilemap_get_id(layer_get_id(press_layers[i])));
+
+/// swaps the tiles under anyone standing on them, and puts back the ones nobody's on anymore
+update_pressed = function()
+{
+    var _now = {};
+    for (var p = 0; p < array_length(party); p++)
+    {
+        var _c = party[p];
+        if (!instance_exists(_c) || !_c.grounded) continue;
+
+        for (var m = 0; m < array_length(press_maps); m++)
+        {
+            var _tm = press_maps[m];
+            var _tw = tilemap_get_tile_width(_tm),  _th = tilemap_get_tile_height(_tm);
+            var _ox = tilemap_get_x(_tm),           _oy = tilemap_get_y(_tm);
+            var _r  = _c.x + _c.hw - 1;
+
+            // across their feet: the tile they're standing on (y) and the one their feet are in (y - 1)
+            for (var _px = _c.x - _c.hw; ; _px = min(_px + _tw, _r))
+            {
+                for (var k = 0; k < 2; k++)
+                {
+                    var _cx = floor((_px - _ox) / _tw);
+                    var _cy = floor((_c.y - k - _oy) / _th);
+                    var _key = string(_tm) + ":" + string(_cx) + ":" + string(_cy);
+                    if (variable_struct_exists(pressed, _key)) { _now[$ _key] = true; continue; }
+
+                    var _data = tilemap_get(_tm, _cx, _cy);
+                    var _idx  = tile_get_index(_data);
+                    if (_idx != 0 && array_contains(press_tiles, _idx))
+                    {
+                        tilemap_set(_tm, tile_set_index(_data, _idx + press_shift), _cx, _cy);
+                        pressed[$ _key] = { tm: _tm, cx: _cx, cy: _cy, data: _data };
+                        _now[$ _key] = true;
+                    }
+                }
+                if (_px >= _r) break;
+            }
+        }
+    }
+
+    // nobody's on these anymore: back to normal
+    var _keys = variable_struct_get_names(pressed);
+    for (var i = 0; i < array_length(_keys); i++)
+    {
+        if (variable_struct_exists(_now, _keys[i])) continue;
+        var _p = pressed[$ _keys[i]];
+        tilemap_set(_p.tm, _p.data, _p.cx, _p.cy);
+        variable_struct_remove(pressed, _keys[i]);
+    }
+}

@@ -47,3 +47,6 @@ else if (_behind <= follow_delay && _e.g) _f.face = _l.x >= _f.x ? 1 : -1;   // 
 _f.grounded = _e.g;
 _f.animate(_dx != 0, _e.g, _dy);
 fol_last = { x: _e.x, y: _e.y };
+
+// flowers (or any press_tiles) react to whoever's standing on them
+update_pressed();
