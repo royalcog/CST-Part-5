@@ -1,0 +1,1 @@
+with (obj_spade_bomb) instance_destroy(); // any bomb still mid-fuse just goes away; ring spades are left to fade with the box

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_extend_bg_right",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_extend_bg_right",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Dialogue/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

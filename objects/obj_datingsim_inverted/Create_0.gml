@@ -1,0 +1,1 @@
+portrait = spr_friendmew_questioning;

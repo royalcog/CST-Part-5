@@ -1,0 +1,1 @@
+if (sprite_exists(door_spr)) sprite_delete(door_spr);

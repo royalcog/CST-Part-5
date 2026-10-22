@@ -1,0 +1,9 @@
+tiles_total = 4; // was 5 — fewer strips at once
+warning_time = 45;
+tile_data = [];
+phase = "pick_tiles";
+timer = 0;
+strip_thin_width = 16; // how thin the visible flash strip is
+repeat_count = 0;
+max_repeats = 3; // tune to taste
+gap_timer = 0;

@@ -1,0 +1,9 @@
+depth = -bbox_bottom;
+var _sb = instance_create_depth(x, y, depth, obj_speakblock);
+_sb.text_id = "sweet";
+_sb.text_id_2 = "sweet_2";
+_sb.owner = id;
+_sb.interact_range = 20;
+_sb.dialogue_flag = "sweet";
+image_xscale = 2;
+image_yscale = 2;

@@ -1,0 +1,10 @@
+grow_time = 10;
+hold_time = 8;
+fade_time = 12;
+timer = 0;
+len_h = 0;
+len_v = 0;
+thickness = 24;
+beam_color = c_white;
+image_alpha = 1;
+image_speed = 1;

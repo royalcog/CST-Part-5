@@ -1,0 +1,16 @@
+anim[0] = 0;
+anim[1] = 0;
+anim[2] = 0;
+anim[3] = 0;
+anim[5] = 0;
+anim[7] = 0;
+anim[8] = 0;
+anim[10] = 0;
+talking = false;
+talk_ind = 0;
+xscale = 1;
+yscale = 1;
+char_id = CharID.Pluey;
+image_xscale = 1.3;
+image_yscale = 1.3;
+depth = obj_tennabg.depth - 1;

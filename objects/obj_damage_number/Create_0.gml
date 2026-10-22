@@ -1,0 +1,12 @@
+life = 30;
+timer = 0;
+scale = 1.0;       // smaller
+target_scale = 0.7; // smaller settle size too
+peak_offset = -10;  // how high the tiny pop goes 
+y_offset = 0;
+alpha = 1;
+damage_amount = 0;
+color_top = c_white;
+color_bottom = c_white;
+x_offset = 0;
+x_vel = 0;

@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"snd_metalstep_echo",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":1,
+  "compression":1,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":1.8693197,
+  "exportDir":"",
+  "name":"snd_metalstep_echo",
+  "parent":{
+    "name":"SoJ Noises",
+    "path":"folders/SFX/SoJ Noises.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"snd_metalstep_echo.wav",
+  "volume":1.0,
+}

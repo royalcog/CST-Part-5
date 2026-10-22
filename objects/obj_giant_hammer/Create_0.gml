@@ -1,0 +1,10 @@
+already_hit = false;
+phase = "swing";
+timer = 0;
+swing_duration = 35;
+hold_duration = 60;
+start_angle = 90;
+end_angle = 360;
+hit_half_w = 92;  // 46 * 2 scale
+hit_half_h = 100; // 50 * 2 scale
+reach = 200; // gets overwritten by scr_spawn_giant_hammer, kept here as a fallback

@@ -1,0 +1,10 @@
+var _camx = camera_get_view_x(view_camera[0]);
+var _camy = camera_get_view_y(view_camera[0]);
+var _camw = camera_get_view_width(view_camera[0]);
+var _camh = camera_get_view_height(view_camera[0]);
+image_xscale = 2;
+image_yscale = 2;
+image_speed = 0;
+x = (_camx + _camw + sprite_width);
+y = (_camy + _camh - sprite_height);
+target_x = (_camx + _camw / 2); 

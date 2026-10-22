@@ -1,0 +1,10 @@
+image_xscale = 2;
+image_yscale = 2;
+image_speed = 1;
+image_index = 0;
+depth = -100;
+visible = false;
+fading_in = false;
+bob_angle = 0;
+start_y = y;
+ghosted = true;

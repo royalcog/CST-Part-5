@@ -1,0 +1,30 @@
+image_xscale = 2;
+image_yscale = 2;
+image_speed = 0;
+depth = -1000;
+anim_loop = true;
+image_angle = 0;
+image_blend = c_white;
+image_alpha = 1;
+siner = 0;
+wobblespeed = .01;
+wobbleamount = .5;
+jitteramount = 1;
+active = 0;
+target = 0;
+shakeamt = 3;
+shakespeed = 0.1;
+nowx = 0;
+nowy = 0;
+on = 1;
+timer = 0;
+char_id = CharID.Tenna;
+animsiner = 0;
+animsinerb = 0;
+armshake = 1;
+armshakesiner = 0;
+use_battle_ext = false;
+
+face_phase = 0; // 0 = idle, 1 = going down, 2 = holding, 3 = going up
+face_frame = 2.0;
+face_timer = 0;
