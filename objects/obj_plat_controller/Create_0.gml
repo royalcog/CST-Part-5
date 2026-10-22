@@ -44,11 +44,23 @@ _r.set_who("ralsei");
 party = [_s, _r];
 _s.leader = true;
 
+// both start standing on whatever's under them, not wherever the start point happens to be
+for (var p = 0; p < 2; p++)
+{
+    var _c = party[p];
+    repeat (600)
+    {
+        if (_c.on_ground()) break;
+        _c.y += 1;
+    }
+    _c.grounded = _c.on_ground();
+}
+
 // the trail starts as a straight line from Ralsei to Susie, so he's already "following"
 for (var i = 0; i <= follow_delay; i++)
 {
     var _k = i / follow_delay;
-    array_push(hist, { x: lerp(_r.x, _s.x, _k), y: _sy, g: true, f: 1 });
+    array_push(hist, { x: lerp(_r.x, _s.x, _k), y: lerp(_r.y, _s.y, _k), g: true, f: 1 });
 }
 fi = 0;
 fol_last = { x: _r.x, y: _r.y };
