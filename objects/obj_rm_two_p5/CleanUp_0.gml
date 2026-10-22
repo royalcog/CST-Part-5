@@ -1,0 +1,1 @@
+global.textbox_top = false;

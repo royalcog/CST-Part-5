@@ -8,6 +8,7 @@ textbox_x = camera_get_view_width(view_camera[0])/2 - (textbox_width/2);
 textbox_y = camera_get_view_height(view_camera[0]) 
     - (sprite_get_height(spr_textbox) * (textbox_height/sprite_get_height(spr_textbox))) 
     - border + 25;
+if (variable_global_exists("textbox_top") && global.textbox_top) textbox_y = 0;
 line_sep = 18;
 line_width = textbox_width - border * 3;
 txtb_spr[0] = spr_textbox;

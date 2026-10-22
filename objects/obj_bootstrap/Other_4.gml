@@ -2,12 +2,18 @@ display_set_gui_size(camera_get_view_width(view_camera[0]), camera_get_view_heig
 
 if (!variable_global_exists("wasd_on")) scr_controls_set(true);
 
+
 // --- TESTING: which Knight round the fight starts on. 1 = normal, 13 = the last attack, 14 = straight to the ending
 // if (!variable_global_exists("knight_start_round")) global.knight_start_round = 13;
 
 // 1. Initialize Globals FIRST before using them anywhere
 
 // Testing Globals
+
+if (!variable_global_exists("textbox_top"))
+{
+    global.textbox_top = false;
+}
 
 /* if (!variable_global_exists("dialogue_self"))
 {

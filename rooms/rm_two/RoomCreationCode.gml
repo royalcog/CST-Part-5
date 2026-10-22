@@ -4,9 +4,8 @@ with (obj_kris)
     image_speed = 0;
 }
 
-// the fountain gets its own layer, behind the floor tiles (300) and in front of the background (400)
-if (!layer_exists("Fountain")) layer_create(350, "Fountain");
-if (!instance_exists(obj_dark_fountain)) instance_create_layer(room_width / 2, 364, "Fountain", obj_dark_fountain);
-
-if (!instance_exists(obj_shadow_tint))  instance_create_depth(0, 0, 0, obj_shadow_tint);
-if (!instance_exists(obj_rm_two_scene)) instance_create_depth(0, 0, -3500, obj_rm_two_scene);
+// Part 5: the room as Part 4 left it, with the Titan's tower standing over where the fountain was
+if (!layer_exists("Titan")) layer_create(345, "Titan");
+if (!instance_exists(obj_shadow_tint)) instance_create_depth(0, 0, 0, obj_shadow_tint);
+if (!instance_exists(obj_titan_tower)) instance_create_layer(0, 0, "Titan", obj_titan_tower);
+if (!instance_exists(obj_rm_two_p5))   instance_create_depth(0, 0, -2050, obj_rm_two_p5);
