@@ -884,6 +884,7 @@
     {"id":{"name":"spr_orb_full","path":"sprites/spr_orb_full/spr_orb_full.yy",},},
     {"id":{"name":"spr_orb","path":"sprites/spr_orb/spr_orb.yy",},},
     {"id":{"name":"spr_pedestal","path":"sprites/spr_pedestal/spr_pedestal.yy",},},
+    {"id":{"name":"spr_petal_feather","path":"sprites/spr_petal_feather/spr_petal_feather.yy",},},
     {"id":{"name":"spr_petrifycrack_1_debris","path":"sprites/spr_petrifycrack_1_debris/spr_petrifycrack_1_debris.yy",},},
     {"id":{"name":"spr_petrifycrack_1","path":"sprites/spr_petrifycrack_1/spr_petrifycrack_1.yy",},},
     {"id":{"name":"spr_petrifycrack_2_debris","path":"sprites/spr_petrifycrack_2_debris/spr_petrifycrack_2_debris.yy",},},

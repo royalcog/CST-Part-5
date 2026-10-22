@@ -724,6 +724,7 @@
     {"name":"spr_orb_full","order":10,"path":"sprites/spr_orb_full/spr_orb_full.yy",},
     {"name":"spr_orb","order":9,"path":"sprites/spr_orb/spr_orb.yy",},
     {"name":"spr_pedestal","order":11,"path":"sprites/spr_pedestal/spr_pedestal.yy",},
+    {"name":"spr_petal_feather","order":28,"path":"sprites/spr_petal_feather/spr_petal_feather.yy",},
     {"name":"spr_petrifycrack_1_debris","order":14,"path":"sprites/spr_petrifycrack_1_debris/spr_petrifycrack_1_debris.yy",},
     {"name":"spr_petrifycrack_1","order":17,"path":"sprites/spr_petrifycrack_1/spr_petrifycrack_1.yy",},
     {"name":"spr_petrifycrack_2_debris","order":15,"path":"sprites/spr_petrifycrack_2_debris/spr_petrifycrack_2_debris.yy",},
