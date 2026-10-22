@@ -180,3 +180,29 @@ update_pressed = function()
         variable_struct_remove(pressed, _keys[i]);
     }
 }
+
+// every textbox in here is the climb's special one (up top, no box, just a shadow)
+global.textbox_plat = true;
+
+// --- dialogue triggers: walk into one and its text opens (once), while you keep playing ---
+// x/y = a point in the room; it fires when either of them gets within r px of it
+triggers = [
+    { x: 320, y: 2760, r: 24, text: "plat_flowers", done: false },
+];
+
+/// the first trigger anyone's touching, or undefined
+trigger_hit = function()
+{
+    for (var i = 0; i < array_length(triggers); i++)
+    {
+        var _tr = triggers[i];
+        if (_tr.done) continue;
+        for (var p = 0; p < array_length(party); p++)
+        {
+            var _c = party[p];
+            if (point_in_rectangle(_tr.x, _tr.y, _c.x - _c.hw - _tr.r, _c.y - _c.hh - _tr.r, _c.x + _c.hw + _tr.r, _c.y + _tr.r))
+                return _tr;
+        }
+    }
+    return undefined;
+}

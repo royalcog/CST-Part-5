@@ -10,6 +10,7 @@ tower_scale   = pillar_w / sprite_get_width(spr_titantower_piece);
 base_bottom_y = 384;     // room y of the pool's bottom edge (the platform edge is 364)
 tower_shade   = 0.85;    // the tower darkens toward its base...
 tower_shade_h = 200;     // ...over this many px
+parallax      = 1;       // 1 = moves with the room (rm_two). smaller = scrolls slower, so it feels further back
 
 /// tiles _spr upward from _anchor (its bottom edge), only drawing what's between _top and _bottom
 draw_column = function(_spr, _img, _anchor, _top, _bottom, _sc)

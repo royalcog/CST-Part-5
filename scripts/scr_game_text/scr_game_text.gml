@@ -86,6 +86,14 @@ function scr_game_text(_text_id)
 			scr_text("* Let's just... try our best.", "ralsei", 34);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_plat_controller) begin_play(); }, 0);
 		break;
+		
+		// ---------------- the tower climb: dialogue triggers (obj_plat_controller opens these, you keep playing)
+		case "plat_flowers":
+			scr_text("* Why are there flowers here...?", "susie", 30);
+			scr_text("* Um...", "ralsei", 51);
+			scr_text("* I'm not really... sure?", "ralsei", 45);
+			scr_text("* ...", "susie", 31);
+		break;
 /*
 
 */

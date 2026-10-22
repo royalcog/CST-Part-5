@@ -50,3 +50,14 @@ fol_last = { x: _e.x, y: _e.y };
 
 // flowers (or any press_tiles) react to whoever's standing on them
 update_pressed();
+
+// dialogue triggers (only once you're playing, and not over another textbox)
+if (state == "play" && !instance_exists(obj_textbox))
+{
+    var _tr = trigger_hit();
+    if (_tr != undefined)
+    {
+        _tr.done = true;
+        create_textbox(_tr.text);
+    }
+}

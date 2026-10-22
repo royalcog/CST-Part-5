@@ -200,6 +200,35 @@ if (!hide_box_sprite)
         textbox_width/txtb_spr_w, textbox_height/txtb_spr_h, 0, c_white, 1);
 }
 
+// the climb's textbox: a black shadow, solid behind the text and fading out at the sides and bottom
+if (plat_style)
+{
+    var _xs = [textbox_x - plat_shadow_side, textbox_x, textbox_x + textbox_width, textbox_x + textbox_width + plat_shadow_side];
+    var _xa = [0, 1, 1, 0];
+    var _ys = [textbox_y, textbox_y + textbox_height, textbox_y + textbox_height + plat_shadow_tail];
+    var _ya = [1, 1, 0];
+
+    draw_primitive_begin(pr_trianglelist);
+    for (var _iy = 0; _iy < 2; _iy++)
+    {
+        for (var _ix = 0; _ix < 3; _ix++)
+        {
+            var _l = _xs[_ix], _r = _xs[_ix + 1], _t = _ys[_iy], _b = _ys[_iy + 1];
+            var _a_lt = plat_shadow_alpha * _xa[_ix]     * _ya[_iy];
+            var _a_rt = plat_shadow_alpha * _xa[_ix + 1] * _ya[_iy];
+            var _a_lb = plat_shadow_alpha * _xa[_ix]     * _ya[_iy + 1];
+            var _a_rb = plat_shadow_alpha * _xa[_ix + 1] * _ya[_iy + 1];
+            draw_vertex_colour(_l, _t, c_black, _a_lt);
+            draw_vertex_colour(_r, _t, c_black, _a_rt);
+            draw_vertex_colour(_l, _b, c_black, _a_lb);
+            draw_vertex_colour(_r, _t, c_black, _a_rt);
+            draw_vertex_colour(_r, _b, c_black, _a_rb);
+            draw_vertex_colour(_l, _b, c_black, _a_lb);
+        }
+    }
+    draw_primitive_end();
+}
+
 if global.speaker_sprite[page] != noone && !global.hide_face && !hide_face[page]
 {
     var _portrait_spr = global.speaker_sprite[page];

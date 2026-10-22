@@ -26,6 +26,16 @@ text_speed = 0.5;
 text_scale = 2;
 page0_applied = false;
 hide_box_sprite = false;
+// the tower climb's textbox: up top, no box, just a soft black shadow where the box would be
+plat_style        = variable_global_exists("textbox_plat") && global.textbox_plat;
+plat_shadow_alpha = 0.7;    // how dark the shadow gets
+plat_shadow_side  = 70;     // px it fades out over at the left and right
+plat_shadow_tail  = 40;     // px it fades out over below the box
+if (plat_style)
+{
+    textbox_y       = 0;
+    hide_box_sprite = true;
+}
 center_text = false;
 speaker_portrait_spr[0] = noone;      // <-- added
 speaker_portrait_frame[0] = 0;        // <-- added

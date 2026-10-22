@@ -15,6 +15,11 @@ if (!variable_global_exists("textbox_top"))
     global.textbox_top = false;
 }
 
+if (!variable_global_exists("textbox_plat"))
+{
+    global.textbox_plat = false;
+}
+
 /* if (!variable_global_exists("dialogue_self"))
 {
     variable_global_set("dialogue_self", 0);
