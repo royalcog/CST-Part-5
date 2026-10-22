@@ -87,6 +87,7 @@ face = function(_o, _spr)
 }
 
 /// Lancer walks up from the bottom of the screen, then self_1 opens
+unlock = function() { global.cutscene_lock = false; }
 lancer_enter = function()
 {
     var _l = instance_exists(obj_lancer) ? instance_find(obj_lancer, 0) : instance_create_layer(0, 0, "Instances", obj_lancer);

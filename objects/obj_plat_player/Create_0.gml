@@ -53,15 +53,49 @@ set_who = function(_who)
 }
 
 /// is the body (feet at _x,_y) overlapping a solid?
+// collision comes from the tile layers (any tile = solid), plus any obj_plat_solid / obj_plat_ledge still placed
+tm_solid = layer_exists("Tiles_Solid") ? layer_tilemap_get_id(layer_get_id("Tiles_Solid")) : -1;
+tm_ledge = layer_exists("Tiles_Ledge") ? layer_tilemap_get_id(layer_get_id("Tiles_Ledge")) : -1;
+
+/// any tile on _tm inside the rectangle?
+tile_in_rect = function(_tm, _l, _t, _r, _b)
+{
+    if (_tm == -1) return false;
+    var _tw = tilemap_get_tile_width(_tm), _th = tilemap_get_tile_height(_tm);
+    for (var _y = _t; ; _y = min(_y + _th, _b))
+    {
+        for (var _x = _l; ; _x = min(_x + _tw, _r))
+        {
+            if ((tilemap_get_at_pixel(_tm, _x, _y) & tile_index_mask) != 0) return true;
+            if (_x >= _r) break;
+        }
+        if (_y >= _b) break;
+    }
+    return false;
+}
+
+/// is the body (feet at _x,_y) overlapping a solid?
 solid_at = function(_x, _y)
 {
-    return collision_rectangle(_x - hw, _y - hh, _x + hw - 1, _y - 1, obj_plat_solid, false, true) != noone;
+    var _l = _x - hw, _t = _y - hh, _r = _x + hw - 1, _b = _y - 1;
+    return tile_in_rect(tm_solid, _l, _t, _r, _b)
+        || collision_rectangle(_l, _t, _r, _b, obj_plat_solid, false, true) != noone;
 }
 
 /// is there a ledge whose top row is exactly at _y, under feet at _x?
 ledge_under = function(_x, _y)
 {
-    var _hit = false, _l = _x - hw, _r = _x + hw - 1;
+    var _l = _x - hw, _r = _x + hw - 1;
+
+    // a ledge tile whose top edge is this row
+    if (tm_ledge != -1)
+    {
+        var _th = tilemap_get_tile_height(tm_ledge);
+        var _oy = tilemap_get_y(tm_ledge);
+        if (((_y - _oy) mod _th) == 0 && tile_in_rect(tm_ledge, _l, _y, _r, _y)) return true;
+    }
+
+    var _hit = false;
     with (obj_plat_ledge)
     {
         if (bbox_top == _y && bbox_right >= _l && bbox_left <= _r) { _hit = true; break; }

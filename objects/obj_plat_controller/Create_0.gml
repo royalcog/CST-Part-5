@@ -6,8 +6,8 @@ global.textbox_top   = false;
 
 // --- tuning ---
 plat_show_solids = true;   // the grey placeholder blocks. false once your tiles are over them
-start_gap     = 44;        // px Ralsei starts behind Susie
-follow_delay  = 12;        // how far back on your trail the follower walks (in steps of your trail)
+start_gap     = 64;        // px Ralsei starts behind Susie
+follow_delay  = 18;        // how far back on your trail the follower walks (in steps of your trail)
 catch_up      = 30;        // if they fall this many steps further behind, they walk double speed
 hist_max      = 600;
 swap_key      = ord("C");
