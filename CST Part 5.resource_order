@@ -675,6 +675,7 @@
     {"name":"spr_lancer_chair_sad","order":7,"path":"sprites/spr_lancer_chair_sad/spr_lancer_chair_sad.yy",},
     {"name":"spr_lancer_dialogue","order":4,"path":"sprites/spr_lancer_dialogue/spr_lancer_dialogue.yy",},
     {"name":"spr_lancer_down","order":1,"path":"sprites/spr_lancer_down/spr_lancer_down.yy",},
+    {"name":"spr_lancer_dt_unhappy","order":8,"path":"sprites/spr_lancer_dt_unhappy/spr_lancer_dt_unhappy.yy",},
     {"name":"spr_lancer_left_sad","order":5,"path":"sprites/spr_lancer_left_sad/spr_lancer_left_sad.yy",},
     {"name":"spr_lancer_left","order":2,"path":"sprites/spr_lancer_left/spr_lancer_left.yy",},
     {"name":"spr_lancer_right_phone","order":6,"path":"sprites/spr_lancer_right_phone/spr_lancer_right_phone.yy",},

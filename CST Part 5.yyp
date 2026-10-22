@@ -830,6 +830,7 @@
     {"id":{"name":"spr_lancer_chair_sad","path":"sprites/spr_lancer_chair_sad/spr_lancer_chair_sad.yy",},},
     {"id":{"name":"spr_lancer_dialogue","path":"sprites/spr_lancer_dialogue/spr_lancer_dialogue.yy",},},
     {"id":{"name":"spr_lancer_down","path":"sprites/spr_lancer_down/spr_lancer_down.yy",},},
+    {"id":{"name":"spr_lancer_dt_unhappy","path":"sprites/spr_lancer_dt_unhappy/spr_lancer_dt_unhappy.yy",},},
     {"id":{"name":"spr_lancer_left_sad","path":"sprites/spr_lancer_left_sad/spr_lancer_left_sad.yy",},},
     {"id":{"name":"spr_lancer_left","path":"sprites/spr_lancer_left/spr_lancer_left.yy",},},
     {"id":{"name":"spr_lancer_right_phone","path":"sprites/spr_lancer_right_phone/spr_lancer_right_phone.yy",},},
