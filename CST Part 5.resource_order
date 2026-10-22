@@ -754,6 +754,7 @@
     {"name":"spr_plat_susie_jump","order":2,"path":"sprites/spr_plat_susie_jump/spr_plat_susie_jump.yy",},
     {"name":"spr_plat_susie_run","order":1,"path":"sprites/spr_plat_susie_run/spr_plat_susie_run.yy",},
     {"name":"spr_pluey_sad","order":1,"path":"sprites/spr_pluey_sad/spr_pluey_sad.yy",},
+    {"name":"spr_queen_chair","order":29,"path":"sprites/spr_queen_chair/spr_queen_chair.yy",},
     {"name":"spr_queen_dialogue","order":6,"path":"sprites/spr_queen_dialogue/spr_queen_dialogue.yy",},
     {"name":"spr_queen_laughing","order":1,"path":"sprites/spr_queen_laughing/spr_queen_laughing.yy",},
     {"name":"spr_queen_pie_throw","order":8,"path":"sprites/spr_queen_pie_throw/spr_queen_pie_throw.yy",},
