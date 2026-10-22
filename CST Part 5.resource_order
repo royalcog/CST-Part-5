@@ -822,6 +822,7 @@
     {"name":"spr_ralsei_spellready","order":30,"path":"sprites/spr_ralsei_spellready/spr_ralsei_spellready.yy",},
     {"name":"spr_ralsei_surprised","order":13,"path":"sprites/spr_ralsei_surprised/spr_ralsei_surprised.yy",},
     {"name":"spr_ralsei_surprisedhands","order":12,"path":"sprites/spr_ralsei_surprisedhands/spr_ralsei_surprisedhands.yy",},
+    {"name":"spr_ralsei_walk_down_neutral","order":32,"path":"sprites/spr_ralsei_walk_down_neutral/spr_ralsei_walk_down_neutral.yy",},
     {"name":"spr_ralsei_walk_down","order":8,"path":"sprites/spr_ralsei_walk_down/spr_ralsei_walk_down.yy",},
     {"name":"spr_ralsei_walk_left_neutral","order":26,"path":"sprites/spr_ralsei_walk_left_neutral/spr_ralsei_walk_left_neutral.yy",},
     {"name":"spr_ralsei_walk_right_neutral","order":23,"path":"sprites/spr_ralsei_walk_right_neutral/spr_ralsei_walk_right_neutral.yy",},
