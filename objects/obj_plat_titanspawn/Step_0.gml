@@ -19,8 +19,39 @@ if (hurt_t > 0)
     if (hurt_t == 0) { sprite_index = spr_titanspawn_idle; image_index = 0; }
 }
 
+// the fight's big one: drifts around the top of the arena, and swoops at you every so often
+if (boss && hurt_t <= 0 && is_struct(arena))
+{
+    boss_t++;
+    var _ctl = instance_find(obj_plat_controller, 0);
+    var _l   = _ctl.leader();
+    var _every = invincible ? swoop_every_rb : swoop_every;
+    if (swoop_t <= 0 && boss_t >= 90 && boss_t mod _every == 0)
+    {
+        swoop_t = swoop_len;
+        swoop_x = _l.x;
+        swoop_y = _l.y - _l.hh / 2;
+    }
+    var _tx, _ty, _max;
+    if (swoop_t > 0) { swoop_t--; _tx = swoop_x; _ty = swoop_y; _max = swoop_spd; }
+    else
+    {
+        _tx  = arena.cx + path_ax * sin(boss_t * 0.013);
+        _ty  = path_y + path_ay * sin(boss_t * 0.027);
+        _max = path_spd;
+    }
+    var _dx   = scr_plat_wrap_dx(x, _tx);
+    var _dy   = _ty - base_y;
+    var _dist = point_distance(0, 0, _dx, _dy);
+    if (swoop_t > 0 && _dist < 10) swoop_t = 0;
+    var _d  = point_direction(0, 0, _dx, _dy);
+    var _sp = min(_max, _dist * 0.1);
+    vx = lerp(vx, lengthdir_x(_sp, _d), 0.15);
+    vy = lerp(vy, lengthdir_y(_sp, _d), 0.15);
+}
+
 // the scene's two: come in fast, then slow right down and hover behind their hero
-if (scripted && instance_exists(target_hero) && hurt_t <= 0)
+else if (scripted && instance_exists(target_hero) && hurt_t <= 0)
 {
     var _hx   = target_hero.x + hold_side * hold_dist;
     var _dx   = scr_plat_wrap_dx(x, _hx);
@@ -76,6 +107,7 @@ if (hurt_t <= 0 && appear_t >= appear_len && !scripted)
 {
     with (obj_plat_player)
     {
+        if (other.leader_only && !leader) continue;
         var _sx = x + scr_plat_wrap_dx(x, other.x);   // the spawn, on this side of the tower
         if (point_in_rectangle(_sx, other.y, x - hw - other.touch_r, y - hh - other.touch_r, x + hw + other.touch_r, y + other.touch_r))
             take_hit(_sx, irandom_range(other.damage_min, other.damage_max));

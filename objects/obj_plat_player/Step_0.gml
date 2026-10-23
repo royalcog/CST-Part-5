@@ -57,7 +57,7 @@ xr -= _mx;
 repeat (abs(_mx))
 {
     var _s = sign(_mx);
-    if (!solid_at(x + _s, y)) x += _s;
+    if (!solid_at(x + _s, y) && arena_ok(x + _s)) x += _s;
     else { vx = 0; xr = 0; break; }
 }
 
@@ -71,12 +71,12 @@ repeat (abs(_my))
     var _s = sign(_my);
     if (_s > 0)
     {
-        if (solid_at(x, y + 1) || ledge_under(x, y)) { vy = 0; yr = 0; break; }   // landed
+        if (solid_at(x, y + 1) || ledge_under(x, y) || arena_floor(y)) { vy = 0; yr = 0; break; }   // landed
         y += 1;
     }
     else
     {
-        if (solid_at(x, y - 1)) { vy = 0; yr = 0; break; }   // bonked its head
+        if (solid_at(x, y - 1) || arena_ceiling(y - 1)) { vy = 0; yr = 0; break; }   // bonked its head
         y -= 1;
     }
 }

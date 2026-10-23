@@ -27,6 +27,7 @@ if (wrap_on)
     u_r     = shader_get_uniform(shd_tower_wrap, "u_r");
     u_span  = shader_get_uniform(shd_tower_wrap, "u_span");
     u_shade = shader_get_uniform(shd_tower_wrap, "u_shade");
+    u_amt   = shader_get_uniform(shd_tower_wrap, "u_amt");
 }
 
 // --- tuning ---
@@ -218,6 +219,7 @@ global.textbox_plat = true;
 triggers = [
     { x: 320, y: 2760, r: 24, text: "plat_flowers", done: false },
     { above_y: room_height / 2, text: "plat_halfway", done: false },   // move this to wherever halfway ends up
+    { x: 880, y: 1200, r: 40, battle: true, done: false },              // the fight
 ];
 
 /// the first trigger anyone's touching, or undefined
@@ -334,4 +336,30 @@ spawn_titan = function(_from_above = false)
         _y = cam_y - spawn_margin - 20;
     }
     return instance_create_depth(scr_plat_wrap(_x), _y, -150, obj_plat_titanspawn);
+}
+
+// --- the fight at (880, 1200) (obj_plat_battle runs it) ---
+wrap_amt    = 1;       // how bent the picture is right now (0 = flat)...
+wrap_target = 1;       // ...and what it's easing toward
+cam_locked  = false;   // the camera stays put while this is on
+cam_release = 0;       // frames the camera eases back after the fight
+battle_on   = false;
+global.plat_arena = undefined;   // the fight's box (players can't leave it)
+
+/// starts the fight (from its trigger)
+start_battle = function()
+{
+    if (battle_on) return;
+    battle_on = true;
+    with (obj_plat_titanspawn) if (!dying) { dying = true; die_t = 0; }   // any regular ones clear off
+    instance_create_depth(0, 0, -200, obj_plat_battle);
+}
+
+/// the first floor at or below (_x, _y), scanning down to _max_y
+find_floor = function(_x, _y, _max_y)
+{
+    var _l = leader();
+    for (var _yy = round(_y); _yy < _max_y; _yy++)
+        if (_l.solid_at(_x, _yy + 1) || _l.ledge_under(_x, _yy)) return _yy;
+    return _max_y - 20;
 }

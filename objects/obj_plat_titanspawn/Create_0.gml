@@ -40,6 +40,24 @@ fast_spd    = 11;      // how fast they come in...
 slow_r      = 240;     // ...slowing down over the last this many px
 arrived     = false;
 
+// --- the fight's big one (obj_plat_battle sets these) ---
+boss          = false;
+invincible    = false;   // glowing rainbow: attacks go straight through it
+leader_only   = false;   // only the one you're controlling gets hurt touching it
+arena         = undefined;
+path_y        = 0;       // it drifts around this height...
+path_ax       = 200;     // ...this far either side of the middle...
+path_ay       = 40;      // ...and this far up and down
+path_spd      = 4;
+swoop_spd     = 7.5;     // every so often it swoops at you
+swoop_len     = 45;
+swoop_every   = 210;     // frames between swoops...
+swoop_every_rb = 140;    // ...and while it's rainbow
+boss_t  = 0;
+swoop_t = 0;
+swoop_x = 0;
+swoop_y = 0;
+
 /// one hit from an attack (from _fx,_fy)
 take_damage = function(_fx, _fy)
 {

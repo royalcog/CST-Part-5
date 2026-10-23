@@ -158,7 +158,7 @@ if (state == "play" && spawn_on)
 
         case "done":   // from here on, one every spawn_every frames
             spawn_t++;
-            if (spawn_t >= spawn_every)
+            if (spawn_t >= spawn_every && !battle_on)
             {
                 if (instance_number(obj_plat_titanspawn) < spawn_max) spawn_titan(irandom(2) == 0);
                 spawn_t = 0;
@@ -167,13 +167,24 @@ if (state == "play" && spawn_on)
     }
 }
 
-// dialogue triggers (only once you're playing, and never over another textbox)
-if (state == "play" && !instance_exists(obj_textbox))
+// dialogue triggers / the fight (only once you're playing, and never over another textbox)
+if (state == "play" && !instance_exists(obj_textbox) && !battle_on)
 {
     var _tr = trigger_hit();
     if (_tr != undefined)
     {
-        _tr.done = true;
-        create_textbox(_tr.text);
+        if (variable_struct_exists(_tr, "battle"))
+        {
+            // the fight waits until the first Titan Spawn scene is over
+            if (intro == "done") { _tr.done = true; start_battle(); }
+        }
+        else
+        {
+            _tr.done = true;
+            create_textbox(_tr.text);
+        }
     }
 }
+
+// the tower bending / flattening (for the fight)
+wrap_amt = (wrap_amt < wrap_target) ? min(wrap_target, wrap_amt + 1 / 40) : max(wrap_target, wrap_amt - 1 / 40);

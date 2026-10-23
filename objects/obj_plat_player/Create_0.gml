@@ -136,7 +136,25 @@ ledge_under = function(_x, _y)
 
 on_ground = function()
 {
-    return solid_at(x, y + 1) || ledge_under(x, y);
+    return solid_at(x, y + 1) || ledge_under(x, y) || arena_floor(y);
+}
+
+/// the fight's box: can't go past its sides, its top, or below its floor
+arena_ok = function(_x)
+{
+    if (!variable_global_exists("plat_arena") || !is_struct(global.plat_arena)) return true;
+    var _a = global.plat_arena;
+    return abs(scr_plat_wrap_dx(_a.cx, _x)) <= _a.half - hw;
+}
+arena_floor = function(_y)
+{
+    if (!variable_global_exists("plat_arena") || !is_struct(global.plat_arena)) return false;
+    return _y >= global.plat_arena.b;
+}
+arena_ceiling = function(_y)
+{
+    if (!variable_global_exists("plat_arena") || !is_struct(global.plat_arena)) return false;
+    return _y - hh < global.plat_arena.t;
 }
 
 /// picks the sprite for what they're doing. used by the follower too
@@ -172,7 +190,7 @@ start_attack = function(_target = noone)
     vx = 0;
     atk_target = (_target != noone && instance_exists(_target)) ? _target : noone;
     var _t = (atk_target != noone) ? atk_target : instance_nearest(x, y - hh / 2, obj_plat_titanspawn);
-    if (_t != noone && !_t.dying) face = (scr_plat_wrap_dx(x, _t.x) >= 0) ? 1 : -1;
+    if (_t != noone && (_t.dying || _t.invincible)) _t = noone;   // rainbow: can't aim at it
     sprite_index = (who == "susie") ? buster_sprite : fire_sprite;
     image_speed  = 0;
     image_index  = 0;
