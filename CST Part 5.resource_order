@@ -435,6 +435,7 @@
     {"name":"snd_error","order":30,"path":"sounds/snd_error/snd_error.yy",},
     {"name":"snd_explosion","order":11,"path":"sounds/snd_explosion/snd_explosion.yy",},
     {"name":"snd_fade","order":24,"path":"sounds/snd_fade/snd_fade.yy",},
+    {"name":"snd_firespell","order":56,"path":"sounds/snd_firespell/snd_firespell.yy",},
     {"name":"snd_friendlaugh","order":14,"path":"sounds/snd_friendlaugh/snd_friendlaugh.yy",},
     {"name":"snd_gerson","order":5,"path":"sounds/snd_gerson/snd_gerson.yy",},
     {"name":"snd_gersonlaugh","order":7,"path":"sounds/snd_gersonlaugh/snd_gersonlaugh.yy",},

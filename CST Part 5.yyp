@@ -558,6 +558,7 @@
     {"id":{"name":"snd_error","path":"sounds/snd_error/snd_error.yy",},},
     {"id":{"name":"snd_explosion","path":"sounds/snd_explosion/snd_explosion.yy",},},
     {"id":{"name":"snd_fade","path":"sounds/snd_fade/snd_fade.yy",},},
+    {"id":{"name":"snd_firespell","path":"sounds/snd_firespell/snd_firespell.yy",},},
     {"id":{"name":"snd_friendlaugh","path":"sounds/snd_friendlaugh/snd_friendlaugh.yy",},},
     {"id":{"name":"snd_gerson","path":"sounds/snd_gerson/snd_gerson.yy",},},
     {"id":{"name":"snd_gersonlaugh","path":"sounds/snd_gersonlaugh/snd_gersonlaugh.yy",},},

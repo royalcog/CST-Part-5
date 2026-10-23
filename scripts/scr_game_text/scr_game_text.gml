@@ -61,6 +61,8 @@ function scr_game_text(_text_id)
 			scr_text("* We'll Meet You Guys At The Top", "queen", 3);
 			scr_text("* ...", "lancer", 10);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_rm_two_p5) board_chair(); }, 0);
+				scr_obj_sprite_after_textbox_delayed(obj_susie, spr_susie_walk_right_neutral, false, 120);
+				scr_obj_sprite_after_textbox_delayed(obj_ralsei, spr_ralsei_walk_right_neutral, false, 120);
 		break;
 
 		case "self_3":
@@ -119,7 +121,7 @@ function scr_game_text(_text_id)
 			scr_text("* We don't need Kris for this, man.", "susie", 30);
 				scr_call_on_page(function() { with (obj_plat_controller) susie_turn(); }, 1, global.page_number - 1);
 			scr_text("* ...?", "ralsei", 50);
-			scr_text("* We're both strong people.| We got this.", "susie", 34);
+			scr_text("* We're both strong people.|* We got this.", "susie", 34);
 			scr_text("* And as much as I'm not a fan...", "susie", 32);
 			scr_text("* We have Queen and Lancer too.", "susie", 30);
 			scr_text("* This Titan is no match for us.", "susie", 34);
