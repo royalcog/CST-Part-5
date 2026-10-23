@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_plat_wrap",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_plat_wrap",
+  "parent":{
+    "name":"Platforming",
+    "path":"folders/Scripts/Platforming.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

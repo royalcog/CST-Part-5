@@ -1,0 +1,1 @@
+tm = -1;   // the tilemap to copy (set by obj_plat_controller)

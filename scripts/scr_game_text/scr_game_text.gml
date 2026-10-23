@@ -94,6 +94,25 @@ function scr_game_text(_text_id)
 			scr_text("* I'm not really... sure?", "ralsei", 45);
 			scr_text("* ...", "susie", 31);
 		break;
+		
+		case "plat_watchout":
+			scr_text("* Watch out!", "susie", 39);
+		break;
+
+		case "plat_halfway":
+			scr_text("* Are we gonna be able to beat this thing?", "susie", 31);
+			scr_text("* I'm not sure...", "ralsei", 34);
+			scr_text("* Last time you and Kris were able to seal it out, but...", "ralsei", 35);
+			scr_text("* We don't need Kris for this, man.", "susie", 30);
+				scr_call_on_page(function() { with (obj_plat_controller) susie_turn(); }, 1, global.page_number - 1);
+			scr_text("* ...?", "ralsei", 50);
+			scr_text("* We're both strong people.| We got this.", "susie", 34);
+			scr_text("* And as much as I'm not a fan...", "susie", 32);
+			scr_text("* We have Queen and Lancer too.", "susie", 30);
+			scr_text("* This Titan is no match for us.", "susie", 34);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* I hope you're right, Susie.", "ralsei", 40);
+		break;
 /*
 
 */

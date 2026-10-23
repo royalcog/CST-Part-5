@@ -3,6 +3,31 @@
 global.plat_lock     = true;   // no control until self_5 is done
 global.cutscene_lock = true;   // Z doesn't open self_ dialogue up here (the climb opens its own)
 global.textbox_top   = false;
+// --- the platforms wrap around the tower ---
+// the room's width is the tower's circumference: run off one side and you come back on the other,
+// and the whole picture gets bent around a cylinder (Post Draw)
+wrap_on    = true;       // false: back to a flat climb
+wrap_shade = 0.55;       // how much darker the tower gets toward its edges
+global.plat_wrap_w = wrap_on ? room_width : 0;
+wrap_r     = room_width / (2 * pi);   // the tower's radius on screen (so the front isn't stretched or squashed)
+
+if (wrap_on)
+{
+    // every tile layer gets copies one tower-width to each side, for the seam
+    var _layers = layer_get_all();
+    for (var i = 0; i < array_length(_layers); i++)
+    {
+        var _tm = layer_tilemap_get_id(_layers[i]);
+        if (_tm == -1) continue;
+        with (instance_create_depth(0, 0, layer_get_depth(_layers[i]), obj_plat_wrapcopy)) tm = _tm;
+    }
+
+    application_surface_draw_enable(false);   // Post Draw draws it instead, bent around the tower
+    u_cx    = shader_get_uniform(shd_tower_wrap, "u_cx");
+    u_r     = shader_get_uniform(shd_tower_wrap, "u_r");
+    u_span  = shader_get_uniform(shd_tower_wrap, "u_span");
+    u_shade = shader_get_uniform(shd_tower_wrap, "u_shade");
+}
 
 // --- tuning ---
 plat_show_solids = true;   // the grey placeholder blocks. false once your tiles are over them
@@ -80,6 +105,9 @@ swap = function()
 
     _old.leader = false;
     _old.vx = 0; _old.vy = 0;
+    _old.attacking = false;
+    _old.hurt_t = 0;
+    _old.image_yscale = 2;
     _new.leader   = true;
     _new.vx       = 0;
     _new.vy       = 0;
@@ -107,7 +135,7 @@ cam_target = function()
     var _vh = camera_get_view_height(view_camera[0]);
     var _l  = leader();
     return {
-        x: clamp(_l.x - _vw / 2, 0, max(0, room_width - _vw)),
+        x: wrap_on ? _l.x - _vw / 2 : clamp(_l.x - _vw / 2, 0, max(0, room_width - _vw)),
         y: clamp(_l.y - _vh * cam_lead_y, 0, max(0, room_height - _vh))
     };
 }
@@ -151,7 +179,7 @@ update_pressed = function()
             {
                 for (var k = 0; k < 2; k++)
                 {
-                    var _cx = floor((_px - _ox) / _tw);
+                    var _cx = floor((scr_plat_wrap(_px) - _ox) / _tw);
                     var _cy = floor((_c.y - k - _oy) / _th);
                     var _key = string(_tm) + ":" + string(_cx) + ":" + string(_cy);
                     if (variable_struct_exists(pressed, _key)) { _now[$ _key] = true; continue; }
@@ -184,10 +212,12 @@ update_pressed = function()
 // every textbox in here is the climb's special one (up top, no box, just a shadow)
 global.textbox_plat = true;
 
-// --- dialogue triggers: walk into one and its text opens (once), while you keep playing ---
-// x/y = a point in the room; it fires when either of them gets within r px of it
+// --- dialogue triggers: reach one and its text opens (once), while you keep playing ---
+//  { x, y, r }:  fires when either of them gets within r px of that point
+//  { above_y }:  fires when either of them climbs above that height
 triggers = [
     { x: 320, y: 2760, r: 24, text: "plat_flowers", done: false },
+    { above_y: room_height / 2, text: "plat_halfway", done: false },   // move this to wherever halfway ends up
 ];
 
 /// the first trigger anyone's touching, or undefined
@@ -200,9 +230,60 @@ trigger_hit = function()
         for (var p = 0; p < array_length(party); p++)
         {
             var _c = party[p];
-            if (point_in_rectangle(_tr.x, _tr.y, _c.x - _c.hw - _tr.r, _c.y - _c.hh - _tr.r, _c.x + _c.hw + _tr.r, _c.y + _tr.r))
-                return _tr;
+            if (variable_struct_exists(_tr, "above_y"))
+            {
+                if (_c.y <= _tr.above_y) return _tr;
+            }
+            else
+            {
+                var _tx = _c.x + scr_plat_wrap_dx(_c.x, _tr.x);   // the trigger, on this side of the tower
+                if (point_in_rectangle(_tx, _tr.y, _c.x - _c.hw - _tr.r, _c.y - _c.hh - _tr.r, _c.x + _c.hw + _tr.r, _c.y + _tr.r))
+                    return _tr;
+            }
         }
     }
     return undefined;
+}
+
+/// whichever of them is _who ("susie" / "ralsei")
+member = function(_who)
+{
+    for (var i = 0; i < array_length(party); i++) if (party[i].who == _who) return party[i];
+    return noone;
+}
+
+/// for the halfway chat: if Susie's the one following, she turns to face Ralsei (and holds it a while)
+susie_turn = function(_hold = 240)
+{
+    var _s = member("susie");
+    if (_s == noone || _s.leader) return;
+    var _r = member("ralsei");
+    _s.face = (scr_plat_wrap_dx(_s.x, _r.x) >= 0) ? 1 : -1;
+    _s.face_hold = _hold;
+}
+
+// --- Titan Spawn ---
+spawn_start   = 180;     // frames into the climb before the first one shows up
+spawn_every   = 240;     // frames between new ones (~4s)
+spawn_max     = 2;       // most on screen at once
+spawn_margin  = 60;      // px outside the screen they appear
+watchout_text = "plat_watchout";   // Susie's "Watch out!" when the first one comes
+spawn_t       = 0;
+spawn_count   = 0;
+watchout_pending = false;
+
+/// a new Titan Spawn just off the left, right or top of the screen
+spawn_titan = function()
+{
+    var _vw = camera_get_view_width(view_camera[0]), _vh = camera_get_view_height(view_camera[0]);
+    var _x, _y;
+    switch (irandom(2))
+    {
+        case 0:  _x = cam_x - spawn_margin;       _y = cam_y + random_range(40, _vh * 0.6); break;
+        case 1:  _x = cam_x + _vw + spawn_margin; _y = cam_y + random_range(40, _vh * 0.6); break;
+        default: _x = cam_x + random_range(80, _vw - 80); _y = cam_y - spawn_margin; break;
+    }
+    instance_create_depth(_x, _y, -150, obj_plat_titanspawn);
+    spawn_count++;
+    if (spawn_count == 1 && watchout_text != "") watchout_pending = true;
 }

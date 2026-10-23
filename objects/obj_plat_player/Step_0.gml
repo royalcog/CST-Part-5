@@ -1,24 +1,37 @@
-// only the one you're controlling runs this. the follower is moved by obj_plat_controller
+// blinking after a hit (both of them)
+if (invuln > 0) invuln--;
+image_alpha = (invuln > 0 && (invuln div 4) mod 2 == 0) ? 0.4 : 1;
+if (attack_cool > 0) attack_cool--;
+
+// only the one you're controlling runs the rest. the follower is moved by obj_plat_controller
 if (!leader) exit;
 
 var _locked = global.plat_lock;
-var _dir    = _locked ? 0 : (keyboard_check(vk_right) - keyboard_check(vk_left));
-var _jp     = !_locked && keyboard_check_pressed(vk_up);
+var _hurt   = hurt_t > 0;
+if (_hurt) hurt_t--;
+var _free   = !_locked && !_hurt && !attacking;
+var _dir    = _free ? (keyboard_check(vk_right) - keyboard_check(vk_left)) : 0;
+var _jp     = _free && keyboard_check_pressed(vk_up);
 var _jh     = !_locked && keyboard_check(vk_up);
 
-// --- run ---
-if (_dir != 0)
+grounded = on_ground();
+if (_free && keyboard_check_pressed(attack_key)) start_attack();
+
+// --- run (knockback carries you while you're hurt) ---
+if (!_hurt)
 {
-    vx = clamp(vx + _dir * accel, -walk_spd, walk_spd);
-    face = _dir;
-}
-else
-{
-    vx = (abs(vx) <= decel) ? 0 : vx - sign(vx) * decel;
+    if (_dir != 0)
+    {
+        vx = clamp(vx + _dir * accel, -walk_spd, walk_spd);
+        face = _dir;
+    }
+    else
+    {
+        vx = (abs(vx) <= decel) ? 0 : vx - sign(vx) * decel;
+    }
 }
 
 // --- jump (with a little leeway both ways) ---
-grounded = on_ground();
 coyote = grounded ? coyote_max : max(0, coyote - 1);
 jbuf   = _jp ? buffer_max : max(0, jbuf - 1);
 if (jbuf > 0 && coyote > 0)
@@ -28,10 +41,10 @@ if (jbuf > 0 && coyote > 0)
     coyote = 0;
     grounded = false;
 }
-if (vy < 0 && !_jh) vy *= jump_cut;   // short hop if you let go
+if (vy < 0 && !_jh && !_hurt) vy *= jump_cut;   // short hop if you let go
 
 // --- gravity ---
-if (!grounded) vy = min(vy + grav, max_fall);
+if (!grounded || vy < 0) vy = min(vy + grav, max_fall);
 
 // --- move, a pixel at a time ---
 xr += vx;
@@ -43,6 +56,8 @@ repeat (abs(_mx))
     if (!solid_at(x + _s, y)) x += _s;
     else { vx = 0; xr = 0; break; }
 }
+
+x = scr_plat_wrap(x);   // off one side of the tower, back on the other
 
 yr += vy;
 var _my = round(yr);
@@ -65,4 +80,6 @@ repeat (abs(_my))
 grounded = on_ground();
 if (grounded && vy > 0) vy = 0;
 
-animate(vx != 0, grounded, vy);
+if (attacking && attack_step()) exit;
+image_yscale = 2;
+animate(vx != 0 && !_hurt, grounded, vy);

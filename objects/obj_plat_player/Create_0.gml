@@ -18,6 +18,29 @@ max_fall  = 10;
 coyote_max = 6;      // frames you can still jump after walking off a ledge
 buffer_max = 6;      // frames a jump press is remembered before landing
 
+// --- attacking (X, on the ground only): aims at the closest Titan Spawn ---
+attack_key       = ord("X");
+attack_cool_max  = 30;                      // frames before you can attack again (~0.5s)
+buster_sprite    = spr_susie_rudebuster;    // Susie (her battle sprite, scaled down)
+buster_scale     = 1.1;
+buster_anim      = 2;                       // x its normal speed
+buster_fire      = 7;                       // frame the Rude Buster leaves her swing
+buster_from      = { x: 38, y: -41 };       // where it leaves from, in the sprite's px from her origin
+buster_sound     = snd_boost;
+fire_sprite      = spr_plat_ralsei_fireball;   // Ralsei
+fire_scale       = 2;
+fire_anim        = 2;
+fire_fire        = 3;
+fire_from        = { x: 12, y: -21 };
+fire_sound       = snd_smallswing;
+
+// --- getting hurt ---
+invuln_max = 60;     // frames you can't be hurt again (you blink)
+hurt_lock  = 16;     // frames you've no control while you're knocked back
+knock_x    = 5;
+knock_y    = 5;
+hurt_sound = snd_hurt;
+
 // --- state ---
 who      = "";
 leader   = false;
@@ -30,6 +53,13 @@ jbuf     = 0;
 spr_idle = noone;
 spr_run  = noone;
 spr_jump = noone;
+attacking   = false;
+atk_t       = 0;
+atk_fired   = false;
+attack_cool = 0;
+invuln      = 0;
+hurt_t      = 0;
+face_hold   = 0;     // > 0: the follower keeps facing the way it was turned (for dialogue)
 
 /// sets up the sprites for "susie" or "ralsei"
 set_who = function(_who)
@@ -66,7 +96,7 @@ tile_in_rect = function(_tm, _l, _t, _r, _b)
     {
         for (var _x = _l; ; _x = min(_x + _tw, _r))
         {
-            if ((tilemap_get_at_pixel(_tm, _x, _y) & tile_index_mask) != 0) return true;
+            if ((tilemap_get_at_pixel(_tm, scr_plat_wrap(_x), _y) & tile_index_mask) != 0) return true;
             if (_x >= _r) break;
         }
         if (_y >= _b) break;
@@ -128,5 +158,80 @@ animate = function(_moving, _grounded, _vy)
     {
         if (sprite_index != spr_idle) { sprite_index = spr_idle; image_index = 0; }
         image_speed = 1;
+    }
+}
+
+/// X: Susie's Rude Buster or Ralsei's fireball, at the closest Titan Spawn
+start_attack = function()
+{
+    if (attacking || attack_cool > 0 || !grounded || hurt_t > 0) return;
+    attacking = true;
+    atk_t     = 0;
+    atk_fired = false;
+    vx = 0;
+    var _t = instance_nearest(x, y - hh / 2, obj_plat_titanspawn);
+    if (_t != noone && !_t.dying) face = (scr_plat_wrap_dx(x, _t.x) >= 0) ? 1 : -1;
+    sprite_index = (who == "susie") ? buster_sprite : fire_sprite;
+    image_speed  = 0;
+    image_index  = 0;
+    var _len = sprite_get_number(sprite_index) / (sprite_get_speed(sprite_index) * ((who == "susie") ? buster_anim : fire_anim)) * game_get_speed(gamespeed_fps);
+    attack_cool = max(attack_cool_max, ceil(_len));
+}
+
+/// runs the attack animation; true while it's still going
+attack_step = function()
+{
+    var _spr   = (who == "susie") ? buster_sprite : fire_sprite;
+    var _scale = (who == "susie") ? buster_scale  : fire_scale;
+    var _mult  = (who == "susie") ? buster_anim   : fire_anim;
+    var _ff    = (who == "susie") ? buster_fire   : fire_fire;
+    var _from  = (who == "susie") ? buster_from   : fire_from;
+
+    atk_t++;
+    var _f = atk_t * sprite_get_speed(_spr) * _mult / game_get_speed(gamespeed_fps);
+    sprite_index = _spr;
+    image_index  = min(floor(_f), sprite_get_number(_spr) - 1);
+    image_xscale = _scale * face;
+    image_yscale = _scale;
+
+    if (!atk_fired && _f >= _ff)
+    {
+        atk_fired = true;
+        var _sx = x + _from.x * _scale * face;
+        var _sy = y + _from.y * _scale;
+        var _t  = instance_nearest(_sx, _sy, obj_plat_titanspawn);
+        if (_t != noone && _t.dying) _t = noone;
+        var _d  = (_t != noone) ? point_direction(0, 0, scr_plat_wrap_dx(_sx, _t.x), _t.y - _sy) : ((face > 0) ? 0 : 180);
+        var _shot = instance_create_depth(_sx, _sy, -160, obj_plat_shot);
+        _shot.setup((who == "susie") ? "buster" : "fire", _t, _d);
+        var _snd = (who == "susie") ? buster_sound : fire_sound;
+        if (_snd != noone) audio_play_sound(_snd, 1, false);
+    }
+
+    if (_f >= sprite_get_number(_spr))
+    {
+        attacking = false;
+        image_yscale = 2;
+        return false;
+    }
+    return true;
+}
+
+/// a Titan Spawn touched them (from _fx). the one you control gets knocked back
+take_hit = function(_fx, _amount)
+{
+    if (invuln > 0) return;
+    invuln = invuln_max;
+    scr_show_damage(id, _amount);
+    if (hurt_sound != noone) audio_play_sound(hurt_sound, 1, false);
+    if (leader)
+    {
+        attacking = false;
+        image_yscale = 2;
+        hurt_t = hurt_lock;
+        var _away = (scr_plat_wrap_dx(_fx, x) >= 0) ? 1 : -1;
+        vx = _away * knock_x;
+        vy = -knock_y;
+        grounded = false;
     }
 }
