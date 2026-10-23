@@ -264,7 +264,7 @@ susie_turn = function(_hold = 240)
 
 // --- Titan Spawn ---
 spawn_start   = 180;     // frames into the climb before the first one shows up
-spawn_every   = 240;     // frames between new ones (~4s)
+spawn_every   = 300;     // frames between new ones (5s)
 spawn_max     = 2;       // most on screen at once
 spawn_margin  = 60;      // px outside the screen they appear
 watchout_text = "plat_watchout";   // Susie's "Watch out!" when the first one comes
@@ -273,17 +273,29 @@ spawn_count   = 0;
 watchout_pending = false;
 
 /// a new Titan Spawn just off the left, right or top of the screen
+/// a new Titan Spawn: around the back of the tower (it floats around into view), or above the screen
 spawn_titan = function()
 {
-    var _vw = camera_get_view_width(view_camera[0]), _vh = camera_get_view_height(view_camera[0]);
+    var _l  = leader();
+    var _vh = camera_get_view_height(view_camera[0]);
+    var _w  = scr_plat_wrap_w();
     var _x, _y;
-    switch (irandom(2))
+
+    if (irandom(2) < 2)
     {
-        case 0:  _x = cam_x - spawn_margin;       _y = cam_y + random_range(40, _vh * 0.6); break;
-        case 1:  _x = cam_x + _vw + spawn_margin; _y = cam_y + random_range(40, _vh * 0.6); break;
-        default: _x = cam_x + random_range(80, _vw - 80); _y = cam_y - spawn_margin; break;
+        // off one side: just round the back of the tower when wrapping, just off the screen when not
+        var _side = choose(-1, 1);
+        if (_w > 0) _x = _l.x + _side * _w * 0.32;
+        else        _x = cam_x + camera_get_view_width(view_camera[0]) / 2 + _side * (camera_get_view_width(view_camera[0]) / 2 + spawn_margin);
+        _y = cam_y + random_range(40, _vh * 0.6);
     }
-    instance_create_depth(_x, _y, -150, obj_plat_titanspawn);
+    else
+    {
+        // from above, somewhere in front of you
+        _x = _l.x + random_range(-1, 1) * ((_w > 0) ? _w / 6 : 300);
+        _y = cam_y - spawn_margin - 20;
+    }
+    instance_create_depth(scr_plat_wrap(_x), _y, -150, obj_plat_titanspawn);
     spawn_count++;
     if (spawn_count == 1 && watchout_text != "") watchout_pending = true;
 }

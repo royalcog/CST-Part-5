@@ -1,3 +1,5 @@
+if (appear_t < appear_len) appear_t++;
+
 if (dying)
 {
     die_t++;
@@ -41,7 +43,7 @@ y = base_y + sin(bob) * bob_amp;
 if (abs(vx) > 0.1) image_xscale = 2 * ((vx > 0) == faces_left ? -1 : 1);
 
 // touching either of them hurts
-if (hurt_t <= 0)
+if (hurt_t <= 0 && appear_t >= appear_len)
 {
     with (obj_plat_player)
     {

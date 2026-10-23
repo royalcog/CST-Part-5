@@ -7,7 +7,7 @@ depth  = -160;
 
 // --- tuning ---
 buster_sprite = spr_rudebuster_projectile;
-buster_scale  = 1;
+buster_scale  = 2;
 buster_speed  = 11;
 buster_turn   = 12;    // degrees per frame it can turn toward its target
 fire_sprite   = spr_plat_fireball;
