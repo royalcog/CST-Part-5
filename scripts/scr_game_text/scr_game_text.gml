@@ -95,8 +95,21 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "susie", 31);
 		break;
 		
-		case "plat_watchout":
+		// the first Titan Spawn: whoever you're controlling yells, takes it out, and the other one reacts
+		case "plat_watchout_susie":
 			scr_text("* Watch out!", "susie", 39);
+		break;
+
+		case "plat_watchout_ralsei":
+			scr_text("* Watch out!", "ralsei", 42);
+		break;
+
+		case "plat_dots_susie":
+			scr_text("* ...", "susie", 31);
+		break;
+
+		case "plat_dots_ralsei":
+			scr_text("* ...", "ralsei", 45);
 		break;
 
 		case "plat_halfway":
@@ -112,6 +125,7 @@ function scr_game_text(_text_id)
 			scr_text("* This Titan is no match for us.", "susie", 34);
 			scr_text("* ...", "ralsei", 45);
 			scr_text("* I hope you're right, Susie.", "ralsei", 40);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_plat_controller) start_spawning(); }, 30);
 		break;
 /*
 

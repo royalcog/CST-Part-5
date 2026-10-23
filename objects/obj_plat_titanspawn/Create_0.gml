@@ -32,6 +32,8 @@ die_t  = 0;
 base_y = y;
 appear_t   = 0;
 appear_len = 30;     // frames it fades in over (it can't hurt you until it's all the way in)
+scripted  = false;   // the first one: it stops short of you and hovers, and can't hurt you
+hold_dist = 180;
 
 /// one hit from an attack (from _fx,_fy)
 take_damage = function(_fx, _fy)

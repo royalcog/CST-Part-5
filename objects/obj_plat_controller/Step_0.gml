@@ -52,33 +52,88 @@ fol_last = { x: _e.x, y: _e.y };
 // flowers (or any press_tiles) react to whoever's standing on them
 update_pressed();
 
-// --- Titan Spawn: one every so often, never more than spawn_max at once ---
-if (state == "play")
+// --- Titan Spawn (once the halfway chat's done) ---
+if (state == "play" && spawn_on)
 {
-    spawn_t++;
-    var _first = (spawn_count == 0);
-    if ((_first && spawn_t >= spawn_start) || (!_first && spawn_t >= spawn_every))
+    intro_t++;
+    var _ld = leader();
+    switch (intro)
     {
-        if (instance_number(obj_plat_titanspawn) < spawn_max) spawn_titan();
-        spawn_t = 0;
+        case "spawn":   // the first one floats down from above, in front of you
+            intro_spawn = spawn_titan(true);
+            intro_spawn.scripted  = true;
+            intro_spawn.hold_dist = intro_hold;
+            intro = "arrive";
+            intro_t = 0;
+        break;
+
+        case "arrive":   // once it's on screen: "Watch out!" from whoever you're controlling
+            if (!instance_exists(intro_spawn)) { intro = "after"; intro_t = 0; break; }
+            if (intro_spawn.appear_t >= intro_spawn.appear_len && intro_spawn.y > cam_y + 60 && !instance_exists(obj_textbox))
+            {
+                global.plat_lock = true;
+                create_textbox("plat_watchout_" + _ld.who);
+                intro = "talk";
+                intro_t = 0;
+            }
+        break;
+
+        case "talk":
+            if (!instance_exists(obj_textbox)) { intro = "pause"; intro_t = 0; }
+        break;
+
+        case "pause":   // a beat, then they take it out in one hit
+            if (intro_t >= intro_pause && _ld.grounded && !_ld.attacking)
+            {
+                if (instance_exists(intro_spawn)) intro_spawn.hp = 1;
+                _ld.attack_cool = 0;
+                _ld.start_attack();
+                intro = "attack";
+                intro_t = 0;
+            }
+        break;
+
+        case "attack":
+            if (!instance_exists(intro_spawn)) { intro = "after"; intro_t = 0; }
+            else if (intro_t >= 150 && !_ld.attacking) { _ld.attack_cool = 0; _ld.start_attack(); intro_t = 0; }   // missed somehow: again
+        break;
+
+        case "after":   // a second later, the other one's "..."
+            if (intro_t >= intro_after && !instance_exists(obj_textbox))
+            {
+                create_textbox("plat_dots_" + follower().who);
+                intro = "dots";
+                intro_t = 0;
+            }
+        break;
+
+        case "dots":
+            if (!instance_exists(obj_textbox))
+            {
+                global.plat_lock = false;
+                intro   = "done";
+                spawn_t = 0;
+            }
+        break;
+
+        case "done":   // from here on, one every spawn_every frames
+            spawn_t++;
+            if (spawn_t >= spawn_every)
+            {
+                if (instance_number(obj_plat_titanspawn) < spawn_max) spawn_titan(irandom(2) == 0);
+                spawn_t = 0;
+            }
+        break;
     }
 }
 
-// dialogue (only once you're playing, and never over another textbox)
+// dialogue triggers (only once you're playing, and never over another textbox)
 if (state == "play" && !instance_exists(obj_textbox))
 {
-    if (watchout_pending)
+    var _tr = trigger_hit();
+    if (_tr != undefined)
     {
-        watchout_pending = false;
-        create_textbox(watchout_text);
-    }
-    else
-    {
-        var _tr = trigger_hit();
-        if (_tr != undefined)
-        {
-            _tr.done = true;
-            create_textbox(_tr.text);
-        }
+        _tr.done = true;
+        create_textbox(_tr.text);
     }
 }

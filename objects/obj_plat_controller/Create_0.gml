@@ -263,27 +263,39 @@ susie_turn = function(_hold = 240)
 }
 
 // --- Titan Spawn ---
-spawn_start   = 180;     // frames into the climb before the first one shows up
+// none until the halfway chat is over. the first one is a little scene: whoever you're controlling yells
+// "Watch out!", takes it out in one hit, and the other one goes "...". after that they come every spawn_every frames
 spawn_every   = 300;     // frames between new ones (5s)
 spawn_max     = 2;       // most on screen at once
 spawn_margin  = 60;      // px outside the screen they appear
-watchout_text = "plat_watchout";   // Susie's "Watch out!" when the first one comes
+intro_hold    = 180;     // px the first one stops short of you (it just hovers there)
+intro_pause   = 60;      // frames after "Watch out!" before the attack
+intro_after   = 60;      // frames after it's gone before the other one's "..."
+spawn_on      = false;
 spawn_t       = 0;
-spawn_count   = 0;
-watchout_pending = false;
+intro         = "";      // the first one's scene: spawn -> arrive -> talk -> pause -> attack -> after -> dots -> done
+intro_t       = 0;
+intro_spawn   = noone;
 
-/// a new Titan Spawn just off the left, right or top of the screen
-/// a new Titan Spawn: around the back of the tower (it floats around into view), or above the screen
-spawn_titan = function()
+/// called when the halfway chat closes
+start_spawning = function()
+{
+    if (spawn_on) return;
+    spawn_on = true;
+    intro    = "spawn";
+    intro_t  = 0;
+}
+
+/// a new Titan Spawn: round the back of the tower (it floats around into view), or from above, in front of you
+spawn_titan = function(_from_above = false)
 {
     var _l  = leader();
     var _vh = camera_get_view_height(view_camera[0]);
     var _w  = scr_plat_wrap_w();
     var _x, _y;
 
-    if (irandom(2) < 2)
+    if (!_from_above)
     {
-        // off one side: just round the back of the tower when wrapping, just off the screen when not
         var _side = choose(-1, 1);
         if (_w > 0) _x = _l.x + _side * _w * 0.32;
         else        _x = cam_x + camera_get_view_width(view_camera[0]) / 2 + _side * (camera_get_view_width(view_camera[0]) / 2 + spawn_margin);
@@ -291,11 +303,8 @@ spawn_titan = function()
     }
     else
     {
-        // from above, somewhere in front of you
-        _x = _l.x + random_range(-1, 1) * ((_w > 0) ? _w / 6 : 300);
+        _x = _l.x + random_range(-120, 120);
         _y = cam_y - spawn_margin - 20;
     }
-    instance_create_depth(scr_plat_wrap(_x), _y, -150, obj_plat_titanspawn);
-    spawn_count++;
-    if (spawn_count == 1 && watchout_text != "") watchout_pending = true;
+    return instance_create_depth(scr_plat_wrap(_x), _y, -150, obj_plat_titanspawn);
 }
