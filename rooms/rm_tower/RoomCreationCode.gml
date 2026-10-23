@@ -1,7 +1,13 @@
 // the tower climb
 
 // the Titan's tower behind everything (in front of the Background layer at 500, behind the tiles)
-if (!layer_exists("TowerBG")) layer_create(450, "TowerBG");
+// the Titan's tower behind everything: just in front of the Background layer (wherever that is), behind the tiles
+if (!layer_exists("TowerBG"))
+{
+    var _bg = layer_exists("Background") ? layer_get_depth(layer_get_id("Background")) : 500;
+    layer_create(_bg - 10, "TowerBG");
+}
+
 if (!instance_exists(obj_titan_tower))
 {
     with (instance_create_layer(0, 0, "TowerBG", obj_titan_tower))
