@@ -21,12 +21,12 @@ rainbow_len     = 480;     // ...for this many frames (8s)
 no_rainbow_after = 55 * 60;    // past this many frames, it stops going rainbow (so the fight doesn't drag)
 rainbow_sound   = snd_sparklegem;
 
-fish_first      = 90;      // frames into the fight before the first fish
-fish_every      = 150;     // frames between fish normally (2.5s)...
-fish_every_rb   = 80;      // ...and while it's rainbow
+fish_first      = 150;     // frames into the fight before the first fish
+fish_every      = 210;     // frames between fish normally (3.5s)...
+fish_every_rb   = 120;     // ...and while it's rainbow (2s)
+fish_warn       = 54;      // frames the "!" shows at the edge before it comes in
 fish_scale      = 1.5;
 fish_speed      = 7.5;     // fast enough to clear in one jump toward it
-fish_warn       = 36;      // frames the "!" shows at the edge before it comes in
 
 end_wait        = 40;      // frames after it's gone before the box opens back up
 

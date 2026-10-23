@@ -1,35 +1,14 @@
-if (!is_struct(arena)) { instance_destroy(); exit; }
+if (warn_t > 0 || !is_struct(arena)) exit;
+var _mx = scr_plat_draw_x(arena.cx);   // the arena's middle, on screen
+var _xs = scale * dir;
 
-// the "!" warning first, then in it comes
-if (warn_t > 0) { warn_t--; exit; }
-
-ox    += dir * spd;
-phase += wave_speed;
-anim  += sprite_get_speed(spr_titanfish_head) / game_get_speed(gamespeed_fps);
-if (fading) alpha -= 0.06;
-
-// gone once the tail's off the far side (or it's faded)
-var _tail = piece(segs + 1);
-if (alpha <= 0 || _tail.ox * dir > camera_get_view_width(view_camera[0]) / 2 + 60) { instance_destroy(); exit; }
-
-// hits the one you're controlling (the one following isn't in danger)
-if (!fading)
+// tail first, then the body from the back, then the head on top
+var _pt = piece(segs + 1);
+draw_sprite_ext(spr_titanfish_tail, floor(anim) mod sprite_get_number(spr_titanfish_tail), _mx + _pt.ox, _pt.y, _xs, scale, 0, c_white, alpha);
+for (var k = segs; k >= 1; k--)
 {
-    var _ctl = instance_exists(obj_plat_controller) ? instance_find(obj_plat_controller, 0) : noone;
-    if (_ctl != noone)
-    {
-        var _l  = _ctl.leader();
-        var _px = scr_plat_wrap_dx(arena.cx, _l.x);   // the leader, in the same "ox" terms
-        for (var k = 0; k <= segs + 1; k++)
-        {
-            var _p  = piece(k);
-            var _cx = clamp(_p.ox, _px - _l.hw, _px + _l.hw);
-            var _cy = clamp(_p.y, _l.y - _l.hh, _l.y);
-            if (point_distance(_p.ox, _p.y, _cx, _cy) <= hit_r * scale)
-            {
-                _l.take_hit(scr_plat_wrap(arena.cx + _p.ox), irandom_range(damage_min, damage_max));
-                break;
-            }
-        }
-    }
+    var _p = piece(k);
+    draw_sprite_ext(spr_titanfish_body, floor(anim + k) mod sprite_get_number(spr_titanfish_body), _mx + _p.ox, _p.y, _xs, scale, 0, c_white, alpha);
 }
+var _ph = piece(0);
+draw_sprite_ext(spr_titanfish_head, floor(anim) mod sprite_get_number(spr_titanfish_head), _mx + _ph.ox, _ph.y, _xs, scale, 0, c_white, alpha);
