@@ -4,7 +4,11 @@ image_alpha = (invuln > 0 && (invuln div 4) mod 2 == 0) ? 0.4 : 1;
 if (attack_cool > 0) attack_cool--;
 
 // only the one you're controlling runs the rest. the follower is moved by obj_plat_controller
-if (!leader) exit;
+if (!leader)
+{
+    if (attacking) attack_step();   // the follower can attack too (in the scene)
+    exit;
+}
 
 var _locked = global.plat_lock;
 var _hurt   = hurt_t > 0;

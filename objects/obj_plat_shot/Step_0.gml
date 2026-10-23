@@ -29,6 +29,7 @@ with (obj_plat_titanspawn)
 if (_hit != noone)
 {
     _hit.take_damage(x, y);
+    if (kind == "fire") audio_play_sound(snd_firespell, 1, false);
     var _fx = instance_create_depth(_hit.x, _hit.y, depth, obj_plat_fx);
     _fx.setup((kind == "buster") ? "buster" : "swarm", _hit);
     instance_destroy();

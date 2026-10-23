@@ -127,7 +127,10 @@ function scr_game_text(_text_id)
 			scr_text("* This Titan is no match for us.", "susie", 34);
 			scr_text("* ...", "ralsei", 45);
 			scr_text("* I hope you're right, Susie.", "ralsei", 40);
-				scr_custom_call_after_textbox_delayed(function() { with (obj_plat_controller) start_spawning(); }, 30);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* Do you... hear something?", "ralsei", 20);
+			scr_text("* ...", "susie", 31);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_plat_controller) start_spawning(); }, 20);
 		break;
 /*
 

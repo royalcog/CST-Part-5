@@ -263,19 +263,20 @@ susie_turn = function(_hold = 240)
 }
 
 // --- Titan Spawn ---
-// none until the halfway chat is over. the first one is a little scene: whoever you're controlling yells
-// "Watch out!", takes it out in one hit, and the other one goes "...". after that they come every spawn_every frames
+// none until the halfway chat is over. then a little scene: one comes in fast from each side and slows down
+// behind whoever's on that side, they turn and take theirs out in one hit, and the other one goes "...".
+// after that they come every spawn_every frames
 spawn_every   = 300;     // frames between new ones (5s)
 spawn_max     = 2;       // most on screen at once
 spawn_margin  = 60;      // px outside the screen they appear
-intro_hold    = 180;     // px the first one stops short of you (it just hovers there)
-intro_pause   = 60;      // frames after "Watch out!" before the attack
-intro_after   = 60;      // frames after it's gone before the other one's "..."
+intro_hold    = 110;     // px from each hero the first two stop and hover
+intro_pause   = 60;      // frames after "Watch out!" before they attack
+intro_after   = 60;      // frames after they're gone before the "..."
 spawn_on      = false;
 spawn_t       = 0;
-intro         = "";      // the first one's scene: spawn -> arrive -> talk -> pause -> attack -> after -> dots -> done
+intro         = "";      // spawn -> arrive -> talk -> pause -> attack -> after -> dots -> done
 intro_t       = 0;
-intro_spawn   = noone;
+intro_pairs   = [];      // { hero, spawn, side }
 
 /// called when the halfway chat closes
 start_spawning = function()
@@ -284,6 +285,32 @@ start_spawning = function()
     spawn_on = true;
     intro    = "spawn";
     intro_t  = 0;
+}
+
+/// one of the two scene spawns: comes in from _side (-1 left, 1 right) of _hero, fast, then slows down behind them
+make_intro_spawn = function(_hero, _side)
+{
+    var _w  = scr_plat_wrap_w();
+    var _vw = camera_get_view_width(view_camera[0]);
+    var _x  = (_w > 0) ? _hero.x + _side * _w * 0.32 : _hero.x + _side * (_vw / 2 + spawn_margin + 40);
+    var _y  = _hero.y - _hero.hh / 2 + random_range(-30, 10);
+    var _s  = instance_create_depth(scr_plat_wrap(_x), _y, -150, obj_plat_titanspawn);
+    _s.scripted    = true;
+    _s.target_hero = _hero;
+    _s.hold_side   = _side;
+    _s.hold_dist   = intro_hold;
+    return { hero: _hero, spawn: _s, side: _side };
+}
+
+/// are all the scene spawns gone (or on their way out)?
+intro_spawns_gone = function()
+{
+    for (var i = 0; i < array_length(intro_pairs); i++)
+    {
+        var _s = intro_pairs[i].spawn;
+        if (instance_exists(_s) && !_s.dying) return false;
+    }
+    return true;
 }
 
 /// a new Titan Spawn: round the back of the tower (it floats around into view), or from above, in front of you

@@ -60,6 +60,7 @@ attack_cool = 0;
 invuln      = 0;
 hurt_t      = 0;
 face_hold   = 0;     // > 0: the follower keeps facing the way it was turned (for dialogue)
+atk_target  = noone;  // who this attack's aimed at (noone = whoever's closest)
 
 /// sets up the sprites for "susie" or "ralsei"
 set_who = function(_who)
@@ -161,15 +162,16 @@ animate = function(_moving, _grounded, _vy)
     }
 }
 
-/// X: Susie's Rude Buster or Ralsei's fireball, at the closest Titan Spawn
-start_attack = function()
+/// X: Susie's Rude Buster or Ralsei's fireball, at _target (or the closest Titan Spawn)
+start_attack = function(_target = noone)
 {
     if (attacking || attack_cool > 0 || !grounded || hurt_t > 0) return;
     attacking = true;
     atk_t     = 0;
     atk_fired = false;
     vx = 0;
-    var _t = instance_nearest(x, y - hh / 2, obj_plat_titanspawn);
+    atk_target = (_target != noone && instance_exists(_target)) ? _target : noone;
+    var _t = (atk_target != noone) ? atk_target : instance_nearest(x, y - hh / 2, obj_plat_titanspawn);
     if (_t != noone && !_t.dying) face = (scr_plat_wrap_dx(x, _t.x) >= 0) ? 1 : -1;
     sprite_index = (who == "susie") ? buster_sprite : fire_sprite;
     image_speed  = 0;
@@ -199,7 +201,7 @@ attack_step = function()
         atk_fired = true;
         var _sx = x + _from.x * _scale * face;
         var _sy = y + _from.y * _scale;
-        var _t  = instance_nearest(_sx, _sy, obj_plat_titanspawn);
+        var _t  = (instance_exists(atk_target) && !atk_target.dying) ? atk_target : instance_nearest(_sx, _sy, obj_plat_titanspawn);
         if (_t != noone && _t.dying) _t = noone;
         var _d  = (_t != noone) ? point_direction(0, 0, scr_plat_wrap_dx(_sx, _t.x), _t.y - _sy) : ((face > 0) ? 0 : 180);
         var _shot = instance_create_depth(_sx, _sy, -160, obj_plat_shot);

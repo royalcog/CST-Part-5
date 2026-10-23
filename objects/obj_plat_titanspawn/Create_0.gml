@@ -34,6 +34,11 @@ appear_t   = 0;
 appear_len = 30;     // frames it fades in over (it can't hurt you until it's all the way in)
 scripted  = false;   // the first one: it stops short of you and hovers, and can't hurt you
 hold_dist = 180;
+target_hero = noone;   // scene spawns: who they're coming in behind
+hold_side   = 1;       // which side of them they stop on
+fast_spd    = 11;      // how fast they come in...
+slow_r      = 240;     // ...slowing down over the last this many px
+arrived     = false;
 
 /// one hit from an attack (from _fx,_fy)
 take_damage = function(_fx, _fy)
