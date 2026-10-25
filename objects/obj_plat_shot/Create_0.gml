@@ -8,12 +8,12 @@ depth  = -160;
 // --- tuning ---
 buster_sprite = spr_rudebuster_projectile;
 buster_scale  = 2;
-buster_speed  = 11;
-buster_turn   = 12;    // degrees per frame it can turn toward its target
+buster_speed  = 9.5;
+buster_turn   = 10;    // degrees per frame it can turn toward its target
 fire_sprite   = spr_plat_fireball;
 fire_scale    = 2;
-fire_speed    = 8;
-fire_turn     = 8;
+fire_speed    = 9.5;
+fire_turn     = 10;
 hit_r         = 26;    // px from a Titan Spawn that counts as a hit
 life          = 150;   // frames before it gives up
 trail_len     = 5;     // afterimages (buster only)

@@ -26,6 +26,8 @@ y0     = 0;
 ox     = 0;
 oy     = 0;
 warn_t = 0;
+loop   = false;   // true: never leaves, just keeps swimming round the tower (fish lanes)
+owner  = noone;   // the fight that made it, if any
 
 // --- state ---
 phase   = random(2 * pi);

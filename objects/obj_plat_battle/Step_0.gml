@@ -52,9 +52,31 @@ switch (state)
         // fish, faster while it's rainbow
         fish_t++;
         var _every = boss.invincible ? fish_every_rb : fish_every;
+        if (fish_vert > 0) _every *= pair_slow;
         if (fight_t >= fish_first && fish_t >= _every)
         {
-            if (random(1) < fish_vert) spawn_fish_vert(choose(1, 1, -1));   // mostly down, sometimes up
+            if (fish_vert > 0)
+            {
+                // the second fight: two at a time
+                if (random(1) < 0.5)
+                {
+                    spawn_fish(choose(-1, 1));               // one across...
+                    spawn_fish_vert(choose(1, 1, -1));       // ...and one up/down
+                }
+                else
+                {
+                    // two up/down, far enough apart to stand between
+                    var _a = random_range(-arena.half + 40, arena.half - 40);
+                    var _b = _a;
+                    repeat (20)
+                    {
+                        _b = random_range(-arena.half + 40, arena.half - 40);
+                        if (abs(_b - _a) >= vert_gap) break;
+                    }
+                    spawn_fish_vert(choose(1, 1, -1), _a);
+                    spawn_fish_vert(choose(1, 1, -1), _b);
+                }
+            }
             else spawn_fish(choose(-1, 1));
             fish_t = 0;
         }
@@ -63,7 +85,7 @@ switch (state)
 
     case "end":
         // the fish swim off, then the box opens back up
-        with (obj_plat_titanfish) fading = true;
+        with (obj_plat_titanfish) if (owner == other.id) fading = true;   // only this fight's fish
         if (t >= end_wait && !instance_exists(boss))
         {
             fade = max(0, fade - 1 / fade_len);

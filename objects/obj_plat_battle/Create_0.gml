@@ -30,6 +30,8 @@ fish_speed      = 7.5;     // fast enough to clear in one jump toward it
 fish_vert       = 0;       // chance (0-1) each fish comes up/down through the arena instead of across
 fish_vert_speed = 6.5;
 fish_vert_warn  = 60;      // frames the "!" shows at the top/bottom first
+vert_gap        = 220;     // two up/down fish at once are at least this far apart (room to stand between)
+pair_slow       = 1.25;    // pairs come this much less often than single fish
 
 end_wait        = 40;      // frames after it's gone before the box opens back up
 
@@ -67,6 +69,7 @@ fish_t   = 0;
 spawn_fish = function(_dir)
 {
     var _f = instance_create_depth(0, 0, -140, obj_plat_titanfish);
+    _f.owner  = id;
     _f.arena  = arena;
     _f.cam_y0 = cam_y0;
     _f.dir    = _dir;
@@ -78,11 +81,12 @@ spawn_fish = function(_dir)
     return _f;
 }
 
-/// a fish coming down (_dir 1) or up (_dir -1) through the arena, somewhere across it
-spawn_fish_vert = function(_dir)
+/// a fish coming down (_dir 1) or up (_dir -1) through the arena at _ox across (random if not given)
+spawn_fish_vert = function(_dir, _ox = undefined)
 {
     var _vh = camera_get_view_height(view_camera[0]);
     var _f = instance_create_depth(0, 0, -140, obj_plat_titanfish);
+    _f.owner  = id;
     _f.arena  = arena;
     _f.cam_y0 = cam_y0;
     _f.vert   = true;
@@ -90,7 +94,7 @@ spawn_fish_vert = function(_dir)
     _f.spd    = fish_vert_speed;
     _f.scale  = fish_scale;
     _f.warn_t = fish_vert_warn;
-    _f.ox     = random_range(-arena.half + 40, arena.half - 40);
+    _f.ox     = (_ox != undefined) ? _ox : random_range(-arena.half + 40, arena.half - 40);
     _f.oy     = (_dir > 0) ? cam_y0 - 40 : cam_y0 + _vh + 40;
     return _f;
 }
