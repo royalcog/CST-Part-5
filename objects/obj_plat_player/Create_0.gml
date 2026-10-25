@@ -61,6 +61,7 @@ invuln      = 0;
 hurt_t      = 0;
 face_hold   = 0;     // > 0: the follower keeps facing the way it was turned (for dialogue)
 atk_target  = noone;  // who this attack's aimed at (noone = whoever's closest)
+ext_vx      = 0;      // pushed by something else this frame (wind)
 
 /// sets up the sprites for "susie" or "ralsei"
 set_who = function(_who)

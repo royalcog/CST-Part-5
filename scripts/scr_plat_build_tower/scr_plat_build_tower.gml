@@ -14,28 +14,19 @@ function scr_plat_tilemap(_name, _tileset, _w, _h)
 }
 
 /// builds a stretch of the tower climb from a text map (one string per 40px row). see rm_tower2's creation code.
-/// _paint_tiles = false: leave the tiles to the room editor, and only place the start point and obstacles from the map
+/// _paint_tiles = false: leave the ledges to the room editor, and only place the start point and obstacles from the map.
+/// (it never touches the deco layers: those are only ever what's in the room editor)
 function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowergarden)
 {
     var _ts   = 40;
     var _rows = array_length(_map);
     var _cols = string_length(_map[0]);
-    var _ledge = -1, _deco = -1;
+    var _ledge = -1;
 
     if (_paint_tiles)
     {
         _ledge = scr_plat_tilemap("Tiles_Ledge", _tileset, _cols, _rows);
-        _deco  = scr_plat_tilemap("Tiles_Deco",  _tileset, _cols, _rows);
         tilemap_clear(_ledge, 0);
-        tilemap_clear(_deco, 0);
-        // anything painted on the other layers (from duplicating rm_tower) goes too
-        var _other = ["Tiles_Solid", "Tiles_Deco_1"];
-        for (var i = 0; i < array_length(_other); i++)
-        {
-            if (!layer_exists(_other[i])) continue;
-            var _tm = layer_tilemap_get_id(layer_get_id(_other[i]));
-            if (_tm != -1) tilemap_clear(_tm, 0);
-        }
     }
 
     /// is cell (_r, _c) a normal ledge? (wraps around sideways, like the tower)
@@ -63,8 +54,6 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                     var _l  = _is_ledge(_map, r, c - 1, _cols);
                     var _rt = _is_ledge(_map, r, c + 1, _cols);
                     tilemap_set(_ledge, (!_l && _rt) ? 6 : ((_l && !_rt) ? 8 : 7), c, r);
-                    if (_ch == "=" && r > 0 && string_char_at(_map[r - 1], c + 1) == "." && random(1) < 0.15)
-                        tilemap_set(_deco, choose(26, 27), c, r - 1);   // a few little flowers
                 }
                 break;
 
@@ -84,9 +73,9 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                 case "Q":
                     with (instance_create_depth(_x + _ts / 2, _y + _ts / 2, -130, obj_plat_orbit))
                     {
-                        count  = 6;
-                        radius = 150;
-                        spd    = -1.2;
+                        count  = 7;
+                        radius = 185;
+                        spd    = -1.0;
                     }
                 break;
 
@@ -96,6 +85,14 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
 
                 case "R":
                     instance_create_depth(_x + _ts / 2, _y, -135, obj_plat_rubble);
+                break;
+
+                case "B":
+                    instance_create_depth(_x + _ts / 2, _y, -136, obj_plat_beam);
+                break;
+
+                case "W":
+                    instance_create_depth(_x + _ts / 2, _y, 0, obj_plat_wind);
                 break;
             }
         }
