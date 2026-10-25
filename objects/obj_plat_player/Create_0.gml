@@ -88,17 +88,21 @@ set_who = function(_who)
 tm_solid = layer_exists("Tiles_Solid") ? layer_tilemap_get_id(layer_get_id("Tiles_Solid")) : -1;
 tm_ledge = layer_exists("Tiles_Ledge") ? layer_tilemap_get_id(layer_get_id("Tiles_Ledge")) : -1;
 
-/// any tile on _tm inside the rectangle?
+/// any tile on _tm inside the rectangle? (outside the room counts as empty)
 tile_in_rect = function(_tm, _l, _t, _r, _b)
 {
     if (_tm == -1) return false;
     var _tw = tilemap_get_tile_width(_tm), _th = tilemap_get_tile_height(_tm);
     for (var _y = _t; ; _y = min(_y + _th, _b))
     {
-        for (var _x = _l; ; _x = min(_x + _tw, _r))
+        if (_y >= 0 && _y < room_height)
         {
-            if ((tilemap_get_at_pixel(_tm, scr_plat_wrap(_x), _y) & tile_index_mask) != 0) return true;
-            if (_x >= _r) break;
+            for (var _x = _l; ; _x = min(_x + _tw, _r))
+            {
+                var _data = tilemap_get_at_pixel(_tm, scr_plat_wrap(_x), _y);
+                if (_data != -1 && (_data & tile_index_mask) != 0) return true;
+                if (_x >= _r) break;
+            }
         }
         if (_y >= _b) break;
     }
