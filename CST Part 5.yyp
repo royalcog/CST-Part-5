@@ -436,6 +436,7 @@
     {"id":{"name":"obj_titan_block","path":"objects/obj_titan_block/obj_titan_block.yy",},},
     {"id":{"name":"obj_titan_spawn","path":"objects/obj_titan_spawn/obj_titan_spawn.yy",},},
     {"id":{"name":"obj_titan_tower","path":"objects/obj_titan_tower/obj_titan_tower.yy",},},
+    {"id":{"name":"obj_tower_top_scene","path":"objects/obj_tower_top_scene/obj_tower_top_scene.yy",},},
     {"id":{"name":"obj_trees_1","path":"objects/obj_trees_1/obj_trees_1.yy",},},
     {"id":{"name":"obj_trees","path":"objects/obj_trees/obj_trees.yy",},},
     {"id":{"name":"obj_UI","path":"objects/obj_UI/obj_UI.yy",},},

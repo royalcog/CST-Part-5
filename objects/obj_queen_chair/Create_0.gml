@@ -39,6 +39,7 @@ riders   = [];           // { inst, dx, dy, hopping, t, len, h, fx, fy, land_spr
 flame_frame  = 0;
 flame_yscale = 1;
 on_gone  = undefined;
+fly_dir  = -1;           // -1 = flies up off the top, 1 = flies down off the bottom
 
 /// floats down from where it is now to hover at _y
 summon = function(_y)

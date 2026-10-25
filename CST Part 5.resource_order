@@ -343,6 +343,7 @@
     {"name":"obj_tile_warning","order":2,"path":"objects/obj_tile_warning/obj_tile_warning.yy",},
     {"name":"obj_titan_block","order":2,"path":"objects/obj_titan_block/obj_titan_block.yy",},
     {"name":"obj_titan_spawn","order":1,"path":"objects/obj_titan_spawn/obj_titan_spawn.yy",},
+    {"name":"obj_tower_top_scene","order":2,"path":"objects/obj_tower_top_scene/obj_tower_top_scene.yy",},
     {"name":"obj_trees_1","order":7,"path":"objects/obj_trees_1/obj_trees_1.yy",},
     {"name":"obj_trees","order":6,"path":"objects/obj_trees/obj_trees.yy",},
     {"name":"obj_wall","order":1,"path":"objects/obj_wall/obj_wall.yy",},

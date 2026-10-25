@@ -138,6 +138,28 @@ function scr_game_text(_text_id)
 			scr_text("* You Guys Need A Lift", "queen", 0);
 			scr_text("* ...", "susie", 31);
 		break;
+
+		// ---------------- Part 5: the top of the tower (obj_tower_top_scene opens self_6 once Susie & Ralsei walk up)
+		case "self_6":
+			global.cutscene_lock = true;   // Lancer takes the chair down after this
+			scr_text("* Took You Guys Long Enough", "queen", 0);
+				scr_call_on_page(function() { with (obj_tower_top_scene) face(obj_queen, queen_left); }, 1, global.page_number - 1);
+			scr_text("* We've Just Been Staring At The Titan's Face For A Few Minutes", "queen", 0);
+			scr_text("* It's Surprisingly Rather Appealing", "queen", 23);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* ...Anyways.", "susie", 31);
+			scr_text("* Let's go beat this thing up.", "susie", 34);
+			scr_text("* ...", "lancer", 11);
+			scr_text("* Lancer, are you okay?", "susie", 30);
+				scr_call_on_page(function() { with (obj_tower_top_scene) face(obj_lancer, lancer_left); }, 1, global.page_number - 1);
+			scr_text("* Yeah, I just...", "lancer", 11);
+			scr_text("* ...", "lancer", 10);
+			scr_text("* I'm gonna get more backup, okay?", "lancer", 9);
+			scr_text("* Girldad, can I take your chair?", "lancer", 12);
+				scr_call_on_page(function() { with (obj_tower_top_scene) face(obj_lancer, lancer_right); }, 1, global.page_number - 1);
+			scr_text("* Go Ahead", "queen", 3);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) lancer_leave(); }, 0);
+		break;
 /*
 
 */

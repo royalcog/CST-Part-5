@@ -13,7 +13,7 @@ switch (state)
     case "dip":
     {
         var _k = clamp(t / dip_time, 0, 1);
-        base_y = from_y + dip_dist * sin(_k * pi / 2);
+        base_y = from_y - fly_dir * dip_dist * sin(_k * pi / 2);   // the opposite way first (sinks before going up, rises before going down)
         if (_k >= 1) { state = "wait"; t = 0; }
     }
     break;
@@ -31,7 +31,7 @@ switch (state)
     case "fly":
     {
         var _k = clamp(t / fly_time, 0, 1);
-        base_y = from_y - fly_dist * _k * _k * _k;   // slow start, then it's gone
+        base_y = from_y + fly_dir * fly_dist * _k * _k * _k;   // slow start, then it's gone
         if (_k >= 1)
         {
             for (var i = 0; i < array_length(riders); i++)
@@ -91,7 +91,9 @@ for (var i = 0; i < array_length(riders); i++)
 
 // the fireball underneath
 flame_frame += sprite_get_speed(flame_sprite) / game_get_speed(gamespeed_fps);
-var _grow = (state == "fly") ? 1 + flame_fly_grow * clamp(t / 20, 0, 1) : 1;
+var _grow = 1;
+if (state == "fly") _grow = (fly_dir < 0) ? 1 + flame_fly_grow * clamp(t / 20, 0, 1)   // going up: the flame stretches
+                                          : 1 - 0.5 * clamp(t / 20, 0, 1);              // going down: it eases off
 flame_yscale = lerp(flame_yscale, _grow, 0.2);
 
 // same shadow as everyone else on the platform
