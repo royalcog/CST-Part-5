@@ -85,7 +85,7 @@ var _map = [
     ".................==S==.................",   // 2920
     "......................................."    // 2960
 ];
-scr_plat_build_tower(_map);
+scr_plat_build_tower(_map, false);   // tiles come from the room editor now; the map just places the start + obstacles
 
 // the Titan's tower behind everything: just in front of the Background layer (wherever that is), behind the tiles
 if (!layer_exists("TowerBG"))

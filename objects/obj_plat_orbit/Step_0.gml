@@ -14,7 +14,7 @@ for (var i = 0; i < count; i++)
     var _py = y + lengthdir_y(radius, _a);
     var _cx = clamp(_px, _l.x - _l.hw, _l.x + _l.hw);
     var _cy = clamp(_py, _l.y - _l.hh, _l.y);
-    if (point_distance(_px, _py, _cx, _cy) <= dot_r)
+    if (point_distance(_px, _py, _cx, _cy) <= hit_r)
     {
         _l.take_hit(scr_plat_wrap(_px), irandom_range(damage_min, damage_max));
         break;
