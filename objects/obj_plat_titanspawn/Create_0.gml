@@ -57,6 +57,15 @@ boss_t  = 0;
 swoop_t = 0;
 swoop_x = 0;
 swoop_y = 0;
+swoop_on = false;     // false: the big one just floats around (no swooping at you)
+
+// --- the regular ones just float around (they don't come after you) ---
+wander_x = x;
+wander_y = y;
+wander_t = 0;
+wander_range_x = 260;  // px either side of the middle of the screen it picks spots in...
+wander_range_up = 170; // ...and how far above / below the middle
+wander_range_dn = 90;
 
 /// one hit from an attack (from _fx,_fy)
 take_damage = function(_fx, _fy)

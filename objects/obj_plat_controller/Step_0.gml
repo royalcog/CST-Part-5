@@ -4,10 +4,61 @@ switch (state)
 {
     case "fadein":
         if (instance_exists(obj_cutscenefade)) t = 0;
-        if (t >= intro_wait)
+        if (progress.started)
         {
+            // coming back into a room: straight into it once the fade's done
+            if (t >= 1) begin_play();
+        }
+        else if (t >= intro_wait)
+        {
+            progress.started = true;
             create_textbox("self_5");
             state = "talk";
+        }
+    break;
+
+    case "play":
+    {
+        var _ld = leader();
+        // up onto the top: on into the next room
+        if (next_room >= 0 && _ld.grounded && _ld.y <= top_y) leave_room(next_room, "up");
+        // off the bottom: back down into the room below
+        else if (fall_room >= 0 && _ld.y > room_height + 60) leave_room(fall_room, "fall");
+    }
+    break;
+
+    case "rescue":   // both at 1 HP: Queen comes to get them
+        switch (rescue_step)
+        {
+            case "land":   // a moment for them to land
+                if ((t >= 40 && leader().grounded) || t >= 120)
+                {
+                    var _ld = leader();
+                    var _sx = scr_plat_draw_x(_ld.x);   // where they are on screen
+                    var _side = (_sx < camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2) ? 1 : -1;
+                    rescue_chair = instance_create_depth(_sx + _side * 150, camera_get_view_y(view_camera[0]) - 160, -95, obj_queen_chair);
+                    rescue_chair.sprite_index = spr_queen_chair_lookdown;
+                    rescue_chair.summon(_ld.y - 110);
+                    rescue_step = "chair";
+                    t = 0;
+                }
+            break;
+
+            case "chair":   // she floats down, a beat, then talks
+                if (!instance_exists(rescue_chair) || (rescue_chair.state == "hover" && rescue_chair.t >= 20))
+                {
+                    create_textbox("plat_lift");
+                    rescue_step = "talk";
+                }
+            break;
+
+            case "talk":   // fade out, up to the top (the music goes with it)
+                if (!instance_exists(obj_textbox))
+                {
+                    if (!leave_room(top_room, "start", true)) rescue_step = "stuck";
+                    else rescue_step = "fade";
+                }
+            break;
         }
     break;
 }
@@ -150,6 +201,7 @@ if (state == "play" && spawn_on)
         case "dots":
             if (!instance_exists(obj_textbox))
             {
+                progress.intro   = true;
                 global.plat_lock = false;
                 intro   = "done";
                 spawn_t = 0;
@@ -181,6 +233,7 @@ if (state == "play" && !instance_exists(obj_textbox) && !battle_on)
         else
         {
             _tr.done = true;
+            progress[$ _tr.key] = true;
             create_textbox(_tr.text);
         }
     }

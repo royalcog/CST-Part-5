@@ -131,6 +131,14 @@ ledge_under = function(_x, _y)
     {
         if (bbox_top == _y && bbox_right >= _l && bbox_left <= _r) { _hit = true; break; }
     }
+    if (_hit) return true;
+
+    // crumbling ledges, while they're still there
+    var _px = _x, _hw = hw;
+    with (obj_plat_crumble)
+    {
+        if (solid && top == _y && abs(scr_plat_wrap_dx(cx, _px)) < half + _hw) { _hit = true; break; }
+    }
     return _hit;
 }
 
@@ -237,12 +245,15 @@ attack_step = function()
     return true;
 }
 
-/// a Titan Spawn touched them (from _fx). the one you control gets knocked back
+/// something touched them (from _fx). HP goes down (never below 1), and the one you control gets knocked back
 take_hit = function(_fx, _amount)
 {
     if (invuln > 0) return;
+    var _ctl = instance_find(obj_plat_controller, 0);
+    if (_ctl == noone || _ctl.state == "rescue" || _ctl.state == "leaving") return;
     invuln = invuln_max;
-    scr_show_damage(id, _amount);
+    var _r = _ctl.party_damage(who, _amount);
+    if (_r.dealt > 0 && instance_exists(_r.inst)) scr_show_damage(_r.inst, _r.dealt);   // over whoever actually took it
     if (hurt_sound != noone) audio_play_sound(hurt_sound, 1, false);
     if (leader)
     {

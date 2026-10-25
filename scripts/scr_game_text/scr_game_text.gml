@@ -132,6 +132,12 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "susie", 31);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_plat_controller) start_spawning(); }, 20);
 		break;
+		
+		// both at 1 HP: Queen comes to get them
+		case "plat_lift":
+			scr_text("* You Guys Need A Lift", "queen", 0);
+			scr_text("* ...", "susie", 31);
+		break;
 /*
 
 */

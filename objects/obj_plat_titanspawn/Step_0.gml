@@ -26,7 +26,7 @@ if (boss && hurt_t <= 0 && is_struct(arena))
     var _ctl = instance_find(obj_plat_controller, 0);
     var _l   = _ctl.leader();
     var _every = invincible ? swoop_every_rb : swoop_every;
-    if (swoop_t <= 0 && boss_t >= 90 && boss_t mod _every == 0)
+    if (swoop_on && swoop_t <= 0 && boss_t >= 90 && boss_t mod _every == 0)
     {
         swoop_t = swoop_len;
         swoop_x = _l.x;
@@ -75,14 +75,21 @@ else if (scripted && instance_exists(target_hero) && hurt_t <= 0)
     image_xscale = 2 * ((scr_plat_wrap_dx(x, target_hero.x) > 0) == faces_left ? -1 : 1);
 }
 
-// everyone else: float toward whoever you're controlling (their middle), the short way around the tower
+// everyone else: just floats around. it drifts toward a spot somewhere on screen, then picks another
 else
 {
-    var _ctl = instance_exists(obj_plat_controller) ? instance_find(obj_plat_controller, 0) : noone;
-    if (_ctl != noone && hurt_t <= 0)
+    if (wander_t <= 0 || point_distance(0, 0, scr_plat_wrap_dx(x, wander_x), wander_y - base_y) < 12)
     {
-        var _l = _ctl.leader();
-        var _d = point_direction(0, 0, scr_plat_wrap_dx(x, _l.x), (_l.y - _l.hh / 2) - base_y);
+        var _mx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;
+        var _my = camera_get_view_y(view_camera[0]) + camera_get_view_height(view_camera[0]) / 2;
+        wander_x = scr_plat_wrap(_mx + random_range(-wander_range_x, wander_range_x));
+        wander_y = _my + random_range(-wander_range_up, wander_range_dn);
+        wander_t = irandom_range(150, 260);
+    }
+    wander_t--;
+    if (hurt_t <= 0)
+    {
+        var _d = point_direction(0, 0, scr_plat_wrap_dx(x, wander_x), wander_y - base_y);
         vx = lerp(vx, lengthdir_x(spd, _d), turn);
         vy = lerp(vy, lengthdir_y(spd, _d), turn);
     }
@@ -92,7 +99,6 @@ else
         vy *= 0.9;
     }
 }
-
 x      += vx;
 x       = scr_plat_wrap(x);
 base_y += vy;

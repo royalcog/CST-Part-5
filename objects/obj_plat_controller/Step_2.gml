@@ -14,3 +14,6 @@ if (!cam_locked)
 var _rx = round(cam_x), _ry = round(cam_y);
 camera_set_view_pos(view_camera[0], _rx, _ry);
 if (instance_exists(obj_camera_controller)) { obj_camera_controller.cam_x = _rx; obj_camera_controller.cam_y = _ry; }
+
+// the HP boxes (after the camera has moved, so they stay put on screen)
+update_damage_ui();

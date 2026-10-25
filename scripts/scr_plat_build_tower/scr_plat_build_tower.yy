@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_plat_build_tower",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_plat_build_tower",
+  "parent":{
+    "name":"Platforming",
+    "path":"folders/Scripts/Platforming.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
