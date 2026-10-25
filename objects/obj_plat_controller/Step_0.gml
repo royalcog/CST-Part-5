@@ -44,7 +44,18 @@ switch (state)
                 }
             break;
 
-            case "chair":   // she floats down, a beat, then talks
+            case "chair":   // she floats down; once she's landed they turn to her, a beat, then she talks
+                if (instance_exists(rescue_chair) && rescue_chair.state == "hover" && !rescue_faced)
+                {
+                    rescue_faced = true;
+                    for (var i = 0; i < array_length(party); i++)
+                    {
+                        var _p = party[i];
+                        _p.face = (rescue_chair.x >= scr_plat_draw_x(_p.x)) ? 1 : -1;
+                        _p.image_xscale = 2 * _p.face;
+                        if (!_p.leader) _p.face_hold = 100000;   // the one following stays turned too
+                    }
+                }
                 if (!instance_exists(rescue_chair) || (rescue_chair.state == "hover" && rescue_chair.t >= 20))
                 {
                     create_textbox("plat_lift");

@@ -8,6 +8,7 @@
 //  B  the Titan's beam comes down where you're standing (step aside)
 //  W  wind gusts push you sideways
 //  .  nothing
+// obstacles get harder the higher they are (scr_plat_difficulty): the bottom stretch has none, the top is the worst.
 // reach the ledge in the top row and you're through to rm_tower_top. fall off the bottom and you're back in rm_tower.
 // (to paint this room by hand instead, delete the scr_plat_build_tower line)
 var _map = [
@@ -75,10 +76,10 @@ var _map = [
     "...........==========..................",   // 2440
     ".......................................",   // 2480
     "......====.............................",   // 2520
-    "......................................R",   // 2560
+    ".......................................",   // 2560
     "====..................................=",   // 2600
-    ".................................O.....",   // 2640
-    "..................................CCC..",   // 2680
+    ".......................................",   // 2640
+    "..................................===..",   // 2680
     ".......................................",   // 2720
     ".............................====......",   // 2760
     ".......................................",   // 2800

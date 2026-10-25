@@ -1,9 +1,10 @@
 // a ring of white dots going round and round. touching one hurts (only the one you're controlling).
 // the gaps between dots are wider than Susie/Ralsei are tall, so you can always slip through one, or wait inside the ring.
 // made by scr_plat_build_tower ("O" = this, "Q" = bigger and backwards). x/y = its middle
-count      = 6;
+diff       = scr_plat_difficulty(y);
+count      = round(lerp(4, 7, diff));   // more dots higher up...
 radius     = 140;
-spd        = 1.4;     // degrees per frame (negative = the other way)
+spd        = lerp(0.9, 1.7, diff);      // ...spinning faster (degrees per frame, negative = the other way)
 dot_r      = 7;       // how big they look...
 hit_r      = 4;       // ...and how close you have to get to one to get hurt
 glow       = 0.3;

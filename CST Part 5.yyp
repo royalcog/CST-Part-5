@@ -500,6 +500,7 @@
     {"id":{"name":"scr_party_wipe","path":"scripts/scr_party_wipe/scr_party_wipe.yy",},},
     {"id":{"name":"scr_pick_target_soul_or_random","path":"scripts/scr_pick_target_soul_or_random/scr_pick_target_soul_or_random.yy",},},
     {"id":{"name":"scr_plat_build_tower","path":"scripts/scr_plat_build_tower/scr_plat_build_tower.yy",},},
+    {"id":{"name":"scr_plat_difficulty","path":"scripts/scr_plat_difficulty/scr_plat_difficulty.yy",},},
     {"id":{"name":"scr_plat_wrap","path":"scripts/scr_plat_wrap/scr_plat_wrap.yy",},},
     {"id":{"name":"scr_point_segment_distance","path":"scripts/scr_point_segment_distance/scr_point_segment_distance.yy",},},
     {"id":{"name":"scr_queue_movement_group","path":"scripts/scr_queue_movement_group/scr_queue_movement_group.yy",},},

@@ -417,6 +417,7 @@ ui_pending = false;   // waiting for the boxes to be up before the HP goes down
 ui_cam_x   = 0;
 rescue_step  = "";
 rescue_chair = noone;
+rescue_faced = false;
 
 /// a hit on _who for _amount. returns { inst (who actually took it), dealt }
 party_damage = function(_who, _amount)
@@ -495,6 +496,7 @@ start_rescue = function()
     if (state == "rescue") return;
     state        = "rescue";
     rescue_step  = "land";
+    rescue_faced = false;
     t            = 0;
     global.plat_lock = true;
     spawn_on     = false;

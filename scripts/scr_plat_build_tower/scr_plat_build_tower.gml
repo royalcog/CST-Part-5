@@ -73,9 +73,9 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                 case "Q":
                     with (instance_create_depth(_x + _ts / 2, _y + _ts / 2, -130, obj_plat_orbit))
                     {
-                        count  = 7;
+                        count  = round(lerp(5, 8, diff));
                         radius = 185;
-                        spd    = -1.0;
+                        spd    = -lerp(0.7, 1.3, diff);
                     }
                 break;
 
