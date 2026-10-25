@@ -501,6 +501,8 @@
     {"name":"snd_wing","order":32,"path":"sounds/snd_wing/snd_wing.yy",},
     {"name":"snd_won","order":29,"path":"sounds/snd_won/snd_won.yy",},
     {"name":"sng_blackaxe","order":5,"path":"sounds/sng_blackaxe/sng_blackaxe.yy",},
+    {"name":"sng_chaosspawn","order":6,"path":"sounds/sng_chaosspawn/sng_chaosspawn.yy",},
+    {"name":"sng_chaostower","order":7,"path":"sounds/sng_chaostower/sng_chaostower.yy",},
     {"name":"sng_cmmm","order":1,"path":"sounds/sng_cmmm/sng_cmmm.yy",},
     {"name":"sng_cmmmbutdestroyed","order":2,"path":"sounds/sng_cmmmbutdestroyed/sng_cmmmbutdestroyed.yy",},
     {"name":"sng_darkpink","order":3,"path":"sounds/sng_darkpink/sng_darkpink.yy",},

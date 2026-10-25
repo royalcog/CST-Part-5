@@ -630,6 +630,8 @@
     {"id":{"name":"sng_blackaxe","path":"sounds/sng_blackaxe/sng_blackaxe.yy",},},
     {"id":{"name":"sng_blackknife","path":"sounds/sng_blackknife/sng_blackknife.yy",},},
     {"id":{"name":"sng_cardjail","path":"sounds/sng_cardjail/sng_cardjail.yy",},},
+    {"id":{"name":"sng_chaosspawn","path":"sounds/sng_chaosspawn/sng_chaosspawn.yy",},},
+    {"id":{"name":"sng_chaostower","path":"sounds/sng_chaostower/sng_chaostower.yy",},},
     {"id":{"name":"sng_cmmm","path":"sounds/sng_cmmm/sng_cmmm.yy",},},
     {"id":{"name":"sng_cmmmbutdestroyed","path":"sounds/sng_cmmmbutdestroyed/sng_cmmmbutdestroyed.yy",},},
     {"id":{"name":"sng_darkpink","path":"sounds/sng_darkpink/sng_darkpink.yy",},},
