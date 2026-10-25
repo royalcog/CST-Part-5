@@ -254,6 +254,18 @@ triggers = first_room ? [
     { x: 800, y: 560, r: 40, battle: true, key: "battle", done: progress.battle },                // the fight
 ] : [];
 
+// fights placed by a map ("X" in rm_tower2's)
+if (variable_global_exists("plat_extra_triggers"))
+{
+    for (var i = 0; i < array_length(global.plat_extra_triggers); i++)
+    {
+        var _xt = global.plat_extra_triggers[i];
+        _xt.done = progress[$ _xt.key] ?? false;
+        array_push(triggers, _xt);
+    }
+    global.plat_extra_triggers = [];
+}
+
 /// the first trigger anyone's touching, or undefined
 trigger_hit = function()
 {
@@ -390,14 +402,15 @@ cam_release = 0;       // frames the camera eases back after the fight
 battle_on   = false;
 global.plat_arena = undefined;   // the fight's box (players can't leave it)
 
-/// starts the fight (from its trigger)
-start_battle = function()
+/// starts a fight (from its trigger). a trigger with vert: true has fish coming down as well as across
+start_battle = function(_tr = undefined)
 {
     if (battle_on) return;
     battle_on = true;
-    progress.battle = true;
+    progress[$ (_tr != undefined) ? _tr.key : "battle"] = true;
     with (obj_plat_titanspawn) if (!dying) { dying = true; die_t = 0; }   // any regular ones clear off
-    instance_create_depth(0, 0, -200, obj_plat_battle);
+    var _b = instance_create_depth(0, 0, -200, obj_plat_battle);
+    if (_tr != undefined && (_tr[$ "vert"] ?? false)) _b.fish_vert = 0.5;
 }
 
 /// the first floor at or below (_x, _y), scanning down to _max_y

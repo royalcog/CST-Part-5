@@ -22,6 +22,7 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
     var _rows = array_length(_map);
     var _cols = string_length(_map[0]);
     var _ledge = -1;
+    global.plat_extra_triggers = [];   // fights ("X") for obj_plat_controller to pick up
 
     if (_paint_tiles)
     {
@@ -73,9 +74,9 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                 case "Q":
                     with (instance_create_depth(_x + _ts / 2, _y + _ts / 2, -130, obj_plat_orbit))
                     {
-                        count  = round(lerp(5, 8, diff));
+                        count  = round(lerp(4, 6, diff));
                         radius = 185;
-                        spd    = -lerp(0.7, 1.3, diff);
+                        spd    = -lerp(0.5, 1.0, diff);
                     }
                 break;
 
@@ -89,6 +90,10 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
 
                 case "W":
                     instance_create_depth(_x + _ts / 2, _y, 0, obj_plat_wind);
+                break;
+				
+                case "X":   // a fight: fish come across and down
+                    array_push(global.plat_extra_triggers, { x: _x + _ts / 2, y: _y + _ts / 2, r: 40, battle: true, vert: true, key: "battle_x" + string(r), done: false });
                 break;
             }
         }

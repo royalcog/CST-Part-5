@@ -1,3 +1,6 @@
+var _ctl = instance_find(obj_plat_controller, 0);
+if (_ctl != noone && _ctl.battle_on) { t = every - first; exit; }
+
 var _vw = camera_get_view_width(view_camera[0]);
 var _my = camera_get_view_y(view_camera[0]) + camera_get_view_height(view_camera[0]) / 2;
 if (abs(floor_y - _my) > near) { t = every - first; exit; }

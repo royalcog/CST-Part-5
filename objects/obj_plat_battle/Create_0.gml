@@ -27,6 +27,9 @@ fish_every_rb   = 120;     // ...and while it's rainbow (2s)
 fish_warn       = 54;      // frames the "!" shows at the edge before it comes in
 fish_scale      = 1.5;
 fish_speed      = 7.5;     // fast enough to clear in one jump toward it
+fish_vert       = 0;       // chance (0-1) each fish comes up/down through the arena instead of across
+fish_vert_speed = 6.5;
+fish_vert_warn  = 60;      // frames the "!" shows at the top/bottom first
 
 end_wait        = 40;      // frames after it's gone before the box opens back up
 
@@ -72,5 +75,22 @@ spawn_fish = function(_dir)
     _f.y0     = fish_y;
     _f.warn_t = fish_warn;
     _f.ox     = -_dir * (camera_get_view_width(view_camera[0]) / 2 + 40);
+    return _f;
+}
+
+/// a fish coming down (_dir 1) or up (_dir -1) through the arena, somewhere across it
+spawn_fish_vert = function(_dir)
+{
+    var _vh = camera_get_view_height(view_camera[0]);
+    var _f = instance_create_depth(0, 0, -140, obj_plat_titanfish);
+    _f.arena  = arena;
+    _f.cam_y0 = cam_y0;
+    _f.vert   = true;
+    _f.dir    = _dir;
+    _f.spd    = fish_vert_speed;
+    _f.scale  = fish_scale;
+    _f.warn_t = fish_vert_warn;
+    _f.ox     = random_range(-arena.half + 40, arena.half - 40);
+    _f.oy     = (_dir > 0) ? cam_y0 - 40 : cam_y0 + _vh + 40;
     return _f;
 }

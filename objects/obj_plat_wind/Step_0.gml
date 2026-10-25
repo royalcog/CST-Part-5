@@ -1,7 +1,7 @@
 var _ctl = instance_find(obj_plat_controller, 0);
 if (_ctl == noone) exit;
 var _l    = _ctl.leader();
-var _near = abs(_l.y - y) <= near && _ctl.state == "play";
+var _near = abs(_l.y - y) <= near && _ctl.state == "play" && !_ctl.battle_on;
 var _vw   = camera_get_view_width(view_camera[0]);
 var _vh   = camera_get_view_height(view_camera[0]);
 

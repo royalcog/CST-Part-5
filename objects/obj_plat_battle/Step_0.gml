@@ -54,7 +54,8 @@ switch (state)
         var _every = boss.invincible ? fish_every_rb : fish_every;
         if (fight_t >= fish_first && fish_t >= _every)
         {
-            spawn_fish(choose(-1, 1));
+            if (random(1) < fish_vert) spawn_fish_vert(choose(1, 1, -1));   // mostly down, sometimes up
+            else spawn_fish(choose(-1, 1));
             fish_t = 0;
         }
     }

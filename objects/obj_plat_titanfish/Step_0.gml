@@ -3,14 +3,22 @@ if (!is_struct(arena)) { instance_destroy(); exit; }
 // the "!" warning first, then in it comes
 if (warn_t > 0) { warn_t--; exit; }
 
-ox    += dir * spd;
+if (vert) oy += dir * spd;
+else      ox += dir * spd;
 phase += wave_speed;
 anim  += sprite_get_speed(spr_titanfish_head) / game_get_speed(gamespeed_fps);
 if (fading) alpha -= 0.06;
 
-// gone once the tail's off the far side (or it's faded)
+// gone once the tail's off the far side of the screen (or it's faded)
 var _tail = piece(segs + 1);
-if (alpha <= 0 || _tail.ox * dir > camera_get_view_width(view_camera[0]) / 2 + 60) { instance_destroy(); exit; }
+var _gone;
+if (vert)
+{
+    var _vy = camera_get_view_y(view_camera[0]), _vh = camera_get_view_height(view_camera[0]);
+    _gone = (dir > 0) ? _tail.y > _vy + _vh + 60 : _tail.y < _vy - 60;
+}
+else _gone = _tail.ox * dir > camera_get_view_width(view_camera[0]) / 2 + 60;
+if (alpha <= 0 || _gone) { instance_destroy(); exit; }
 
 // hits the one you're controlling (the one following isn't in danger)
 if (!fading)

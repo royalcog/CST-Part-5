@@ -5,7 +5,7 @@ var _vy = camera_get_view_y(view_camera[0]);
 var _vh = camera_get_view_height(view_camera[0]);
 
 // a new one every so often while you're around
-if (abs(_l.y - y) <= near && _ctl.state == "play")
+if (abs(_l.y - y) <= near && _ctl.state == "play" && !_ctl.battle_on)
 {
     if (++t >= every)
     {

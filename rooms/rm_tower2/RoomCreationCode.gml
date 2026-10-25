@@ -6,6 +6,7 @@
 //  F  fish swim along the ledge just below this
 //  R  falling rubble around here
 //  W  wind gusts push you sideways
+//  X  a fight starts here (a big Titan Spawn, fish coming across AND down): stand on the wide ledge below it
 //  .  nothing
 // obstacles get harder the higher they are (scr_plat_difficulty): the bottom stretch has none, the top is the worst.
 // reach the ledge in the top row and you're through to rm_tower_top. fall off the bottom and you're back in rm_tower.
@@ -53,8 +54,8 @@ var _map = [
     ".................................=====.",   // 1560
     ".......................................",   // 1600
     ".=====.................................",   // 1640
-    "............F..........................",   // 1680
-    ".......==========......................",   // 1720
+    "............X..........................",   // 1680
+    ".=======================...............",   // 1720
     ".......................................",   // 1760
     "...................===.................",   // 1800
     "........................R....O.........",   // 1840

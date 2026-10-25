@@ -239,7 +239,7 @@ if (state == "play" && !instance_exists(obj_textbox) && !battle_on)
         if (variable_struct_exists(_tr, "battle"))
         {
             // the fight waits until the first Titan Spawn scene is over
-            if (intro == "done") { _tr.done = true; start_battle(); }
+            if (intro == "done") { _tr.done = true; start_battle(_tr); }
         }
         else
         {
