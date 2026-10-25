@@ -87,10 +87,6 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                     instance_create_depth(_x + _ts / 2, _y, -135, obj_plat_rubble);
                 break;
 
-                case "B":
-                    instance_create_depth(_x + _ts / 2, _y, -136, obj_plat_beam);
-                break;
-
                 case "W":
                     instance_create_depth(_x + _ts / 2, _y, 0, obj_plat_wind);
                 break;

@@ -367,7 +367,6 @@
     {"id":{"name":"obj_pinkbomb","path":"objects/obj_pinkbomb/obj_pinkbomb.yy",},},
     {"id":{"name":"obj_pipis","path":"objects/obj_pipis/obj_pipis.yy",},},
     {"id":{"name":"obj_plat_battle","path":"objects/obj_plat_battle/obj_plat_battle.yy",},},
-    {"id":{"name":"obj_plat_beam","path":"objects/obj_plat_beam/obj_plat_beam.yy",},},
     {"id":{"name":"obj_plat_controller","path":"objects/obj_plat_controller/obj_plat_controller.yy",},},
     {"id":{"name":"obj_plat_crumble","path":"objects/obj_plat_crumble/obj_plat_crumble.yy",},},
     {"id":{"name":"obj_plat_fishlane","path":"objects/obj_plat_fishlane/obj_plat_fishlane.yy",},},
