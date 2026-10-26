@@ -16,8 +16,7 @@ if (state == "choose" && mode == "cmd" && members[chooser] != noone && instance_
 }
 
 // ---------------------------------------------------------------- the text panel
-var _show = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight_bars"
-          || state == "fight_wait" || state == "fight_hit" || state == "win");
+var _show = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win");
 if (!_show) exit;
 
 draw_set_colour(c_black);
@@ -32,27 +31,57 @@ draw_set_valign(fa_top);
 var _row = function(_i) { return panel_y + 4 + _i * line_h; };
 var _heart = function(_x, _y) { draw_sprite_ext(spr_soul_red, 0, _x, _y + 11, 1, 1, 0, c_white, 1); };
 
-// FIGHT's timing bars
-if (state == "fight_bars" || state == "fight_wait" || state == "fight_hit")
+// FIGHT's attack boxes: one row per fighter (Deltarune's)
+if (state == "fight")
 {
     for (var i = 0; i < array_length(fighters); i++)
     {
         var _f = fighters[i];
-        var _y = _row(i);
-        draw_set_colour(defs[_f.who].color);
-        draw_text_transformed(text_x, _y, string_upper(names[_f.who]), text_scale * 0.75, text_scale * 0.75, 0);
-        draw_set_colour(c_white);
-        draw_rectangle(bar_x0 - 2, _y + 2, bar_x0 + 2, _y + line_h - 4, true);             // the target line
-        if (!_f.done || _f.flash > 0)
+        var _d = defs[_f.who];
+        var _b = members[_f.who];
+        var _y1 = panel_y + 4 + i * (fb_row_h + 2), _y2 = _y1 + fb_row_h;
+
+        // their face (out of their party box's art)
+        if (_b != noone && _b.icon_rect_w > 0)
         {
-            var _bc = _f.crit ? col_yellow : c_white;
-            draw_set_alpha(_f.done ? _f.flash : 1);
-            draw_set_colour(_bc);
-            draw_rectangle(_f.x - 3, _y + 2, _f.x + 3, _y + line_h - 4, false);
+            var _is = fb_row_h / _b.icon_rect_h;
+            draw_sprite_part_ext(_b.sprite_frame, 0, _b.icon_rect_x, _b.icon_rect_y, _b.icon_rect_w, _b.icon_rect_h,
+                fb_icon_x, _y1, _is, _is, c_white, 1);
+        }
+        // the box in their colour, and the reticle
+        draw_set_colour(_d.color);
+        draw_rectangle(fb_box_x1, _y1, fb_box_x2, _y2, true);
+        draw_rectangle(fb_box_x1 + 1, _y1 + 1, fb_box_x2 - 1, _y2 - 1, true);
+        draw_set_colour(c_white);
+        draw_rectangle(fb_reticle_x - fb_cursor_w / 2 - 2, _y1 + 2, fb_reticle_x + fb_cursor_w / 2 + 2, _y2 - 2, true);
+
+        // the cursor: afterimages while it moves, then it stops where it was hit and flashes out
+        if (_f.phase == "move" && _f.delay <= 0)
+        {
+            for (var k = 0; k < array_length(_f.trail); k++)
+            {
+                draw_set_alpha(0.5 * (1 - (k + 1) / (fb_trail + 1)));
+                draw_rectangle(_f.trail[k] - fb_cursor_w / 2, _y1 + 3, _f.trail[k] + fb_cursor_w / 2, _y2 - 3, false);
+            }
+            draw_set_alpha(1);
+            draw_rectangle(_f.x - fb_cursor_w / 2, _y1 + 3, _f.x + fb_cursor_w / 2, _y2 - 3, false);
+        }
+        else if (_f.flash > 0 && _f.phase != "miss")
+        {
+            var _grow = (1 - _f.flash) * 8;
+            draw_set_colour(_f.crit ? col_yellow : c_white);
+            draw_set_alpha(_f.flash);
+            draw_rectangle(_f.x - fb_cursor_w / 2 - _grow, _y1 + 3 - _grow / 2, _f.x + fb_cursor_w / 2 + _grow, _y2 - 3 + _grow / 2, false);
             draw_set_alpha(1);
         }
+        // critical: little stars drifting off
+        for (var k = 0; k < array_length(_f.stars); k++)
+        {
+            var _st = _f.stars[k];
+            draw_sprite_ext(spr_sparestar_anim, 0, _st.x, (_y1 + _y2) / 2 + _st.y, 1, 1, _st.x * 4, col_yellow, _st.a);
+        }
+        draw_set_colour(c_white);
     }
-    draw_set_colour(c_white);
     exit;
 }
 
@@ -101,8 +130,6 @@ if (state == "choose" && mode != "cmd")
                 var _hx = 520, _mx = 680, _bw = 110, _bh = line_h - 8;
                 draw_set_colour(make_color_rgb(128, 0, 0)); draw_rectangle(_hx, _y + 4, _hx + _bw, _y + 4 + _bh, false);
                 draw_set_colour(make_color_rgb(0, 255, 0)); draw_rectangle(_hx, _y + 4, _hx + _bw * (_en.hp / _en.max_hp), _y + 4 + _bh, false);
-                draw_set_colour(make_color_rgb(255, 80, 32)); draw_rectangle(_mx, _y + 4, _mx + _bw, _y + 4 + _bh, false);
-                draw_set_colour(col_yellow); if (_en.mercy > 0) draw_rectangle(_mx, _y + 4, _mx + _bw * (_en.mercy / 100), _y + 4 + _bh, false);
                 draw_set_colour(c_white);
                 draw_text_transformed(_hx + 4, _y + 2, string(ceil(_en.hp / _en.max_hp * 100)) + "%", 1.5, 1.5, 0);
                 if (_en.can_spare)   // no MERCY bar for things that can't be spared
@@ -124,7 +151,7 @@ if (state == "choose" && mode != "cmd")
                 if (_b == noone) continue;
                 var _y = _row(i);
                 draw_set_colour(defs[i].color);
-                draw_text_transformed(col_x[0], _y, names[i], text_scale, text_scale, 0);
+                draw_text_transformed(col_x[0], _y, names[i], name_scale, name_scale, 0);
                 draw_set_colour((_b.hp <= 0) ? c_red : c_white);
                 draw_text_transformed(col_x[0] + 200, _y, "HP " + string(_b.hp) + " / " + string(_b.max_hp), text_scale, text_scale, 0);
                 if (i == pick_i) _heart(col_x[0] - 22, _y);

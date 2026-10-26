@@ -14,7 +14,7 @@ function scr_bm_member_def(_name)
             cmds: ["FIGHT", "MAGIC", "ITEM", "SPARE", "DEFEND"],
             at: 20, mg: 3,
             idle: spr_susie_battle_idle, idle_hold: false,
-            ready_fight: spr_susie_attack_ready, ready_magic: spr_susie_attack_ready, ready_act: -1,
+            ready_fight: spr_susie_attack_ready, ready_magic: -1, ready_act: -1,   // no spell ready yet: falls back to her ACT ready (none yet either: idle)
             ready_item: spr_susie_itemready, item_anim: spr_susie_item,
             defend: spr_susie_defend,
             attack: spr_susie_battle_intro, attack_sound_frame: 0,
@@ -102,7 +102,7 @@ function scr_bm_heal(_box, _amt)
 /// _mode: 0 (or false) = hold its first frame, 1 (or true) = play once and hold the last frame, 2 = loop it
 function scr_bm_pose(_obj, _spr, _mode = 0)
 {
-    if (!is_real(_spr) || _spr == -1 || !instance_exists(_obj)) return;
+    if (is_string(_spr) || _spr == -1 || !instance_exists(_obj)) return;   // (sprite names are asset refs now, not numbers: is_real is false for them)
     with (_obj)
     {
         sprite_index = _spr;

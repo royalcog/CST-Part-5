@@ -28,13 +28,22 @@ col_grey   = make_color_rgb(128, 128, 128);
 col_tired  = make_color_rgb(0, 162, 232);
 col_yellow = make_color_rgb(255, 255, 0);
 
-// --- tuning: FIGHT's timing bars (GUI px) ---
-bar_x0       = 150;   // the target line
-bar_start    = 330;   // how far right of it the first bar starts
-bar_stagger  = 70;    // extra gap between each fighter's bar
-bar_speed    = 6;     // px per frame
-crit_window  = 2;     // px either side of the line that's a perfect hit
-miss_after   = 30;    // px past the line before it counts as a miss
+// --- tuning: FIGHT's attack boxes (Deltarune's, GUI px). one row per fighter: their face, a box in their colour,
+//     the white reticle near its left end, and their cursor sliding left toward it. Z hits the leftmost cursor
+//     that's close enough: it stops dead, flashes, and they attack right then. let it slide past: MISS ---
+fb_icon_x     = 26;    // their face
+fb_box_x1     = 66;    // the box
+fb_box_x2     = 820;
+fb_row_h      = 22;
+fb_reticle_x  = 92;    // the reticle (a perfect hit lines the cursor up with it)
+fb_cursor_w   = 6;
+fb_speed      = 4;     // px per frame (Deltarune's 8 px per 30fps frame on a 640 screen is ~5.3 here; a touch slower)
+fb_start      = 240;   // px right of the reticle the first cursor starts (it reaches the reticle 60 frames later)
+fb_stagger    = [0, 24, 36];   // frames each later cursor comes in after the one before (Deltarune: 0, 12 or 18 of its frames)
+fb_hit_range  = 112;   // px before the reticle a cursor can be hit (Deltarune: 14 of its frames early)
+fb_crit       = 4;     // px either side of the reticle that's a critical
+fb_miss_after = 20;    // px past the reticle before it's a MISS
+fb_trail      = 4;     // afterimages behind a moving cursor
 
 // --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
 crit_points  = 150;
@@ -73,7 +82,6 @@ depth = -10050;   // its Draw GUI goes over the party boxes
 
 // --- state ---
 state    = "turn_start";
-fight_i  = 0;
 t        = 0;
 turn     = 0;
 actions  = array_create(3, undefined);
@@ -130,7 +138,8 @@ snd_no     = function() { audio_play_sound(snd_cantselect, 1, false); }
 /// the pose they hold once they've picked (Deltarune shows what they're about to do)
 ready_pose = function(_i, _kind)
 {
-    // they sit in their ready (animating, like Deltarune) until it's their go, then do the real thing
+    // the moment a command's picked (Z on its button) they go into its ready, and hold it until their go.
+    // no ready for that command: their ACT ready instead (then on their go they do the real thing). no ACT ready either: idle
     var _d = defs[_i];
     var _hold = variable_struct_exists(_d, "ready_hold") && _d.ready_hold;
     var _spr = -1, _mode = _hold ? 0 : 2;
@@ -140,14 +149,17 @@ ready_pose = function(_i, _kind)
         case "spell":  _spr = _d.ready_magic; break;
         case "act":    _spr = _d.ready_act;  _mode = 0; break;   // Queen's point: its first frame, she points when it's her go
         case "item":   _spr = _d.ready_item; break;
+        case "spare":  _spr = -1; break;                         // nobody has a SPARE ready: the ACT ready below
         case "defend":
             // DEFEND happens right away in Deltarune (no turn of its own)
             if (is_string(_d.defend)) { scr_bm_idle(_d); scr_queen_shield_build(); return; }   // Queen builds her shield
             _spr = _d.defend; _mode = 1;                                                        // plays, holds the last frame
         break;
     }
-    if (_spr == -1) scr_bm_idle(_d);
-    else scr_bm_pose(_d.obj, _spr, _mode);
+    if (_spr == -1 && _kind != "defend" && _d.ready_act != -1) { _spr = _d.ready_act; _mode = 0; }
+    if (_spr == -1) { scr_bm_idle(_d); return; }
+    if (instance_exists(_d.obj) && _d.obj.sprite_index == _spr) return;   // already in it (picked the button, now the target): keep it going
+    scr_bm_pose(_d.obj, _spr, _mode);
 }
 
 /// _i has picked _act: hold their pose, move on to the next person (or start playing it all out)
@@ -199,8 +211,12 @@ start_execute = function()
         if (_a == undefined || _a.kind == "defend") continue;
         if (_a.kind == "fight")
         {
-            array_push(fighters, { who: i, target: _a.target, x: bar_x0 + bar_start + array_length(fighters) * bar_stagger + irandom(20),
-                                   done: false, points: 0, crit: false, flash: 0 });
+            // each later cursor comes in 0, 12 or 18 Deltarune frames (0, 24 or 36 here) after the one before
+            var _n = array_length(fighters);
+            var _gap = (_n == 0) ? 0 : fighters[_n - 1].delay + fb_stagger[irandom(2)];
+            if (_n == 2 && _gap == fighters[1].delay && fighters[1].delay == fighters[0].delay) _gap += fb_stagger[1 + irandom(1)];   // all three at once: reroll
+            array_push(fighters, { who: i, target: _a.target, delay: _gap, x: fb_reticle_x + fb_start + _gap * fb_speed,
+                                   phase: "move", points: 0, crit: false, flash: 0, t: 0, trail: [], stars: [] });
         }
         else array_push(queue, _a);
     }
