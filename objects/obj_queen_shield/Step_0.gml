@@ -1,5 +1,6 @@
 t++;
 flash = max(0, flash - 0.15);
+bob += bob_speed;
 if (state != "shatter") follow_queen();
 
 switch (state)
@@ -23,7 +24,7 @@ switch (state)
             // every frame of spr_queen_shield_break is one shard, drawn where it sits in the shield
             for (var i = 0; i < sprite_get_number(spr_queen_shield_break); i++)
             {
-                array_push(shards, { f: i, x: 0, y: 0, vx: random_range(1, 4.5), vy: random_range(-5, -1.5), a: 1 });
+                array_push(shards, { f: i, x: 0, y: 0, vx: random_range(1, 4.5) * (flip ? -1 : 1), vy: random_range(-5, -1.5), a: 1 });
             }
             if (break_sound != noone) audio_play_sound(break_sound, 1, false);
             state = "shatter";

@@ -1,5 +1,5 @@
 var _h  = sprite_get_height(spr_queen_shield) * scale;
-var _top = y - _h;   // its bottom sits at Queen's feet
+var _top = y - _h + ((state == "shatter") ? 0 : sin(bob) * bob_amp);   // floating, bobbing
 
 switch (state)
 {
@@ -26,30 +26,30 @@ switch (state)
                 _a = 1 - _kt; _dy = section_drop * _kt;
             }
             var _spr = (k mod 2 == 0) ? spr_queen_shield_pieces : spr_queen_shield_pieces_1;
-            draw_sprite_ext(_spr, k mod sprite_get_number(_spr), x, _top + k * _step + _dy, scale, scale, 0, c_white, _a);
+            draw_part(_spr, k mod sprite_get_number(_spr), 0, _top + k * _step + _dy, _a);
         }
     }
     break;
 
     case "up":
-        draw_sprite_ext(spr_queen_shield, hp_frame(), x, _top, scale, scale, 0, c_white, 1);
+        draw_part(spr_queen_shield, hp_frame(), 0, _top, 1);
         if (flash > 0)
         {
             gpu_set_fog(true, c_white, 0, 0);
-            draw_sprite_ext(spr_queen_shield, hp_frame(), x, _top, scale, scale, 0, c_white, flash);
+            draw_part(spr_queen_shield, hp_frame(), 0, _top, flash);
             gpu_set_fog(false, c_white, 0, 0);
         }
     break;
 
     case "crack":   // the cracked frames, shaking
-        draw_sprite_ext(spr_queen_shield, (hp_frame() == 0) ? 2 : 3, x + random_range(-2, 2), _top, scale, scale, 0, c_white, 1);
+        draw_part(spr_queen_shield, (hp_frame() == 0) ? 2 : 3, random_range(-2, 2), _top, 1);
     break;
 
     case "shatter":
         for (var i = 0; i < array_length(shards); i++)
         {
             var _s = shards[i];
-            draw_sprite_ext(spr_queen_shield_break, _s.f, x + _s.x, _top + _s.y, scale, scale, 0, c_white, _s.a);
+            draw_part(spr_queen_shield_break, _s.f, _s.x, _top + _s.y, _s.a);
         }
     break;
 }

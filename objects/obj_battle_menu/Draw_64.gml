@@ -70,16 +70,18 @@ if (state == "choose" && mode != "cmd")
                 var _x = col_x[i mod 2], _y = _row(i div 2);
                 var _can = _is_item || _o.tp <= global.tp.value;
                 draw_set_colour(_can ? c_white : col_grey);
-                draw_text_transformed(_x, _y, _o.name, text_scale, text_scale, 0);
-                if (i == list_i) _heart(_x - 20, _y);
+                draw_text_transformed(_x, _y, _o.name, name_scale, name_scale, 0);
+                if (i == list_i) _heart(_x - 22, _y);
             }
+            // the description in grey, the TP cost under it in orange (Deltarune's layout)
             var _sel = list[list_i];
+            var _lines = (_sel.desc == "") ? 0 : string_count("\n", _sel.desc) + 1;
             draw_set_colour(col_grey);
-            draw_text_transformed(desc_x, _row(0), _sel.desc, text_scale * 0.75, text_scale * 0.75, 0);
+            if (_lines > 0) draw_text_ext_transformed(desc_x, _row(0), _sel.desc, desc_line / desc_scale, 1000, desc_scale, desc_scale, 0);
             if (!_is_item && _sel.tp > 0)
             {
                 draw_set_colour(col_orange);
-                draw_text_transformed(desc_x + 140, _row(0), string(_sel.tp) + "% TP", text_scale * 0.75, text_scale * 0.75, 0);
+                draw_text_transformed(desc_x, _row(0) + _lines * desc_line, string(_sel.tp) + "% TP", desc_scale, desc_scale, 0);
             }
         }
         break;
@@ -92,9 +94,9 @@ if (state == "choose" && mode != "cmd")
                 var _en = _e[i];
                 var _y = _row(i);
                 draw_set_colour((_en.can_spare && _en.mercy >= 100) ? col_yellow : c_white);
-                draw_text_transformed(col_x[0], _y, _en.enemy_name, text_scale, text_scale, 0);
+                draw_text_transformed(col_x[0], _y, _en.enemy_name, name_scale, name_scale, 0);
                 if (_en.can_spare && _en.is_tired()) { draw_set_colour(col_tired); draw_text_transformed(col_x[0] + 230, _y, "(Tired)", text_scale * 0.75, text_scale * 0.75, 0); }
-                if (i == pick_i) _heart(col_x[0] - 20, _y);
+                if (i == pick_i) _heart(col_x[0] - 22, _y);
                 // HP and MERCY bars
                 var _hx = 520, _mx = 680, _bw = 110, _bh = line_h - 8;
                 draw_set_colour(make_color_rgb(128, 0, 0)); draw_rectangle(_hx, _y + 4, _hx + _bw, _y + 4 + _bh, false);
@@ -125,7 +127,7 @@ if (state == "choose" && mode != "cmd")
                 draw_text_transformed(col_x[0], _y, names[i], text_scale, text_scale, 0);
                 draw_set_colour((_b.hp <= 0) ? c_red : c_white);
                 draw_text_transformed(col_x[0] + 200, _y, "HP " + string(_b.hp) + " / " + string(_b.max_hp), text_scale, text_scale, 0);
-                if (i == pick_i) _heart(col_x[0] - 20, _y);
+                if (i == pick_i) _heart(col_x[0] - 22, _y);
             }
         }
         break;

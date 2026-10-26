@@ -25,6 +25,7 @@ function scr_tp_init()
         grazing:   999,           // frames since the last graze (the shell fades out from this)
         fresh:     999,           // frames since a bullet was FIRST grazed (the shell's bright white just after)
         grazed:    ds_map_create(), // bullets that have already given their first graze
+        flash:     0              // the bar flashes white when you gain
     };
 }
 

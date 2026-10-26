@@ -26,7 +26,7 @@ function scr_bm_member_def(_name)
                 { name: "Heal",        tp: 75, target: "ally",  effect: "heal",       amount: 60,
                   desc: "Heal\nAlly" },
                 { name: "Scythemare",  tp: 40, target: "none",  effect: "scythemare", amount: 0,
-                  desc: "Spare\nTIRED foes" },
+                  desc: "Spare all\nTIRED foes" },      // Scythemare
             ],
         };
         case "Ralsei": return {
@@ -45,7 +45,7 @@ function scr_bm_member_def(_name)
                 { name: "Heal Prayer", tp: 32, target: "ally",  effect: "heal",       amount: 75,
                   desc: "Heal\nAlly" },
                 { name: "ReviveSong",  tp: 84, target: "ally",  effect: "revivesong", amount: 120,
-                  desc: "Revive or\nbig heal" },
+                  desc: "Revive\nAlly" },               // ReviveSong
             ],
         };
         case "Queen": return {
@@ -55,14 +55,15 @@ function scr_bm_member_def(_name)
             idle: spr_queen_walk_right_unhappy, idle_hold: true,
             ready_fight: spr_queen_pie_throw, ready_magic: -1, ready_act: spr_queen_pointright,
             ready_item: spr_queen_wine_right_unhappy, item_anim: spr_queen_wine_right_unhappy,
+            ready_hold: true,                                 // her ready poses hold still (first frame)
             defend: "shield",
             attack: spr_queen_pie_throw, attack_sound_frame: 2,
             spell_anim: spr_queen_pointright,                 // her ACTs
             magic: [   // her ACTs
                 { name: "Check",   tp: 0, target: "enemy", effect: "check",   amount: 0,
-                  desc: "Useful\nanalysis" },
+                  desc: "" },     // Deltarune's ACTs don't have a description
                 { name: "Lecture", tp: 0, target: "none",  effect: "lecture", amount: 10,
-                  desc: "+10% TP\n(ignores dark)" },
+                  desc: "Raises TP\n10%" },
             ],
         };
     }
@@ -73,11 +74,11 @@ function scr_bm_member_def(_name)
 function scr_bm_items_default()
 {
     return [
-        { name: "Dark Candy",  target: "ally", effect: "heal",   amount: 40,  desc: "Heals\n40 HP" },
-        { name: "Dark Candy",  target: "ally", effect: "heal",   amount: 40,  desc: "Heals\n40 HP" },
-        { name: "Darkburger",  target: "ally", effect: "heal",   amount: 70,  desc: "Heals\n70 HP" },
-        { name: "TensionBit",  target: "none", effect: "tp",     amount: 32,  desc: "+32% TP\n(ignores dark)" },
-        { name: "ReviveMint",  target: "ally", effect: "revive", amount: 0,   desc: "Revives\nor heals" },
+        { name: "Dark Candy",  target: "ally", effect: "heal",   amount: 40,  desc: "Heals\n40HP" },
+        { name: "Dark Candy",  target: "ally", effect: "heal",   amount: 40,  desc: "Heals\n40HP" },
+        { name: "Darkburger",  target: "ally", effect: "heal",   amount: 70,  desc: "Heals\n70HP" },
+        { name: "TensionBit",  target: "none", effect: "tp",     amount: 32,  desc: "Raises TP\n32%" },
+        { name: "ReviveMint",  target: "ally", effect: "revive", amount: 0,   desc: "Heal Downed\nAlly" },
     ];
 }
 
@@ -97,8 +98,9 @@ function scr_bm_heal(_box, _amt)
 }
 
 /// puts a party member's body in a pose. every battle sprite's origin is lined up with their idle's feet,
-/// so it's a straight swap (no re-anchoring). _play: play it once and hold the last frame. otherwise hold frame 0
-function scr_bm_pose(_obj, _spr, _play = false)
+/// so it's a straight swap (no re-anchoring).
+/// _mode: 0 (or false) = hold its first frame, 1 (or true) = play once and hold the last frame, 2 = loop it
+function scr_bm_pose(_obj, _spr, _mode = 0)
 {
     if (!is_real(_spr) || _spr == -1 || !instance_exists(_obj)) return;
     with (_obj)
@@ -106,8 +108,8 @@ function scr_bm_pose(_obj, _spr, _play = false)
         sprite_index = _spr;
         last_sprite  = _spr;
         image_index  = 0;
-        image_speed  = _play ? 1 : 0;
-        anim_loop    = !_play;
+        image_speed  = (_mode == 0) ? 0 : 1;
+        anim_loop    = (_mode != 1);
     }
 }
 

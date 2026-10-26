@@ -10,9 +10,12 @@ panel_y    = 404;
 panel_h    = 480 - 404;
 text_x     = 24;
 line_h     = 24;
-text_scale = 2;
-col_x      = [44, 300];       // the two columns in lists
-desc_x     = 600;             // a spell/item's description + TP cost, on the right
+text_scale = 1.75;            // the battle text
+name_scale = 1.75;            // spell / item / enemy / ally names (Deltarune: the same font size as the descriptions)
+desc_scale = 1.75;            // a spell / item's description and TP cost, on the right
+desc_line  = 18;              // px between description lines
+col_x      = [80, 320];       // the two columns in lists (Deltarune's 60 / 240 on its 640-wide screen)
+desc_x     = 613;             // a spell/item's description, TP cost under it (Deltarune's 460)
 type_speed = 2;               // letters per frame
 flavor     = [
     "* The Titan Spawn writhe in the dark.",
@@ -127,21 +130,24 @@ snd_no     = function() { audio_play_sound(snd_cantselect, 1, false); }
 /// the pose they hold once they've picked (Deltarune shows what they're about to do)
 ready_pose = function(_i, _kind)
 {
+    // they sit in their ready (animating, like Deltarune) until it's their go, then do the real thing
     var _d = defs[_i];
-    var _spr = -1, _play = false;
+    var _hold = variable_struct_exists(_d, "ready_hold") && _d.ready_hold;
+    var _spr = -1, _mode = _hold ? 0 : 2;
     switch (_kind)
     {
         case "fight":  _spr = _d.ready_fight; break;
         case "spell":  _spr = _d.ready_magic; break;
-        case "act":    _spr = _d.ready_act;  _play = true; break;   // Queen's point plays out and holds
+        case "act":    _spr = _d.ready_act;  _mode = 0; break;   // Queen's point: its first frame, she points when it's her go
         case "item":   _spr = _d.ready_item; break;
         case "defend":
+            // DEFEND happens right away in Deltarune (no turn of its own)
             if (is_string(_d.defend)) { scr_bm_idle(_d); scr_queen_shield_build(); return; }   // Queen builds her shield
-            _spr = _d.defend; _play = true;                                                     // plays, holds the last frame
+            _spr = _d.defend; _mode = 1;                                                        // plays, holds the last frame
         break;
     }
     if (_spr == -1) scr_bm_idle(_d);
-    else scr_bm_pose(_d.obj, _spr, _play);
+    else scr_bm_pose(_d.obj, _spr, _mode);
 }
 
 /// _i has picked _act: hold their pose, move on to the next person (or start playing it all out)
@@ -230,7 +236,7 @@ run_action = function(_a)
                     var _sp = _a.spell;
                     if (_sp.effect == "rudebuster")
                     {
-                        set_text("* " + _who + " cast RUDE BUSTER!");
+                        set_text("* " + _who + " used RUDE BUSTER!");
                         _a.target = retarget(_a.target);
                         _a.fx = instance_create_depth(0, 0, -3000, obj_rude_buster);
                         _a.fx.break_on_hit = false;
@@ -368,7 +374,7 @@ apply = function(_a)
             if (_a.target == noone) break;
             if (!_a.target.can_spare) set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n" + _a.target.no_mercy_text);
             else if (_a.target.mercy >= 100) _a.target.spare();
-            else set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n* But its name wasn't YELLOW...");
+            else set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n* But MERCY was not 100%!");   // Chapter 5's line
         break;
     }
 }

@@ -3,12 +3,16 @@
 //  up:       blocks everything aimed at Queen. it darkens as it loses HP (spr_queen_shield frames 0 -> 1 -> 3)
 //  down:     taken back down if DEFEND's undone before the round plays out (sections drop away, nothing breaks)
 //  break:    out of HP, or the round's over: it cracks, then shatters into its shards (spr_queen_shield_break)
-// x/y = its bottom-left, in front of Queen
+// x/y = its bottom-left (before bobbing), floating in front of Queen. it's mirrored for this fight (flip)
 image_speed = 0;
 
 // --- tuning ---
 scale         = 1;      // the shield's 140px tall at 1x (Queen's 126 at her 2x)
-offset_x      = 22;     // px in front of Queen's feet
+flip          = true;   // turned around for this fight
+front_gap     = 14;     // px between the front of Queen and the shield
+float_h       = 12;     // px it floats off the ground
+bob_amp       = 3;      // px it bobs up and down
+bob_speed     = 0.06;
 max_hp        = 400;    // Chapter 2's first shield
 sections      = 10;     // how many pieces stack up into it
 section_every = 3;      // frames between each piece
@@ -25,13 +29,25 @@ state   = "build";
 t       = 0;
 flash   = 0;
 shards  = [];
+bob     = 0;
 
 follow_queen = function()
 {
     if (!instance_exists(obj_queen)) return;
-    x = obj_queen.x + offset_x;
-    y = obj_queen.y;                         // her origin's at her feet
-    depth = obj_queen.depth - 1;             // in front of her
+    // the front of Queen (her sprite's right edge) + a gap. her origin's at her feet
+    var _q = obj_queen;
+    var _front = _q.x + (sprite_get_width(_q.sprite_index) - sprite_get_xoffset(_q.sprite_index)) * abs(_q.image_xscale);
+    x = _front + front_gap;
+    y = _q.y - float_h;
+    depth = _q.depth - 1;                    // in front of her
+}
+
+/// draws a frame of _spr at (_lx, _ly) in the shield's own space (0 = its left edge), mirrored if flip is on
+draw_part = function(_spr, _img, _lx, _ly, _a)
+{
+    var _w = sprite_get_width(spr_queen_shield) * scale;
+    if (flip) draw_sprite_ext(_spr, _img, x + _w - _lx, _ly, -scale, scale, 0, c_white, _a);
+    else      draw_sprite_ext(_spr, _img, x + _lx, _ly, scale, scale, 0, c_white, _a);
 }
 follow_queen();
 
