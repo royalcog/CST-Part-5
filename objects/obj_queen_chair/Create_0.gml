@@ -20,6 +20,8 @@ lift_wait    = 6;        // ...holds a beat...
 fly_time     = 70;       // ...then speeds up and away
 fly_dist     = 700;      // px it travels up (well past the top of the screen)
 fly_sound    = snd_wing;
+sink_time    = 100;      // floating down instead (liftoff(..., 1)): frames to sink out of sight
+sink_dist    = 420;      // px it sinks (past the bottom of the screen)
 
 hop_sound    = snd_smallswing;
 
@@ -75,10 +77,12 @@ add_rider = function(_inst, _dx, _dy, _frames, _height, _land_sprite = noone, _o
     if (hop_sound != noone) audio_play_sound(hop_sound, 1, false, 0.7, 0, random_range(0.95, 1.1));
 }
 
-/// off it goes, riders and all. _on_done once it's gone (riders are destroyed with it)
-liftoff = function(_on_done = undefined)
+/// off it goes, riders and all. _on_done once it's gone (riders are destroyed with it).
+/// _dir: -1 = flies up off the top of the screen, 1 = floats down off the bottom
+liftoff = function(_on_done = undefined, _dir = -1)
 {
     on_gone = _on_done;
+    fly_dir = _dir;
     from_y  = base_y;
     state   = "dip";
     t = 0;

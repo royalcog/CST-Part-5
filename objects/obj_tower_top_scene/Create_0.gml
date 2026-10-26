@@ -11,13 +11,13 @@ with (obj_kris) { move_spd = 0; x = -200; y = -200; }
 
 // --- tuning: where everyone stands (their feet, room px) ---
 cx          = room_width / 2;
-susie_x     = cx - 170;
-ralsei_x    = cx - 105;
+susie_x     = cx + 105;
+ralsei_x    = cx + 170;
 pair_y      = 250;                 // where Susie & Ralsei stop
 pair_from_y = room_height + 90;    // they start below the screen
-lancer_x    = cx + 10;
+lancer_x    = cx - 10;
 lancer_y    = 250;
-queen_x     = cx + 95;
+queen_x     = cx - 95;
 queen_y     = 215;                 // a bit further back than Lancer, so he can walk past in front of her
 pair_walk   = 2;                   // px per frame
 lancer_walk = 2;
@@ -39,11 +39,12 @@ lancer_ride  = spr_lancer_dt_unhappy;     // once he's on the chair
 queen_left   = spr_queen_walk_left_unhappy;
 queen_right  = spr_queen_walk_right_unhappy;
 
-// --- tuning: the chair (parked, empty, bobbing) ---
-chair_x      = cx + 240;
-chair_y      = 255;
-lancer_board = { x: chair_x - 105, y: chair_y + 56 };   // Lancer walks here, then hops on
-lancer_seat  = { dx: -46, dy: 16 };                     // his feet, from the chair's origin (its left arm), same as rm_two
+// --- tuning: the chair (parked, empty, bobbing), on the left, flipped so its near arm faces everyone ---
+chair_x      = cx - 240;
+chair_y      = lancer_y - 56;     // same height off the ground as rm_two's, so Lancer just walks straight over
+chair_flip   = true;              // false: the chair faces right like rm_two's (then Lancer's hop lands on its far arm)
+lancer_board = { x: chair_x + (chair_flip ? 110 : -110), y: lancer_y };   // Lancer walks here (straight left), then hops on
+lancer_seat  = { dx: -46, dy: 16 };                     // his feet, from the chair's origin (its near arm), same as rm_two
 lancer_hop   = { frames: 24, h: 36 };
 ride_wait    = 30;                 // frames he sits there before it goes
 end_wait     = 40;                 // frames after it's gone before Z works again
@@ -95,8 +96,8 @@ pair_enter = function()
     {
         arrived++;
         if (arrived < 2) return;
-        face(obj_susie,  susie_right);
-        face(obj_ralsei, ralsei_right);
+        face(obj_susie,  susie_left);
+        face(obj_ralsei, ralsei_left);
         scr_call_after_frames(function() { create_textbox("self_6"); }, talk_wait);
     };
     scr_walk_feet_to(obj_susie,  susie_left,  susie_right,  susie_up,  susie_down,  susie_x,  pair_y, pair_walk, _done);
@@ -107,7 +108,7 @@ pair_enter = function()
 lancer_leave = function()
 {
     if (!instance_exists(chair)) { unlock(); return; }
-    face(obj_queen, queen_right);   // she watches him go
+    face(obj_queen, queen_left);   // she watches him go
     scr_walk_feet_to(obj_lancer, lancer_left, lancer_right, spr_lancer_up, spr_lancer_down, lancer_board.x, lancer_board.y, lancer_walk,
         function()
         {

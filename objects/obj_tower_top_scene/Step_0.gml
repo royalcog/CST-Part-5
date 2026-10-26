@@ -13,6 +13,7 @@ switch (state)
         // the chair, parked and empty
         chair = instance_create_depth(chair_x, chair_y, -2300, obj_queen_chair);
         chair.sprite_index = spr_queen_chair;
+        if (chair_flip) chair.image_xscale = -2;
         chair.home_y = chair_y;
         chair.from_y = chair_y;
         chair.base_y = chair_y;

@@ -2,7 +2,7 @@
 // made by scr_plat_build_tower ("C" in the map). x/y = its top-left (y = the top you stand on)
 diff        = scr_plat_difficulty(y);
 tiles       = 3;
-shake_len   = round(lerp(70, 30, diff));    // frames it shakes before it goes (less warning higher up)
+shake_len   = round(lerp(70, 55, diff));    // frames it shakes before it goes (less warning higher up, but always enough to cross one)
 fall_len    = 36;                           // frames it takes to drop out of sight
 back_after  = round(lerp(120, 200, diff));  // frames before it comes back
 crack_col   = c_black;

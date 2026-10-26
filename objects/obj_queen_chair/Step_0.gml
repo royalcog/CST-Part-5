@@ -30,8 +30,17 @@ switch (state)
 
     case "fly":
     {
-        var _k = clamp(t / fly_time, 0, 1);
-        base_y = from_y + fly_dir * fly_dist * _k * _k * _k;   // slow start, then it's gone
+        var _k;
+        if (fly_dir < 0)
+        {
+            _k = clamp(t / fly_time, 0, 1);
+            base_y = from_y - fly_dist * _k * _k * _k;    // up: slow start, then it's gone
+        }
+        else
+        {
+            _k = clamp(t / sink_time, 0, 1);
+            base_y = from_y + sink_dist * _k * _k;        // down: a gentler sink that picks up speed
+        }
         if (_k >= 1)
         {
             for (var i = 0; i < array_length(riders); i++)
