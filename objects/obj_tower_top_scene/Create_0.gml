@@ -233,8 +233,6 @@ battle_draw = function()
 {
     with (obj_susie)  { sprite_index = spr_susie_battle_intro;  image_index = 0; image_speed = 1; anim_loop = false; }
     with (obj_ralsei) { sprite_index = spr_ralsei_battle_intro; image_index = 0; image_speed = 1; anim_loop = false; }
-    set_feet(obj_susie,  battle_spots.susie.x,  battle_spots.susie.y);
-    set_feet(obj_ralsei, battle_spots.ralsei.x, battle_spots.ralsei.y);
     audio_play_sound(snd_taking_out_sword, 1, false);
     state = "battle_draw";
     t = 0;

@@ -46,9 +46,10 @@ if (wrap_on)
     u_amt   = shader_get_uniform(shd_tower_wrap, "u_amt");
 }
 
-// --- the fountain's shadow from rm_two carries on up the tower: the same blue, everywhere ---
+// --- the fountain's shadow from rm_two carries on up the tower, fading the higher you climb ---
 shadow_on       = true;
-shadow_strength = 0.75;    // 0-1 (rm_two's is 1 at its darkest, right by the fountain)
+shadow_strength = 0.75;    // 0-1 at the bottom of rm_tower (rm_two's is 1 at its darkest, right by the fountain)...
+shadow_top      = 0;       // ...fading to this at the top of rm_tower2
 if (shadow_on && !instance_exists(obj_shadow_tint))
 {
     with (instance_create_depth(0, 0, 0, obj_shadow_tint))

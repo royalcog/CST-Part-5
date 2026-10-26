@@ -18,6 +18,8 @@ function scr_party_damage(_amount)
 
     with (_target)
     {
+        // DEFENDing (the battle menu) takes a third off
+        if (variable_instance_exists(id, "defending") && defending) _amount = ceil(_amount * 2 / 3);
         hp -= _amount;
         hurt_timer = hurt_flash_time;
 

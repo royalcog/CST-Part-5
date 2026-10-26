@@ -7,11 +7,11 @@ if (!init)
         build_sea();
         if (!front)
         {
-            // behind the floor, and a second one in front of it for the puffs touching its edges
+            // behind the floor (and, if sea_edges_front, a second one in front of it for the puffs touching its edges)
             var _lay = layer_exists(sea_layer) ? layer_get_id(sea_layer) : -1;
             var _d = (_lay != -1) ? layer_get_depth(_lay) : 0;
             depth = _d + 50;
-            with (instance_create_depth(0, 0, _d - 1, obj_plat_cloud))
+            if (sea_edges_front) with (instance_create_depth(0, 0, _d - 1, obj_plat_cloud))
             {
                 mode = "sea"; front = true; sea_layer = other.sea_layer;
                 init = true;

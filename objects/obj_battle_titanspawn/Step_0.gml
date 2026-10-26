@@ -25,3 +25,18 @@ switch (state)
     break;
 }
 depth = -2000 - y;
+
+
+// hurt: the hurt sprite and a shake, then back
+if (hurt_t > 0)
+{
+    hurt_t--;
+    sprite_index = (hurt_t > 0) ? spr_titanspawn_hurt : spr_titanspawn_idle;
+}
+// defeated / spared: fade out, then it's gone
+if (gone)
+{
+    gone_t++;
+    image_alpha = max(0, 1 - gone_t / 30);
+    if (gone_t >= 30 && hurt_t <= 0) instance_destroy();
+}

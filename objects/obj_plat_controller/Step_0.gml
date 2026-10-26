@@ -1,5 +1,13 @@
 t++;
 
+// the shadow fades as you climb: 0 at the bottom of rm_tower, 1 at the top of rm_tower2 (each room's half the climb)
+if (shadow_on && instance_exists(obj_shadow_tint) && array_length(party) > 0)
+{
+    var _h = clamp((room_height - leader().y) / room_height, 0, 1);
+    var _k = (first_room ? 0 : 0.5) + _h * 0.5;
+    obj_shadow_tint.strength = lerp(shadow_strength, shadow_top, _k);
+}
+
 switch (state)
 {
     case "fadein":

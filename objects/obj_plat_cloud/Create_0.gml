@@ -44,6 +44,7 @@ sea_near_light = 0.85;     // brightness of the puffs at the bottom of the room.
 sea_far_light  = 0.3;      // ...and at the top (further away = darker)
 sea_jitter     = 10;       // px each puff is nudged off its cell's centre
 sea_scale      = [1.8, 2.3];
+sea_edges_front = false;   // true: the puffs touching the floor overlap its edges. false: every puff's behind the tiles
 
 // --- state ---
 if (!variable_global_exists("plat_cloud") || !is_struct(global.plat_cloud))
@@ -101,7 +102,7 @@ build_sea = function()
             if (_filled(_tm, c, r, _cols, _rows)) continue;
             var _edge = _filled(_tm, c - 1, r, _cols, _rows) || _filled(_tm, c + 1, r, _cols, _rows)
                      || _filled(_tm, c, r - 1, _cols, _rows) || _filled(_tm, c, r + 1, _cols, _rows);
-            if (_edge != front) continue;
+            if (sea_edges_front && _edge != front) continue;   // split between the back and front instances
             var _y = _oy + (r + 0.5) * _th + random_range(-sea_jitter, sea_jitter);
             var _light = lerp(sea_far_light, sea_near_light, clamp(_y / room_height, 0, 1)) + random_range(-0.05, 0.05);
             array_push(puffs, {
