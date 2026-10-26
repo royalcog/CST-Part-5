@@ -188,28 +188,34 @@ switch (state)
             for (var i = 0; i < array_length(fighters); i++)
             {
                 var _f = fighters[i];
-                if (_f.phase != "move" || _f.x > fb_reticle_x + fb_hit_range) continue;
+                if (_f.phase != "move" || _f.delay > 0 || _f.x > fb_reticle_x + fb_hit_range) continue;
                 if (_best == -1 || _f.x < fighters[_best].x) _best = i;
             }
             if (_best != -1)
             {
-                var _f = fighters[_best];
-                var _d = defs[_f.who];
-                var _dist = abs(_f.x - fb_reticle_x);
-                _f.crit   = _dist <= fb_crit;
-                _f.points = _f.crit ? crit_points : max(10, round(120 - _dist * 0.65));
-                _f.phase  = "attack";
-                _f.t      = 0;
-                _f.flash  = 1;
-                _f.trail  = [];
-                if (_f.crit)
+                // that one, and any other cursor sitting on the same spot, all land together
+                var _bx = fighters[_best].x;
+                for (var i = 0; i < array_length(fighters); i++)
                 {
-                    audio_play_sound(snd_criticalswing, 1, false);
-                    repeat (5) array_push(_f.stars, { x: _f.x, y: 0, vx: random_range(1, 3), vy: random_range(-2.5, 2.5), a: 1 });
+                    var _f = fighters[i];
+                    if (_f.phase != "move" || _f.delay > 0 || abs(_f.x - _bx) > fb_together) continue;
+                    var _d = defs[_f.who];
+                    var _dist = abs(_f.x - fb_reticle_x);
+                    _f.crit   = _dist <= fb_crit;
+                    _f.points = _f.crit ? crit_points : max(10, round(120 - _dist * 0.9));
+                    _f.phase  = "attack";
+                    _f.t      = 0;
+                    _f.flash  = 1;
+                    _f.trail  = [];
+                    if (_f.crit)
+                    {
+                        audio_play_sound(snd_criticalswing, 1, false);
+                        repeat (5) array_push(_f.stars, { x: _f.x, y: 0, vx: random_range(1, 3), vy: random_range(-2.5, 2.5), a: 1 });
+                    }
+                    // they attack right now
+                    scr_bm_pose(_d.obj, _d.attack, true);
+                    if (_d.attack_sound_frame <= 0) audio_play_sound(snd_attack, 1, false);
                 }
-                // they attack right now
-                scr_bm_pose(_d.obj, _d.attack, true);
-                if (_d.attack_sound_frame <= 0) audio_play_sound(snd_attack, 1, false);
             }
         }
 

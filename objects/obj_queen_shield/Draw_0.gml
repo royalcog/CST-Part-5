@@ -6,31 +6,33 @@ switch (state)
     case "build":
     case "down":
     {
-        // the sections, stacked bottom to top (each one's a diagonal slab: spr_queen_shield_pieces)
-        var _ph   = sprite_get_height(spr_queen_shield_pieces) * scale;
-        var _step = (_h - _ph) / max(1, sections - 1);
-        for (var k = 0; k < sections; k++)
+        // the real shield, in bands from the bottom up: each one drops onto the one below and settles,
+        // so it always reads as one wall going up (taking it down: top band first, lifting off and fading)
+        var _sh   = sprite_get_height(spr_queen_shield);
+        var _band = ceil(_sh / sections);
+        for (var k = 0; k < sections; k++)                 // k = 0 is the bottom band
         {
-            var _order = sections - 1 - k;          // the bottom one (k = sections - 1) comes first
+            var _sy = max(0, _sh - (k + 1) * _band);
+            var _hh = (_sh - k * _band) - _sy;
+            if (_hh <= 0) continue;
             var _a, _dy;
             if (state == "build")
             {
-                var _kt = clamp((t - _order * section_every) / section_every, 0, 1);
+                var _kt = clamp((t - k * section_every) / section_every, 0, 1);
                 if (_kt <= 0) continue;
+                _kt = 1 - power(1 - _kt, 2);
                 _a = _kt; _dy = -section_drop * (1 - _kt);
             }
             else
             {
-                var _kt = clamp((t - k * 2) / 6, 0, 1);   // the top one goes first
+                var _kt = clamp((t - (sections - 1 - k) * 2) / 6, 0, 1);
                 if (_kt >= 1) continue;
-                _a = 1 - _kt; _dy = section_drop * _kt;
+                _a = 1 - _kt; _dy = -section_drop * _kt;
             }
-            var _spr = (k mod 2 == 0) ? spr_queen_shield_pieces : spr_queen_shield_pieces_1;
-            draw_part(_spr, k mod sprite_get_number(_spr), 0, _top + k * _step + _dy, _a);
+            draw_band(0, _sy, _hh, _top, _dy, _a);
         }
     }
     break;
-
     case "up":
         draw_part(spr_queen_shield, hp_frame(), 0, _top, 1);
         if (flash > 0)

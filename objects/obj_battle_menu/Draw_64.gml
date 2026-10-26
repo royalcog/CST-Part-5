@@ -41,37 +41,44 @@ if (state == "fight")
         var _b = members[_f.who];
         var _y1 = panel_y + 4 + i * (fb_row_h + 2), _y2 = _y1 + fb_row_h;
 
-        // their face (out of their party box's art)
+        // their face (out of their party box's art), centred in the space left of the box
         if (_b != noone && _b.icon_rect_w > 0)
         {
-            var _is = fb_row_h / _b.icon_rect_h;
-            draw_sprite_part_ext(_b.sprite_frame, 0, _b.icon_rect_x, _b.icon_rect_y, _b.icon_rect_w, _b.icon_rect_h,
-                fb_icon_x, _y1, _is, _is, c_white, 1);
+            var _r  = variable_struct_exists(fb_icon_rects, names[_f.who]) ? fb_icon_rects[$ names[_f.who]]
+                    : [_b.icon_rect_x, _b.icon_rect_y, _b.icon_rect_w, _b.icon_rect_h];
+            var _is = fb_row_h / _r[3];
+            var _ix = fb_icon_x + ((fb_box_x1 - 6 - fb_icon_x) - _r[2] * _is) / 2;
+            draw_sprite_part_ext(_b.sprite_frame, 0, _r[0], _r[1], _r[2], _r[3], _ix, _y1, _is, _is, c_white, 1);
         }
-        // the box in their colour, and the reticle
+        // the box in their colour, and the reticle at its left end
+        var _bx2 = fb_box_x1 + fb_box_w;
         draw_set_colour(_d.color);
-        draw_rectangle(fb_box_x1, _y1, fb_box_x2, _y2, true);
-        draw_rectangle(fb_box_x1 + 1, _y1 + 1, fb_box_x2 - 1, _y2 - 1, true);
+        draw_rectangle(fb_box_x1, _y1, _bx2, _y2, true);
+        draw_rectangle(fb_box_x1 + 1, _y1 + 1, _bx2 - 1, _y2 - 1, true);
         draw_set_colour(c_white);
         draw_rectangle(fb_reticle_x - fb_cursor_w / 2 - 2, _y1 + 2, fb_reticle_x + fb_cursor_w / 2 + 2, _y2 - 2, true);
 
-        // the cursor: afterimages while it moves, then it stops where it was hit and flashes out
+        // the cursor (only inside the box): afterimages while it moves, then it stops where it was hit and flashes out
+        var _cx1 = fb_box_x1 + 2, _cx2 = _bx2 - 2;
         if (_f.phase == "move" && _f.delay <= 0)
         {
             for (var k = 0; k < array_length(_f.trail); k++)
             {
+                var _tx = _f.trail[k];
+                if (_tx - fb_cursor_w / 2 < _cx1 || _tx + fb_cursor_w / 2 > _cx2) continue;
                 draw_set_alpha(0.5 * (1 - (k + 1) / (fb_trail + 1)));
-                draw_rectangle(_f.trail[k] - fb_cursor_w / 2, _y1 + 3, _f.trail[k] + fb_cursor_w / 2, _y2 - 3, false);
+                draw_rectangle(_tx - fb_cursor_w / 2, _y1 + 3, _tx + fb_cursor_w / 2, _y2 - 3, false);
             }
             draw_set_alpha(1);
-            draw_rectangle(_f.x - fb_cursor_w / 2, _y1 + 3, _f.x + fb_cursor_w / 2, _y2 - 3, false);
+            if (_f.x - fb_cursor_w / 2 >= _cx1 && _f.x + fb_cursor_w / 2 <= _cx2)
+                draw_rectangle(_f.x - fb_cursor_w / 2, _y1 + 3, _f.x + fb_cursor_w / 2, _y2 - 3, false);
         }
         else if (_f.flash > 0 && _f.phase != "miss")
         {
             var _grow = (1 - _f.flash) * 8;
             draw_set_colour(_f.crit ? col_yellow : c_white);
             draw_set_alpha(_f.flash);
-            draw_rectangle(_f.x - fb_cursor_w / 2 - _grow, _y1 + 3 - _grow / 2, _f.x + fb_cursor_w / 2 + _grow, _y2 - 3 + _grow / 2, false);
+            draw_rectangle(max(_cx1, _f.x - fb_cursor_w / 2 - _grow), _y1 + 3 - _grow / 2, min(_cx2, _f.x + fb_cursor_w / 2 + _grow), _y2 - 3 + _grow / 2, false);
             draw_set_alpha(1);
         }
         // critical: little stars drifting off
@@ -153,7 +160,7 @@ if (state == "choose" && mode != "cmd")
                 draw_set_colour(defs[i].color);
                 draw_text_transformed(col_x[0], _y, names[i], name_scale, name_scale, 0);
                 draw_set_colour((_b.hp <= 0) ? c_red : c_white);
-                draw_text_transformed(col_x[0] + 200, _y, "HP " + string(_b.hp) + " / " + string(_b.max_hp), text_scale, text_scale, 0);
+                draw_text_transformed(col_x[0] + 200, _y, "HP " + string(_b.hp) + " / " + string(_b.max_hp), name_scale, name_scale, 0);
                 if (i == pick_i) _heart(col_x[0] - 22, _y);
             }
         }

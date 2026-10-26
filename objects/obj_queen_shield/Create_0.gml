@@ -1,5 +1,5 @@
 // Queen's DEFEND: her shield from the Chapter 2 battle. made by scr_queen_shield_build when she picks DEFEND.
-//  build:    its sections stack up from the bottom (spr_queen_shield_pieces), then it's the whole shield
+//  build:    it builds up from the bottom in sections, each one settling onto the one below, until it's the whole shield
 //  up:       blocks everything aimed at Queen. it darkens as it loses HP (spr_queen_shield frames 0 -> 1 -> 3)
 //  down:     taken back down if DEFEND's undone before the round plays out (sections drop away, nothing breaks)
 //  break:    out of HP, or the round's over: it cracks, then shatters into its shards (spr_queen_shield_break)
@@ -40,6 +40,15 @@ follow_queen = function()
     x = _front + front_gap;
     y = _q.y - float_h;
     depth = _q.depth - 1;                    // in front of her
+}
+
+/// draws rows _sy to _sy + _sh of the shield (frame _img), at _top + its own row + _dy. mirrored if flip is on
+draw_band = function(_img, _sy, _sh, _top, _dy, _a)
+{
+    var _w = sprite_get_width(spr_queen_shield);
+    var _yy = _top + _sy * scale + _dy;
+    if (flip) draw_sprite_part_ext(spr_queen_shield, _img, 0, _sy, _w, _sh, x + _w * scale, _yy, -scale, scale, c_white, _a);
+    else      draw_sprite_part_ext(spr_queen_shield, _img, 0, _sy, _w, _sh, x, _yy, scale, scale, c_white, _a);
 }
 
 /// draws a frame of _spr at (_lx, _ly) in the shield's own space (0 = its left edge), mirrored if flip is on

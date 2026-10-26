@@ -32,17 +32,19 @@ col_yellow = make_color_rgb(255, 255, 0);
 //     the white reticle near its left end, and their cursor sliding left toward it. Z hits the leftmost cursor
 //     that's close enough: it stops dead, flashes, and they attack right then. let it slide past: MISS ---
 fb_icon_x     = 26;    // their face
-fb_box_x1     = 66;    // the box
-fb_box_x2     = 820;
+fb_icon_rects = { Queen: [23, 15, 25, 26] };   // face rects (box-art px) when the box's own one crops it (Queen's did)
+fb_box_x1     = 70;    // the box. the reticle's at its left end: nothing goes further left than that
+fb_box_w      = 300;
 fb_row_h      = 22;
-fb_reticle_x  = 92;    // the reticle (a perfect hit lines the cursor up with it)
 fb_cursor_w   = 6;
-fb_speed      = 4;     // px per frame (Deltarune's 8 px per 30fps frame on a 640 screen is ~5.3 here; a touch slower)
-fb_start      = 240;   // px right of the reticle the first cursor starts (it reaches the reticle 60 frames later)
+fb_reticle_x  = fb_box_x1 + 4 + fb_cursor_w / 2;   // the reticle (a perfect hit lines the cursor up with it)
+fb_speed      = 4.5;   // px per frame
+fb_start      = 150;   // px right of the reticle the first cursor starts (it reaches the reticle ~33 frames later)
 fb_stagger    = [0, 24, 36];   // frames each later cursor comes in after the one before (Deltarune: 0, 12 or 18 of its frames)
-fb_hit_range  = 112;   // px before the reticle a cursor can be hit (Deltarune: 14 of its frames early)
+fb_hit_range  = 80;    // px before the reticle a cursor can be hit (~18 frames)
 fb_crit       = 4;     // px either side of the reticle that's a critical
-fb_miss_after = 20;    // px past the reticle before it's a MISS
+fb_miss_after = 4;     // px past the reticle before it's a MISS (it's gone the moment it slides out of the box)
+fb_together   = fb_cursor_w;   // cursors this close to the one Z hits get hit with it (two on the same spot both land)
 fb_trail      = 4;     // afterimages behind a moving cursor
 
 // --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
