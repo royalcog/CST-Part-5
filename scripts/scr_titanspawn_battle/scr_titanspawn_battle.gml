@@ -67,9 +67,22 @@ function scr_titanspawn_battle_start()
     var _shift  = _cam_cx - (_left + _right) / 2;
     obj_UI.target_x   += _shift;
     obj_UI.onscreen_x += _shift;
+
+    // the purple/black panel behind the boxes, stretched across the whole screen (like the Susie/Ralsei layout)
+    obj_UI.panel_full_width = true;
+    obj_UI.depth = -10002;
+    with (obj_battle_ui_box) depth = -10003;   // the boxes draw over it
     scr_tp_reset(true);       // darkness: the bar's blue, DEFEND gives 2%, grazing gives a lot less
     scr_tp_bar_show(true);
     start_titanspawn_battle_music();
 
-    // TODO: the rounds (TALKbox dialogue + Titan Spawn attacks + the battle menu) go here once the script's written
+    // the menu: the player picks for Susie, Ralsei & Queen each turn
+    with (obj_battle_menu) instance_destroy();
+    with (instance_create_depth(0, 0, -10050, obj_battle_menu))
+    {
+        // TODO: the script's rounds go here, one per enemy turn (they loop):
+        //   { talk: [ { speaker: obj_susie, text: "..." } ], attack: scr_start_titanspawn_attack1 }
+        rounds = [];
+        on_win = undefined;   // what happens once they've won (otherwise Z just opens the next self_ line)
+    }
 }
