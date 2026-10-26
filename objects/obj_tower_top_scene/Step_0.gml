@@ -23,6 +23,52 @@ switch (state)
         t = 0;
     }
     break;
+	
+    case "spawns":
+        // everyone stops walking the moment the first one's down
+        if (array_length(spawns) > 0 && instance_exists(spawns[0]) && spawns[0].landed)
+        {
+            spawn_shock();
+            state = "shock";
+            t = 0;
+        }
+    break;
+
+    case "shock":
+        if (t >= shock_hold) battle_slide_start();
+    break;
+
+    case "battle_slide":
+    {
+        var _k = clamp(t / battle_move, 0, 1);
+        _k = 1 - power(1 - _k, 3);
+        set_feet(obj_susie,  lerp(slide_from.susie.x,  battle_spots.susie.x,  _k), lerp(slide_from.susie.y,  battle_spots.susie.y,  _k));
+        set_feet(obj_ralsei, lerp(slide_from.ralsei.x, battle_spots.ralsei.x, _k), lerp(slide_from.ralsei.y, battle_spots.ralsei.y, _k));
+        set_feet(obj_queen,  lerp(slide_from.queen.x,  battle_spots.queen.x,  _k), lerp(slide_from.queen.y,  battle_spots.queen.y,  _k));
+        if (_k >= 1) battle_draw();
+    }
+    break;
+
+    case "battle_draw":
+    {
+        // the intro animations freeze on their last frame when they're done (anim_loop = false)
+        var _done = obj_susie.image_speed == 0 && obj_ralsei.image_speed == 0;
+        if (_done && state != "battle_wait") { state = "battle_wait"; t = 0; }
+    }
+    break;
+
+    case "battle_wait":
+        if (t >= battle_wait)
+        {
+            with (obj_susie)  { sprite_index = spr_susie_battle_idle;  image_index = 0; image_speed = 1; anim_loop = true; }
+            with (obj_ralsei) { sprite_index = spr_ralsei_battle_idle; image_index = 0; image_speed = 1; anim_loop = true; }
+            set_feet(obj_susie,  battle_spots.susie.x,  battle_spots.susie.y);
+            set_feet(obj_ralsei, battle_spots.ralsei.x, battle_spots.ralsei.y);
+            scr_titanspawn_battle_start();
+            state = "battle";
+            t = 0;
+        }
+    break;
 
     case "intro":
         // wait out the room's fade-in, then a beat

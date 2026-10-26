@@ -49,6 +49,31 @@ lancer_hop   = { frames: 24, h: 36 };
 ride_wait    = 30;                 // frames he sits there before it goes
 end_wait     = 40;                 // frames after it's gone before Z works again
 
+// --- tuning: "Let's end this." -> the Titan Spawn -> the battle ---
+end_walk_frames = 22;              // they get this far into walking before the Spawn stop them
+end_walk_dy     = -1.5;            // px per frame (up, toward the Titan)
+end_walk_dx     = 0;
+spawn_spots     = [                // where the Titan Spawn end up (room px), over the clouds on the right
+    { x: cx + 190, y: 175 },
+    { x: cx + 290, y: 245 },
+    { x: cx + 200, y: 315 },
+];
+spawn_stagger   = 10;              // frames between each one starting to drop
+spawn_from_y    = -80;             // they drop from above the screen
+shock_hold      = 50;              // frames everyone's shocked before the battle starts
+battle_spots    = {                // their feet in battle (room px), on the left facing the Spawn
+    queen:  { x: cx - 200, y: 215 },
+    susie:  { x: cx - 235, y: 280 },
+    ralsei: { x: cx - 265, y: 340 },
+};
+battle_move     = 20;              // frames to slide into place
+battle_wait     = 15;              // frames after the draw-weapon animation before the UI comes in
+queen_battle_sprite = spr_queen_walk_right_unhappy;   // same as the King fight
+
+// --- the camera: centred on the room (the floor on the left, the clouds on the right) ---
+cam_x = round((room_width - camera_get_view_width(view_camera[0])) / 2);
+camera_set_view_pos(view_camera[0], cam_x, 0);
+
 // --- state ---
 state = "setup";
 t     = 0;
@@ -98,7 +123,11 @@ pair_enter = function()
         if (arrived < 2) return;
         face(obj_susie,  susie_left);
         face(obj_ralsei, ralsei_left);
-        scr_call_after_frames(function() { create_textbox("self_6"); }, talk_wait);
+        scr_call_after_frames(function()
+        {
+            create_textbox("self_6");
+            global.dialogue_self = 6;   // so the next Z opens self_7
+        }, talk_wait);
     };
     scr_walk_feet_to(obj_susie,  susie_left,  susie_right,  susie_up,  susie_down,  susie_x,  pair_y, pair_walk, _done);
     scr_walk_feet_to(obj_ralsei, ralsei_left, ralsei_right, ralsei_up, ralsei_down, ralsei_x, pair_y, pair_walk, _done);
@@ -126,4 +155,59 @@ lancer_leave = function()
                     }, ride_wait);
                 });
         });
+}
+
+// ---------------------------------------------------------------- self_7
+/// after "Let's end this.": all three start walking toward the Titan... and the Titan Spawn drop in
+end_this = function()
+{
+    scr_char_move_now(obj_susie,  susie_up,          true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    scr_char_move_now(obj_ralsei, ralsei_up,         true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    scr_char_move_now(obj_queen,  spr_queen_walk_up, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    spawns = [];
+    for (var i = 0; i < array_length(spawn_spots); i++)
+    {
+        var _s = instance_create_depth(spawn_spots[i].x, spawn_from_y, -2000, obj_battle_titanspawn);
+        _s.home_x = spawn_spots[i].x;
+        _s.home_y = spawn_spots[i].y;
+        _s.drop_delay = end_walk_frames + i * spawn_stagger;
+        array_push(spawns, _s);
+    }
+    state = "spawns";
+    t = 0;
+}
+
+/// they all stop: Susie & Ralsei shocked, Queen turns to face them
+spawn_shock = function()
+{
+    scr_set_sprite_keep_body(obj_susie,  spr_susie_shocked);
+    scr_set_sprite_keep_body(obj_ralsei, spr_ralsei_shocked);
+    face(obj_queen, queen_right);
+    with (obj_susie)  { image_speed = 0; image_index = 0; }
+    with (obj_ralsei) { image_speed = 0; image_index = 0; }
+}
+
+/// slide everyone into their battle spots (from wherever they are)
+battle_slide_start = function()
+{
+    slide_from = {
+        susie:  scr_get_feet(obj_susie),
+        ralsei: scr_get_feet(obj_ralsei),
+        queen:  scr_get_feet(obj_queen),
+    };
+    face(obj_queen, queen_battle_sprite);
+    state = "battle_slide";
+    t = 0;
+}
+
+/// Susie & Ralsei draw their weapons (the King fight's intro), then idle
+battle_draw = function()
+{
+    with (obj_susie)  { sprite_index = spr_susie_battle_intro;  image_index = 0; image_speed = 1; anim_loop = false; }
+    with (obj_ralsei) { sprite_index = spr_ralsei_battle_intro; image_index = 0; image_speed = 1; anim_loop = false; }
+    set_feet(obj_susie,  battle_spots.susie.x,  battle_spots.susie.y);
+    set_feet(obj_ralsei, battle_spots.ralsei.x, battle_spots.ralsei.y);
+    audio_play_sound(snd_taking_out_sword, 1, false);
+    state = "battle_draw";
+    t = 0;
 }

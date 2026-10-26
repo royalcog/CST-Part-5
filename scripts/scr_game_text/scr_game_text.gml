@@ -160,6 +160,12 @@ function scr_game_text(_text_id)
 			scr_text("* Go Ahead", "queen", 3);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) lancer_leave(); }, 0);
 		break;
+		
+		case "self_7":
+			global.cutscene_lock = true;   // the Titan Spawn battle starts after this
+			scr_text("* Let's end this.", "susie", 34);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) end_this(); }, 0);
+		break;
 /*
 
 */
