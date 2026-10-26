@@ -11,10 +11,10 @@ entry_kind = "start";    // "rise": how you got into this room ("fall" = dropped
 front      = false;      // "sea": the edge puffs (made automatically)
 sea_layer  = "Tiles_1";  // "sea": the floor's tile layer
 
-// --- the sprites (looked up by name, so nothing breaks before they're in the project) ---
-spr_puff    = asset_get_index("spr_rising_cloudx2_outline");   // the puffs (3 frames)
-spr_puff_ol = asset_get_index("spr_rising_cloudx2");           // the extra layer under them, when outline = true
-spr_bg      = asset_get_index("spr_rising_bg");                // the black mass they sit on (2 frames)
+// --- the sprites (named directly: "remove unused assets" is on, so looking them up by name finds nothing) ---
+spr_puff    = spr_rising_cloudx2_outline;   // the puffs (3 frames)
+spr_puff_ol = spr_rising_cloudx2;           // the extra layer under them, when outline = true
+spr_bg      = spr_rising_bg;                // the black mass they sit on (2 frames)
 outline     = false;
 
 // --- tuning: the rings (Deltarune: 10 puffs at 175, then 18 at 300, on a 640-wide screen) ---
@@ -28,7 +28,6 @@ bob_x       = 4;           // px
 bob_y       = 4;
 
 // --- tuning: rising ---
-come_in_at   = 0.5;        // shows up once you're this far up rm_tower (0.5 = halfway)
 arrive_gap   = 330;        // px below the one you're controlling that it starts at (just under the screen), then rises in
 min_gap      = 140;        // px below them it's put when you come up into the next room
 min_speed    = -0.3;       // px per frame when it's right under you (slow, so there's time to platform)

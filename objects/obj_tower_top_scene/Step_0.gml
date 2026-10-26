@@ -1,5 +1,14 @@
 t++;
 
+// the camera pan toward the Titan (after "Let's end this.")
+if (cam_pan.on)
+{
+    cam_pan.t++;
+    var _pk = clamp(cam_pan.t / cam_pan_time, 0, 1);
+    set_cam(lerp(cam_pan.from, cam_pan.to, _pk * _pk * (3 - 2 * _pk)));
+    if (_pk >= 1) cam_pan.on = false;
+}
+
 switch (state)
 {
     case "setup":
@@ -40,12 +49,33 @@ switch (state)
 
     case "battle_slide":
     {
-        var _k = clamp(t / battle_move, 0, 1);
-        _k = 1 - power(1 - _k, 3);
-        set_feet(obj_susie,  lerp(slide_from.susie.x,  battle_spots.susie.x,  _k), lerp(slide_from.susie.y,  battle_spots.susie.y,  _k));
-        set_feet(obj_ralsei, lerp(slide_from.ralsei.x, battle_spots.ralsei.x, _k), lerp(slide_from.ralsei.y, battle_spots.ralsei.y, _k));
-        set_feet(obj_queen,  lerp(slide_from.queen.x,  battle_spots.queen.x,  _k), lerp(slide_from.queen.y,  battle_spots.queen.y,  _k));
-        if (_k >= 1) battle_draw();
+        var _all = true;
+        for (var i = 0; i < array_length(walkers); i++)
+        {
+            var _w = walkers[i];
+            if (_w.done) continue;
+            var _f  = _w.by_origin ? { x: _w.o.x, y: _w.o.y } : scr_get_feet(_w.o);
+            var _dx = _w.to.x - _f.x, _dy = _w.to.y - _f.y;
+            var _d  = point_distance(0, 0, _dx, _dy);
+            var _nx = (_d <= battle_walk) ? _w.to.x : _f.x + _dx / _d * battle_walk;
+            var _ny = (_d <= battle_walk) ? _w.to.y : _f.y + _dy / _d * battle_walk;
+            if (_w.by_origin) { _w.o.x = _nx; _w.o.y = _ny; }
+            else set_feet(_w.o, _nx, _ny);
+
+            if (_d <= battle_walk)
+            {
+                _w.done = true;
+                // stand still, facing the Spawn
+                if (_w.o == obj_queen) face(obj_queen, queen_battle_sprite);
+                else
+                {
+                    var _face = _w.r;
+                    with (_w.o) { sprite_index = _face; last_sprite = _face; image_speed = 0; image_index = 0; }
+                }
+            }
+            else _all = false;
+        }
+        if (_all) battle_draw();
     }
     break;
 
@@ -62,8 +92,6 @@ switch (state)
         {
             with (obj_susie)  { sprite_index = spr_susie_battle_idle;  image_index = 0; image_speed = 1; anim_loop = true; }
             with (obj_ralsei) { sprite_index = spr_ralsei_battle_idle; image_index = 0; image_speed = 1; anim_loop = true; }
-            set_feet(obj_susie,  battle_spots.susie.x,  battle_spots.susie.y);
-            set_feet(obj_ralsei, battle_spots.ralsei.x, battle_spots.ralsei.y);
             scr_titanspawn_battle_start();
             state = "battle";
             t = 0;

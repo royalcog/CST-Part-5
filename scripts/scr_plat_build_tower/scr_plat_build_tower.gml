@@ -87,10 +87,6 @@ function scr_plat_build_tower(_map, _paint_tiles = true, _tileset = tlst_flowerg
                 case "R":
                     instance_create_depth(_x + _ts / 2, _y, -135, obj_plat_rubble);
                 break;
-
-                case "W":
-                    instance_create_depth(_x + _ts / 2, _y, 0, obj_plat_wind);
-                break;
 				
                 case "X":   // a fight: fish come across and down
                     array_push(global.plat_extra_triggers, { x: _x + _ts / 2, y: _y + _ts / 2, r: 40, battle: true, vert: true, key: "battle_x" + string(r), done: false });

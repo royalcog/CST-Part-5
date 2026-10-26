@@ -9,8 +9,25 @@ global.textbox_top   = false;
 // Kris is invisible but still walks around on the arrow keys: keep him put
 with (obj_kris) { move_spd = 0; x = -200; y = -200; }
 
+// --- the camera: it starts on the left (the gap in the floor, where Lancer goes down), then pans right
+//     toward the Titan after "Let's end this.", ending up centred on the room for the battle ---
+vw           = camera_get_view_width(view_camera[0]);
+cam_start_x  = 0;
+cam_battle_x = round((room_width - vw) / 2);
+cam_pan_time = 70;                 // frames
+cam_x        = cam_start_x;
+cam_pan      = { on: false, t: 0, from: 0, to: 0 };
+set_cam = function(_x)
+{
+    cam_x = _x;
+    camera_set_view_pos(view_camera[0], round(_x), 0);
+    if (instance_exists(obj_camera_controller)) obj_camera_controller.cam_x = round(_x);   // it'd put the camera back otherwise
+}
+set_cam(cam_start_x);
+
 // --- tuning: where everyone stands (their feet, room px) ---
-cx          = room_width / 2;
+cx          = cam_start_x + vw / 2;   // the middle of the screen while they talk
+bcx         = cam_battle_x + vw / 2;  // the middle of the screen in the battle
 susie_x     = cx + 105;
 ralsei_x    = cx + 170;
 pair_y      = 250;                 // where Susie & Ralsei stop
@@ -40,39 +57,36 @@ queen_left   = spr_queen_walk_left_unhappy;
 queen_right  = spr_queen_walk_right_unhappy;
 
 // --- tuning: the chair (parked, empty, bobbing), on the left, flipped so its near arm faces everyone ---
-chair_x      = cx - 240;
+chair_x      = 125;               // over the gap in the floor (x 0-240), so it can float down through it
 chair_y      = lancer_y - 56;     // same height off the ground as rm_two's, so Lancer just walks straight over
 chair_flip   = true;              // false: the chair faces right like rm_two's (then Lancer's hop lands on its far arm)
-lancer_board = { x: chair_x + (chair_flip ? 110 : -110), y: lancer_y };   // Lancer walks here (straight left), then hops on
+lancer_board = { x: chair_x + (chair_flip ? 125 : -125), y: lancer_y };   // Lancer walks here (straight left, the floor's edge), then hops on
 lancer_seat  = { dx: -46, dy: 16 };                     // his feet, from the chair's origin (its near arm), same as rm_two
 lancer_hop   = { frames: 24, h: 36 };
 ride_wait    = 30;                 // frames he sits there before it goes
 end_wait     = 40;                 // frames after it's gone before Z works again
 
 // --- tuning: "Let's end this." -> the Titan Spawn -> the battle ---
-end_walk_frames = 22;              // they get this far into walking before the Spawn stop them
-end_walk_dy     = -1.5;            // px per frame (up, toward the Titan)
-end_walk_dx     = 0;
+end_walk_frames = 45;              // they get this far into walking before the Spawn stop them
+end_walk_dx     = 1.5;             // px per frame (right, toward the Titan; the camera pans with them)
+end_walk_dy     = 0;
 spawn_spots     = [                // where the Titan Spawn end up (room px), over the clouds on the right
-    { x: cx + 190, y: 175 },
-    { x: cx + 290, y: 245 },
-    { x: cx + 200, y: 315 },
+    { x: bcx + 190, y: 175 },
+    { x: bcx + 290, y: 245 },
+    { x: bcx + 200, y: 315 },
 ];
+spawn_after     = 50;              // frames into the walk/pan that the first one starts dropping
 spawn_stagger   = 10;              // frames between each one starting to drop
 spawn_from_y    = -80;             // they drop from above the screen
 shock_hold      = 50;              // frames everyone's shocked before the battle starts
 battle_spots    = {                // their feet in battle (room px), on the left facing the Spawn
-    queen:  { x: cx - 200, y: 215 },
-    susie:  { x: cx - 235, y: 280 },
-    ralsei: { x: cx - 265, y: 340 },
+    queen:  { x: bcx - 200, y: 215 },
+    susie:  { x: bcx - 275, y: 280 },
+    ralsei: { x: bcx - 265, y: 340 },
 };
-battle_move     = 20;              // frames to slide into place
+battle_walk     = 3;               // px per frame they walk to their spots (then draw their weapons)
 battle_wait     = 15;              // frames after the draw-weapon animation before the UI comes in
 queen_battle_sprite = spr_queen_walk_right_unhappy;   // same as the King fight
-
-// --- the camera: centred on the room (the floor on the left, the clouds on the right) ---
-cam_x = round((room_width - camera_get_view_width(view_camera[0])) / 2);
-camera_set_view_pos(view_camera[0], cam_x, 0);
 
 // --- state ---
 state = "setup";
@@ -161,16 +175,17 @@ lancer_leave = function()
 /// after "Let's end this.": all three start walking toward the Titan... and the Titan Spawn drop in
 end_this = function()
 {
-    scr_char_move_now(obj_susie,  susie_up,          true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
-    scr_char_move_now(obj_ralsei, ralsei_up,         true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
-    scr_char_move_now(obj_queen,  spr_queen_walk_up, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    scr_char_move_now(obj_susie,  susie_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    scr_char_move_now(obj_ralsei, ralsei_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    scr_char_move_now(obj_queen,  queen_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
+    cam_pan = { on: true, t: 0, from: cam_x, to: cam_battle_x };
     spawns = [];
     for (var i = 0; i < array_length(spawn_spots); i++)
     {
         var _s = instance_create_depth(spawn_spots[i].x, spawn_from_y, -2000, obj_battle_titanspawn);
         _s.home_x = spawn_spots[i].x;
         _s.home_y = spawn_spots[i].y;
-        _s.drop_delay = end_walk_frames + i * spawn_stagger;
+        _s.drop_delay = spawn_after + i * spawn_stagger;
         array_push(spawns, _s);
     }
     state = "spawns";
@@ -187,15 +202,28 @@ spawn_shock = function()
     with (obj_ralsei) { image_speed = 0; image_index = 0; }
 }
 
-/// slide everyone into their battle spots (from wherever they are)
+/// everyone walks to their battle spot (walking animation, the way they're going), then Susie & Ralsei draw their weapons
 battle_slide_start = function()
 {
-    slide_from = {
-        susie:  scr_get_feet(obj_susie),
-        ralsei: scr_get_feet(obj_ralsei),
-        queen:  scr_get_feet(obj_queen),
-    };
-    face(obj_queen, queen_battle_sprite);
+    // Susie & Ralsei's battle sprites line up by their origin (they're in keep_feet_skip), so they walk their
+    // x/y straight to where it'll be in battle: then nothing moves when the draw-weapon and idle sprites swap in.
+    // Queen walks by her feet as usual.
+    var _sp = scr_feet_to_xy(obj_susie,  spr_susie_battle_idle,  battle_spots.susie.x,  battle_spots.susie.y);
+    var _rp = scr_feet_to_xy(obj_ralsei, spr_ralsei_battle_idle, battle_spots.ralsei.x, battle_spots.ralsei.y);
+    walkers = [
+        { o: obj_susie,  to: _sp,                 by_origin: true,  l: susie_left,  r: susie_right,  done: false },
+        { o: obj_ralsei, to: _rp,                 by_origin: true,  l: ralsei_left, r: ralsei_right, done: false },
+        { o: obj_queen,  to: battle_spots.queen,  by_origin: false, l: queen_left,  r: queen_right,  done: false },
+    ];
+    for (var i = 0; i < 3; i++)
+    {
+        var _w = walkers[i];
+        var _f = _w.by_origin ? { x: _w.o.x, y: _w.o.y } : scr_get_feet(_w.o);
+        _w.o.sprite_index = (_w.to.x < _f.x) ? _w.l : _w.r;
+        _w.o.last_sprite  = _w.o.sprite_index;   // don't let End Step nudge them for the swap
+        _w.o.image_speed  = 1;
+        _w.o.anim_loop    = true;
+    }
     state = "battle_slide";
     t = 0;
 }

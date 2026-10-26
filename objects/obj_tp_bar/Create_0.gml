@@ -4,12 +4,14 @@
 scr_tp_init();
 
 // --- tuning (GUI px; the GUI is the camera's size) ---
-bar_x      = 38;      // the bar's centre (its sprites have a centred origin)
+bar_x      = 52;      // the bar's centre (its sprites have a centred origin)
 bar_y      = 138;     // ...
-logo_x     = 4;       // the "TP" logo's top-left
-logo_y     = 44;
-num_x      = 14;      // the percentage, centred under the logo
-num_y      = 96;
+logo_x     = 22;      // the "TP" logo's centre (its origin's centred too)
+logo_y     = 64;
+num_x      = 22;      // the percentage: centred under the logo...
+num_y      = 92;      // ...its top
+num_scale  = 2;       // fnt_determination is small, so it's drawn bigger
+num_gap    = 22;      // px between the number and the "%" under it
 slide_dist = 90;      // px off the left edge when hidden
 slide_lerp = 0.2;
 fill_col_dark = make_color_rgb(70, 140, 255);   // the fill in darkness (Deltarune's blue bar)

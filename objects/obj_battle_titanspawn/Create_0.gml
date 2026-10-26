@@ -1,7 +1,7 @@
 // a Titan Spawn in the tower-top battle (made by obj_tower_top_scene). it drops in from above the screen to
 // (home_x, home_y), easing to a stop, then bobs in place. drawn by its own sprite at 2x.
 sprite_index = spr_titanspawn_idle;
-image_xscale = -2;      // facing the party (on the left)
+image_xscale = 2;       // turned around to face the party (on the left)
 image_yscale = 2;
 image_speed  = 1;
 

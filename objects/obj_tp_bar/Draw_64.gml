@@ -32,13 +32,13 @@ var _pct = floor(_tp.value);
 if (_pct >= 100)
 {
     draw_set_colour(max_col);
-    draw_text(num_x + _ox, num_y, "MAX");
+    draw_text_transformed(num_x + _ox, num_y, "MAX", num_scale, num_scale, 0);
 }
 else
 {
     draw_set_colour(c_white);
-    draw_text(num_x + _ox, num_y, string(_pct));
-    draw_text(num_x + _ox, num_y + 18, "%");
+    draw_text_transformed(num_x + _ox, num_y, string(_pct), num_scale, num_scale, 0);
+    draw_text_transformed(num_x + _ox, num_y + num_gap, "%", num_scale, num_scale, 0);
 }
 draw_set_colour(c_white);
 draw_set_halign(fa_left);

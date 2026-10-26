@@ -38,10 +38,10 @@ var _ld = _ctl.leader();
 if (!instance_exists(_ld)) exit;
 var _playing = (_ctl.state == "play") && !instance_exists(obj_plat_battle);
 
-// ---------------- it shows up halfway up rm_tower ----------------
+// ---------------- it shows up once the halfway chat's over (with the first Titan Spawn) ----------------
 if (!global.plat_cloud.on)
 {
-    if (_ctl.first_room && _playing && _ld.y <= room_height * (1 - come_in_at))
+    if (_ctl.first_room && _playing && _ctl.spawn_on)
     {
         global.plat_cloud.on = true;
         cloud_y = _ld.y + arrive_gap;

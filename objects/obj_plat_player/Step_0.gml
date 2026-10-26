@@ -51,8 +51,7 @@ if (vy < 0 && !_jh && !_hurt) vy *= jump_cut;   // short hop if you let go
 if (!grounded || vy < 0) vy = min(vy + grav, max_fall);
 
 // --- move, a pixel at a time ---
-xr += vx + ext_vx;   // the wind's push on top of walking
-ext_vx = 0;
+xr += vx;
 var _mx = round(xr);
 xr -= _mx;
 repeat (abs(_mx))

@@ -59,6 +59,14 @@ function scr_titanspawn_battle_start()
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
     scr_party_init_trio();
+
+    // centre the three boxes on the screen (the King fight's layout sits ~40px right of centre)
+    var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;
+    var _left   = obj_UI.target_x + (-1)  + obj_UI.boxes_x_correction;
+    var _right  = obj_UI.target_x + 460   + obj_UI.boxes_x_correction + sprite_get_width(spr_queenbox_empty) * (52 / 47);
+    var _shift  = _cam_cx - (_left + _right) / 2;
+    obj_UI.target_x   += _shift;
+    obj_UI.onscreen_x += _shift;
     scr_tp_reset(true);       // darkness: the bar's blue, DEFEND gives 2%, grazing gives a lot less
     scr_tp_bar_show(true);
     start_titanspawn_battle_music();

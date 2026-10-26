@@ -302,7 +302,6 @@
     {"name":"obj_plat_start","order":2,"path":"objects/obj_plat_start/obj_plat_start.yy",},
     {"name":"obj_plat_titanfish","order":10,"path":"objects/obj_plat_titanfish/obj_plat_titanfish.yy",},
     {"name":"obj_plat_titanspawn","order":5,"path":"objects/obj_plat_titanspawn/obj_plat_titanspawn.yy",},
-    {"name":"obj_plat_wind","order":16,"path":"objects/obj_plat_wind/obj_plat_wind.yy",},
     {"name":"obj_plat_wrapcopy","order":8,"path":"objects/obj_plat_wrapcopy/obj_plat_wrapcopy.yy",},
     {"name":"obj_pluey","order":2,"path":"objects/obj_pluey/obj_pluey.yy",},
     {"name":"obj_quadrant_highlight","order":2,"path":"objects/obj_quadrant_highlight/obj_quadrant_highlight.yy",},
