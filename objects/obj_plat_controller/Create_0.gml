@@ -46,6 +46,22 @@ if (wrap_on)
     u_amt   = shader_get_uniform(shd_tower_wrap, "u_amt");
 }
 
+// --- the fountain's shadow from rm_two carries on up the tower: the same blue, everywhere ---
+shadow_on       = true;
+shadow_strength = 0.75;    // 0-1 (rm_two's is 1 at its darkest, right by the fountain)
+if (shadow_on && !instance_exists(obj_shadow_tint))
+{
+    with (instance_create_depth(0, 0, 0, obj_shadow_tint))
+    {
+        flat        = true;
+        tiles_only  = true;            // the ledges and deco, not the Titan Spawn / fish / effects
+        strength    = other.shadow_strength;
+        back_depth  = 480;             // the tower (TowerBG) and the Background stay as they are
+        front_depth = -9000;
+        shade_objs  = [obj_plat_player];
+    }
+}
+
 // --- tuning ---
 plat_show_solids = true;   // the grey placeholder blocks. false once your tiles are over them
 start_gap     = 64;        // px Ralsei starts behind Susie
