@@ -2,5 +2,7 @@
 // so the wrap-around has something to show when you're near the seam (made by obj_plat_controller)
 var _w = scr_plat_wrap_w();
 if (_w <= 0 || tm == -1) exit;
+scr_shadow_tint_begin();   // same shadow as the layer it's copying (does nothing if there's no shadow)
 draw_tilemap(tm, -_w, 0);
 draw_tilemap(tm,  _w, 0);
+if (instance_exists(obj_shadow_tint)) scr_shadow_tint_end();

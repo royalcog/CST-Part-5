@@ -7,6 +7,7 @@ else if (state == "fall") { var _k = t / fall_len; _dy += 160 * _k * _k; _a = 1 
 else if (state == "back") _a = t / 20;
 
 draw_set_alpha(_a);
+scr_shadow_tint_begin();   // same shadow as the ledges (does nothing if there's no shadow)
 for (var i = 0; i < tiles; i++)
 {
     var _tile = (tiles == 1) ? 7 : ((i == 0) ? 6 : ((i == tiles - 1) ? 8 : 7));
@@ -18,5 +19,6 @@ for (var i = 0; i < tiles; i++)
     draw_line_width(_tx + 16, _dy + 12, _tx + 24, _dy + 6,  2);
     draw_line_width(_tx + 24, _dy + 6,  _tx + 34, _dy + 14, 2);
 }
+if (instance_exists(obj_shadow_tint)) scr_shadow_tint_end();
 draw_set_colour(c_white);
 draw_set_alpha(1);

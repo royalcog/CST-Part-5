@@ -112,6 +112,10 @@ party[leader_i].leader = true;
 party[leader_i].depth = -100;
 party[1 - leader_i].depth = -90;
 global.plat_entry = { kind: "start", x: 0, leader: _entry.leader };   // used up
+// the dark cloud: shows up halfway up rm_tower, then creeps up after you (obj_plat_cloud has its tuning)
+cloud_on = true;
+if (cloud_on && !instance_exists(obj_plat_cloud))
+    with (instance_create_depth(0, 0, -200, obj_plat_cloud)) { mode = "rise"; entry_kind = _entry.kind; }
 
 // both start standing on whatever's under them, not wherever the start point happens to be
 if (_drop)

@@ -9,8 +9,10 @@ function scr_shadow_tint_begin()
     shader_set(shd_shadow_tint);
     shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_tint"), _c.tint_r, _c.tint_g, _c.tint_b);
     shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_strength"), _c.strength);
-    shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_y_near"), _c.near_y);
-    shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_y_far"), _c.far_y);
+	
+    // flat: put the fade way below everything, so the whole layer gets the full shadow
+    shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_y_near"), _c.flat ? 1000000 : _c.near_y);
+    shader_set_uniform_f(shader_get_uniform(shd_shadow_tint, "u_y_far"),  _c.flat ? 1000001 : _c.far_y);
 }
 
 function scr_shadow_tint_end()

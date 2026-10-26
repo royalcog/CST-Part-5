@@ -7,3 +7,7 @@ with (obj_kris)
 }
 
 if (!instance_exists(obj_tower_top_scene)) instance_create_depth(0, 0, -2050, obj_tower_top_scene);
+
+// the top of the tower sticks up out of the clouds: puffs fill everything around the floor tiles
+if (!instance_exists(obj_plat_cloud))
+    with (instance_create_depth(0, 0, 50, obj_plat_cloud)) { mode = "sea"; sea_layer = "Tiles_1"; }
