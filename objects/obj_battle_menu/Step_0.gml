@@ -192,10 +192,10 @@ switch (state)
                 var _f = fighters[_best];
                 var _dist = abs(_f.x - bar_x0);
                 _f.crit   = _dist <= crit_window;
-                _f.points = _f.crit ? 150 : max(0, round(110 - _dist * 2.2));
+                _f.points = _f.crit ? crit_points : max(0, round(110 - _dist * 2.2));
                 _f.done   = true;
                 _f.flash  = 1;
-                audio_play_sound(snd_select, 1, false, 0.6, 0, _f.crit ? 1.4 : 1);
+                if (_f.crit) audio_play_sound(snd_criticalswing, 1, false);
             }
         }
         if (_left == 0) { state = "fight_wait"; t = 0; }
@@ -231,7 +231,7 @@ switch (state)
                 if (_f.points <= 0) scr_trigger_damage_popup(_tg, "MISS", col_grey, col_grey, 0, -sprite_get_yoffset(_tg.sprite_index) * _tg.image_yscale - 4, noone);
                 else
                 {
-                    var _dmg = round(_d.fight_base * _f.points / 100 * random_range(0.9, 1.1));
+                    var _dmg = max(1, round(_d.at * _f.points / 20) - _tg.df * 3);
                     _tg.take_hit(_dmg, _d.color);
                 }
             }
@@ -311,7 +311,9 @@ switch (state)
     break;
 
     case "turn_end":
-        if (t >= 10) { turn++; state = "turn_start"; t = 0; }
+        // Queen used her shield this round: it breaks now (like her Chapter 2 shields)
+        if (t == 1) scr_queen_shield_break();
+        if (t >= 10 && !instance_exists(obj_queen_shield)) { turn++; state = "turn_start"; t = 0; }
     break;
 
     // ---------------------------------------------------------------- won

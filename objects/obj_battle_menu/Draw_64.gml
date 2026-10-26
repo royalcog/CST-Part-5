@@ -91,9 +91,9 @@ if (state == "choose" && mode != "cmd")
             {
                 var _en = _e[i];
                 var _y = _row(i);
-                draw_set_colour((_en.mercy >= 100) ? col_yellow : c_white);
+                draw_set_colour((_en.can_spare && _en.mercy >= 100) ? col_yellow : c_white);
                 draw_text_transformed(col_x[0], _y, _en.enemy_name, text_scale, text_scale, 0);
-                if (_en.is_tired()) { draw_set_colour(col_tired); draw_text_transformed(col_x[0] + 230, _y, "(Tired)", text_scale * 0.75, text_scale * 0.75, 0); }
+                if (_en.can_spare && _en.is_tired()) { draw_set_colour(col_tired); draw_text_transformed(col_x[0] + 230, _y, "(Tired)", text_scale * 0.75, text_scale * 0.75, 0); }
                 if (i == pick_i) _heart(col_x[0] - 20, _y);
                 // HP and MERCY bars
                 var _hx = 520, _mx = 680, _bw = 110, _bh = line_h - 8;
@@ -103,8 +103,13 @@ if (state == "choose" && mode != "cmd")
                 draw_set_colour(col_yellow); if (_en.mercy > 0) draw_rectangle(_mx, _y + 4, _mx + _bw * (_en.mercy / 100), _y + 4 + _bh, false);
                 draw_set_colour(c_white);
                 draw_text_transformed(_hx + 4, _y + 2, string(ceil(_en.hp / _en.max_hp * 100)) + "%", 1.5, 1.5, 0);
-                draw_set_colour(c_black);
-                draw_text_transformed(_mx + 4, _y + 2, string(_en.mercy) + "%", 1.5, 1.5, 0);
+                if (_en.can_spare)   // no MERCY bar for things that can't be spared
+                {
+                    draw_set_colour(make_color_rgb(255, 80, 32)); draw_rectangle(_mx, _y + 4, _mx + _bw, _y + 4 + _bh, false);
+                    draw_set_colour(col_yellow); if (_en.mercy > 0) draw_rectangle(_mx, _y + 4, _mx + _bw * (_en.mercy / 100), _y + 4 + _bh, false);
+                    draw_set_colour(c_black);
+                    draw_text_transformed(_mx + 4, _y + 2, string(_en.mercy) + "%", 1.5, 1.5, 0);
+                }
             }
         }
         break;

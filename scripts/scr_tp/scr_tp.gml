@@ -18,13 +18,13 @@ function scr_tp_init()
         // tuning
         defend_gain:      16,
         defend_gain_dark: 2,
-        graze_mult_dark:  0.25,   // Deltarune sets most bullets' graze points to 0 in darkness. this keeps a little
+        graze_mult_dark:  0,      // Deltarune sets most bullets' graze points to 0 in darkness fights (so: none). raise it to allow some
         graze_radius:     28,     // px past a bullet's own radius that counts as a graze (soul's at 2x)
         graze_tick_div:   30,     // while still grazing, you get _points / this every frame (Deltarune's 1/30)
         // state
-        grazing:   0,             // frames since the last graze (the shell fades out from this)
+        grazing:   999,           // frames since the last graze (the shell fades out from this)
+        fresh:     999,           // frames since a bullet was FIRST grazed (the shell's bright white just after)
         grazed:    ds_map_create(), // bullets that have already given their first graze
-        flash:     0              // the bar flashes white when you gain
     };
 }
 
@@ -35,6 +35,7 @@ function scr_tp_reset(_dark = false)
     global.tp.value = 0;
     global.tp.dark  = _dark;
     global.tp.grazing = 999;
+    global.tp.fresh   = 999;
     ds_map_clear(global.tp.grazed);
 }
 
@@ -67,35 +68,32 @@ function scr_tp_defend(_chars = 1)
     scr_tp_add(_chars * (global.tp.dark ? global.tp.defend_gain_dark : global.tp.defend_gain));
 }
 
-/// call every step from a bullet. (_x, _y) its centre, _r its hit radius, _points the % it gives the first time
-/// it comes into graze range (then _points / 30 a frame while it stays there). _key: something unique to this
-/// bullet (its id), so it only gives the first chunk once. no TP while the soul's invulnerable after a hit.
-function scr_graze(_x, _y, _r, _points = 2, _key = id)
+/// call every step from a bullet (Deltarune's grazing). (_x, _y) its centre, _r its hit radius.
+/// _points: the TP % it gives the moment it first comes into graze range (Deltarune's default bullet: 3 of 250 = 1.2%),
+/// then _points / 30 every frame it stays in range. _key: unique to this bullet (its id), so the first chunk's only once.
+/// no TP (and no graze) while the soul's invulnerable after a hit. returns true if it's grazing this frame
+/// (so an attack can shorten itself the way Deltarune's grazing shortens the turn)
+function scr_graze(_x, _y, _r, _points = 1.2, _key = id)
 {
     scr_tp_init();
-    if (!instance_exists(obj_soul)) return;
+    if (!instance_exists(obj_soul)) return false;
     var _s = instance_find(obj_soul, 0);
-    if (_s.invulnerable) return;
+    if (_s.invulnerable) return false;
     var _d = point_distance(_x, _y, _s.x, _s.y);
-    if (_d > _r + global.tp.graze_radius) return;
+    if (_d > _r + global.tp.graze_radius) return false;
 
     var _mult = global.tp.dark ? global.tp.graze_mult_dark : 1;
     var _k = string(_key);
     if (!ds_map_exists(global.tp.grazed, _k))
     {
         ds_map_add(global.tp.grazed, _k, true);
-        scr_tp_add(_points * _mult);
-        audio_play_sound(scr_graze_sound(), 1, false, 0.6);
+        if (_points * _mult > 0) scr_tp_add(_points * _mult);
+        audio_play_sound(snd_graze, 1, false);
+        global.tp.fresh = 0;
     }
-    else scr_tp_add(_points * _mult / global.tp.graze_tick_div);
+    else if (_points * _mult > 0) scr_tp_add(_points * _mult / global.tp.graze_tick_div);
     global.tp.grazing = 0;
-}
-
-/// the graze sound (a quiet tick if there isn't one ripped yet)
-function scr_graze_sound()
-{
-    var _s = asset_get_index("snd_graze");
-    return (_s != -1) ? _s : snd_select;
+    return true;
 }
 
 /// slide the TP bar in (true) or out (false). makes it if it isn't there

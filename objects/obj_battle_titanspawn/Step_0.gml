@@ -33,10 +33,37 @@ if (hurt_t > 0)
     hurt_t--;
     sprite_index = (hurt_t > 0) ? spr_titanspawn_hurt : spr_titanspawn_idle;
 }
-// defeated / spared: fade out, then it's gone
-if (gone)
+
+// spared: fades out white while the stars fly off
+if (gone && spared)
 {
     gone_t++;
     image_alpha = max(0, 1 - gone_t / 30);
-    if (gone_t >= 30 && hurt_t <= 0) instance_destroy();
+    for (var i = 0; i < array_length(stars); i++)
+    {
+        var _s = stars[i];
+        _s.x += lengthdir_x(_s.spd, _s.dir);
+        _s.y += lengthdir_y(_s.spd, _s.dir);
+        _s.spd *= 0.95;
+        _s.rot += _s.vr;
+        _s.f += 0.25;   // 15 frames a second
+    }
+    if (gone_t >= 45) instance_destroy();
+}
+// defeated: red, then sliced into strips that drift apart, with red mist coming off
+else if (gone)
+{
+    gone_t++;
+    if (gone_t == die_red_time) audio_play_sound(snd_damagetaken, 1, false, 0.6, 0, 0.6);
+    if (gone_t > die_red_time && gone_t mod 2 == 0)
+    {
+        repeat (3) array_push(mist, { x: x + random_range(-30, 30), y: y + random_range(-40, 40), vx: random_range(-0.6, 0.6), vy: random_range(-1.5, -0.4), a: 1, sz: random_range(2, 5) });
+    }
+    for (var i = array_length(mist) - 1; i >= 0; i--)
+    {
+        var _m = mist[i];
+        _m.x += _m.vx; _m.y += _m.vy; _m.a -= 0.03; _m.sz += 0.08;
+        if (_m.a <= 0) array_delete(mist, i, 1);
+    }
+    if (gone_t >= die_red_time + die_slice_time && array_length(mist) == 0) instance_destroy();
 }

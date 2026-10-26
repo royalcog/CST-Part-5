@@ -12,6 +12,13 @@ function scr_party_damage(_amount)
 
     var _target = _candidates[irandom(array_length(_candidates) - 1)];
     _result.box = _target;
+	
+    // Queen's DEFEND shield takes it instead
+    if (_target.char_name == "Queen" && scr_queen_shield_up())
+    {
+        obj_queen_shield.hit(_amount);
+        return _result;
+    }
 
     // the Knight's hits swoon outright
     var _knight_rules = instance_exists(obj_king_turn_sequencer) && obj_king_turn_sequencer.swoon_kills;

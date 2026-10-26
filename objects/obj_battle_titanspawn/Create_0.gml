@@ -22,19 +22,34 @@ bob     = random(2 * pi);
 landed  = false;
 
 
-// --- as an enemy (obj_battle_menu) ---
+// --- as an enemy (obj_battle_menu). stats are Deltarune's Titan Spawn ---
 enemy_name  = "Titan Spawn";
-max_hp      = 400;
+max_hp      = 3000;
 hp          = max_hp;
-mercy       = 0;        // 0-100. at 100 its name goes yellow and SPARE works
-tired_at    = 0.35;     // TIRED (Pacify / Scythemare work) at or below this much of its HP
-check_text  = "* TITAN SPAWN - AT 12 DF 0\n* A fragment of the Titan. It hungers for light.";
+at          = 18;       // its bullets do about at * 5 to whoever they hit (for when its attacks are built)
+df          = 0;
+rudebuster_mult = 0.5;  // Rude Buster does half damage to them, like the game
+can_spare   = false;    // they can't be spared: they have to be fought (or banished, which only Kris can do)
+no_mercy_text = "* ...it was not something that can understand MERCY.";
+mercy       = 0;
+tired_at    = 0.35;     // (only matters for things that can be spared)
+check_text  = "* TITAN SPAWN - AT 18 DF 0\n* A shard of fear that crawls out of the darkest places.";
 hurt_t      = 0;        // frames left of the hurt sprite + shake
 hurt_len    = 24;
 targeted    = false;    // the menu's cursor is on it (it flashes)
-gone        = false;    // defeated or spared: it's fading out, and doesn't count any more
+gone        = false;    // defeated or spared: it's going away, and doesn't count any more
 gone_t      = 0;
 spared      = false;
+
+// defeated: it turns red, then it's sliced into strips that drift apart into red mist (Deltarune's violent defeat)
+die_red_time   = 14;    // frames it goes red and shudders
+die_slice_time = 40;    // frames the strips drift apart and fade
+die_strip_h    = 2;     // each strip, in the sprite's own px
+die_drift      = 70;    // px the strips spread by the end
+mist           = [];    // the red specks floating off
+// spared (not used for the Titan Spawn, but here for anything that can be): it goes white and stars burst out
+star_count     = 8;
+stars          = [];
 
 is_tired = function() { return !gone && hp <= max_hp * tired_at; }
 is_alive = function() { return !gone; }
@@ -51,10 +66,15 @@ take_hit = function(_amount, _col)
     return _p;
 }
 
-/// spared: it goes white and fades away
+/// spared: it goes white and fades, with the spare stars bursting out (Deltarune's spr_sparestar_anim)
 spare = function()
 {
-    if (gone) return;
+    if (gone || !can_spare) return;
     gone = true; spared = true; gone_t = 0;
     audio_play_sound(snd_spell_pacify, 1, false);
+    for (var i = 0; i < star_count; i++)
+    {
+        var _a = i * 360 / star_count + random(20);
+        array_push(stars, { x: x, y: y, dir: _a, spd: random_range(2, 3.5), rot: random(360), vr: random_range(-8, 8), f: 0 });
+    }
 }

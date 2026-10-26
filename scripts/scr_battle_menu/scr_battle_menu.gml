@@ -2,6 +2,9 @@
 // numbers here are all tuning, change them freely.
 
 /// what each party member can do. _name: "Susie" / "Ralsei" / "Queen" (the obj_battle_ui_box char_name)
+/// at: their attack (FIGHT damage is Deltarune's: round(at * points / 20) - enemy df * 3, points 0-150)
+/// poses: ready_* = held once they've picked (before it happens), *_anim = played when it happens.
+///        "defend" for Queen is her shield (obj_queen_shield), not a sprite
 function scr_bm_member_def(_name)
 {
     switch (_name)
@@ -9,14 +12,16 @@ function scr_bm_member_def(_name)
         case "Susie": return {
             obj: obj_susie, color: make_color_rgb(255, 0, 255),
             cmds: ["FIGHT", "MAGIC", "ITEM", "SPARE", "DEFEND"],
-            fight_base: 95,                                   // damage from a perfect (non-crit) FIGHT hit
+            at: 20, mg: 3,
             idle: spr_susie_battle_idle, idle_hold: false,
             ready_fight: spr_susie_attack_ready, ready_magic: spr_susie_attack_ready, ready_act: -1,
+            ready_item: spr_susie_itemready, item_anim: spr_susie_item,
             defend: spr_susie_defend,
             attack: spr_susie_battle_intro, attack_sound_frame: 0,
             spell_anim: spr_susie_heal,                       // for Heal (Rude Buster has its own swing)
             magic: [
-                { name: "Rude Buster", tp: 50, target: "enemy", effect: "rudebuster", amount: 210,
+                // Rude Buster: Deltarune's at * 11 + mg * 5 (halved against the Titan Spawn, like the game)
+                { name: "Rude Buster", tp: 50, target: "enemy", effect: "rudebuster", amount: 0,
                   desc: "Rude\nDamage" },
                 { name: "Heal",        tp: 75, target: "ally",  effect: "heal",       amount: 60,
                   desc: "Heal\nAlly" },
@@ -27,10 +32,11 @@ function scr_bm_member_def(_name)
         case "Ralsei": return {
             obj: obj_ralsei, color: make_color_rgb(1, 255, 0),
             cmds: ["FIGHT", "MAGIC", "ITEM", "SPARE", "DEFEND"],
-            fight_base: 50,
+            at: 13, mg: 11,
             idle: spr_ralsei_battle_idle, idle_hold: false,
             ready_fight: spr_ralsei_attack_ready, ready_magic: spr_ralsei_spellready, ready_act: -1,
-            defend: -1,
+            ready_item: spr_ralsei_itemready, item_anim: spr_ralsei_item,
+            defend: spr_ralsei_defend,
             attack: spr_ralsei_attack, attack_sound_frame: 4,
             spell_anim: spr_ralsei_spell,
             magic: [
@@ -45,17 +51,18 @@ function scr_bm_member_def(_name)
         case "Queen": return {
             obj: obj_queen, color: make_color_rgb(111, 209, 255),
             cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
-            fight_base: 70,
+            at: 14, mg: 0,
             idle: spr_queen_walk_right_unhappy, idle_hold: true,
-            ready_fight: spr_queen_pie_throw, ready_magic: -1, ready_act: -1,
-            defend: -1,
+            ready_fight: spr_queen_pie_throw, ready_magic: -1, ready_act: spr_queen_pointright,
+            ready_item: spr_queen_wine_right_unhappy, item_anim: spr_queen_wine_right_unhappy,
+            defend: "shield",
             attack: spr_queen_pie_throw, attack_sound_frame: 2,
-            spell_anim: -1,
+            spell_anim: spr_queen_pointright,                 // her ACTs
             magic: [   // her ACTs
                 { name: "Check",   tp: 0, target: "enemy", effect: "check",   amount: 0,
                   desc: "Useful\nanalysis" },
-                { name: "Lecture", tp: 0, target: "none",  effect: "lecture", amount: 30,
-                  desc: "+Mercy\nall foes" },
+                { name: "Lecture", tp: 0, target: "none",  effect: "lecture", amount: 10,
+                  desc: "+10% TP\n(ignores dark)" },
             ],
         };
     }
@@ -89,18 +96,18 @@ function scr_bm_heal(_box, _amt)
     audio_play_sound(snd_heal, 5, false);
 }
 
-/// puts a party member's body in a pose (battle sprites line up by origin, Queen's by her feet).
-/// _play: play it once and freeze on the last frame. otherwise hold its first frame
+/// puts a party member's body in a pose. every battle sprite's origin is lined up with their idle's feet,
+/// so it's a straight swap (no re-anchoring). _play: play it once and hold the last frame. otherwise hold frame 0
 function scr_bm_pose(_obj, _spr, _play = false)
 {
-    if (_spr == -1 || !instance_exists(_obj)) return;
-    if (_obj == obj_queen) scr_set_sprite_keep_feet(_obj, _spr);
-    else with (_obj) { sprite_index = _spr; last_sprite = _spr; }
+    if (!is_real(_spr) || _spr == -1 || !instance_exists(_obj)) return;
     with (_obj)
     {
-        image_index = 0;
-        image_speed = _play ? 1 : 0;
-        anim_loop   = !_play;
+        sprite_index = _spr;
+        last_sprite  = _spr;
+        image_index  = 0;
+        image_speed  = _play ? 1 : 0;
+        anim_loop    = !_play;
     }
 }
 
@@ -108,6 +115,5 @@ function scr_bm_pose(_obj, _spr, _play = false)
 function scr_bm_idle(_def)
 {
     if (!instance_exists(_def.obj)) return;
-    if (_def.obj == obj_queen) { scr_set_sprite_keep_feet(_def.obj, _def.idle); return; }
     with (_def.obj) { sprite_index = _def.idle; last_sprite = _def.idle; image_index = 0; image_speed = _def.idle_hold ? 0 : 1; anim_loop = true; }
 }

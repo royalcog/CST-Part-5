@@ -33,6 +33,9 @@ bar_speed    = 6;     // px per frame
 crit_window  = 2;     // px either side of the line that's a perfect hit
 miss_after   = 30;    // px past the line before it counts as a miss
 
+// --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
+crit_points  = 150;
+
 // --- tuning: TP from FIGHT (Deltarune: accuracy / 10, or / 26 in darkness, out of 250) ---
 fight_tp_div      = 10;
 fight_tp_div_dark = 26;
@@ -117,24 +120,28 @@ prev_chooser = function(_from)
 
 key_ok     = function() { return keyboard_check_pressed(ord("Z")) || keyboard_check_pressed(vk_enter); }
 key_back   = function() { return keyboard_check_pressed(ord("X")) || keyboard_check_pressed(vk_shift); }
-snd_move   = function() { audio_play_sound(snd_select, 1, false, 0.35, 0, 1.3); }
-snd_ok     = function() { audio_play_sound(snd_select, 1, false, 0.7); }
-snd_no     = function() { audio_play_sound(snd_error, 1, false, 0.6); }
+snd_move   = function() { audio_play_sound(snd_menumove, 1, false); }
+snd_ok     = function() { audio_play_sound(snd_select, 1, false); }
+snd_no     = function() { audio_play_sound(snd_cantselect, 1, false); }
 
 /// the pose they hold once they've picked (Deltarune shows what they're about to do)
 ready_pose = function(_i, _kind)
 {
     var _d = defs[_i];
-    var _spr = -1;
+    var _spr = -1, _play = false;
     switch (_kind)
     {
         case "fight":  _spr = _d.ready_fight; break;
         case "spell":  _spr = _d.ready_magic; break;
-        case "act":    _spr = _d.ready_act;   break;
-        case "defend": _spr = _d.defend;      break;
+        case "act":    _spr = _d.ready_act;  _play = true; break;   // Queen's point plays out and holds
+        case "item":   _spr = _d.ready_item; break;
+        case "defend":
+            if (is_string(_d.defend)) { scr_bm_idle(_d); scr_queen_shield_build(); return; }   // Queen builds her shield
+            _spr = _d.defend; _play = true;                                                     // plays, holds the last frame
+        break;
     }
     if (_spr == -1) scr_bm_idle(_d);
-    else scr_bm_pose(_d.obj, _spr, false);
+    else scr_bm_pose(_d.obj, _spr, _play);
 }
 
 /// _i has picked _act: hold their pose, move on to the next person (or start playing it all out)
@@ -156,7 +163,11 @@ undo = function(_i)
     if (_a == undefined) return;
     if (_a.kind == "spell" && _a.spell.tp > 0) scr_tp_add(_a.spell.tp);
     if (_a.kind == "item") array_insert(items, min(_a.slot, array_length(items)), _a.item);
-    if (_a.kind == "defend") global.tp.value = max(0, global.tp.value - _a.tp_gain);
+    if (_a.kind == "defend")
+    {
+        global.tp.value = max(0, global.tp.value - _a.tp_gain);
+        if (is_string(defs[_i].defend)) scr_queen_shield_takedown();   // taken down, not broken
+    }
     actions[_i] = undefined;
     if (members[_i] != noone) members[_i].defending = false;
     scr_bm_idle(defs[_i]);
@@ -233,7 +244,8 @@ run_action = function(_a)
                     else if (_sp.effect == "check" || _sp.effect == "lecture")
                     {
                         // Queen's ACTs
-                        if (_sp.effect == "check") { _a.target = retarget(_a.target); set_text((_a.target != noone) ? _a.target.check_text : "* ..."); _a.hold = 90; }
+                        scr_bm_pose(_d.obj, _d.spell_anim, true);   // her point plays out and holds
+                        if (_sp.effect == "check") { _a.target = retarget(_a.target); set_text((_a.target != noone) ? _a.target.check_text : "* ..."); _a.hold = 110; }
                         else { set_text("* Queen lectured the Titan Spawn on why the Titan's face is Surprisingly Rather Appealing."); _a.hold = 70; }
                     }
                     else
@@ -244,6 +256,7 @@ run_action = function(_a)
                 break;
                 case "item":
                     set_text("* " + _who + " used the " + string_upper(_a.item.name) + "!");
+                    if (_d.item_anim != _d.ready_item) scr_bm_pose(_d.obj, _d.item_anim, true);
                 break;
                 case "spare":
                     _a.target = retarget(_a.target);
@@ -257,6 +270,10 @@ run_action = function(_a)
             var _ready = false;
             if (_a.kind == "spell" && _a.spell.effect == "rudebuster")
                 _ready = !instance_exists(_a.fx) || _a.fx.landed;
+            else if (_a.kind == "spell" && (_a.spell.effect == "check" || _a.spell.effect == "lecture"))
+                _ready = _a.t >= 18;
+            else if (_a.kind == "item" && _d.obj.sprite_index == _d.item_anim && _d.item_anim != _d.ready_item)
+                _ready = _d.obj.image_speed == 0 || _a.t >= 90;
             else if (_a.kind == "spell" && _d.spell_anim != -1 && _d.obj.sprite_index == _d.spell_anim)
                 _ready = _d.obj.image_speed == 0 || _a.t >= 90;
             else _ready = _a.t >= 18;
@@ -293,7 +310,11 @@ apply = function(_a)
             {
                 case "rudebuster":
                     _a.target = retarget(_a.target);
-                    if (_a.target != noone) _a.target.take_hit(_sp.amount, _d.color);
+                    if (_a.target != noone)
+                    {
+                        var _rb = max(1, _d.at * 11 + _d.mg * 5 - _a.target.df * 3);
+                        _a.target.take_hit(round(_rb * _a.target.rudebuster_mult * random_range(0.95, 1.05)), _d.color);
+                    }
                 break;
                 case "heal":
                     scr_bm_heal(_a.target, _sp.amount);
@@ -304,21 +325,27 @@ apply = function(_a)
                 break;
                 case "pacify":
                     _a.target = retarget(_a.target);
-                    if (_a.target != noone && _a.target.is_tired()) { _a.target.spare(); set_text("* The Titan Spawn was pacified!"); }
-                    else { set_text("* But the enemy wasn't TIRED..."); audio_play_sound(snd_error, 1, false, 0.5); }
+                    if (_a.target != noone && !_a.target.can_spare) { set_text(_a.target.no_mercy_text); audio_play_sound(snd_cantselect, 1, false); }
+                    else if (_a.target != noone && _a.target.is_tired()) { _a.target.spare(); set_text("* The " + _a.target.enemy_name + " was pacified!"); }
+                    else { set_text("* But the enemy wasn't TIRED..."); audio_play_sound(snd_cantselect, 1, false); }
                 break;
                 case "scythemare":
                 {
-                    var _n = 0;
-                    with (obj_battle_titanspawn) if (is_tired()) { spare(); _n++; }
-                    if (_n == 0) { set_text("* But nobody was TIRED..."); audio_play_sound(snd_error, 1, false, 0.5); }
+                    var _n = 0, _nomercy = "";
+                    with (obj_battle_titanspawn)
+                    {
+                        if (gone) continue;
+                        if (!can_spare) { _nomercy = no_mercy_text; continue; }
+                        if (is_tired()) { spare(); _n++; }
+                    }
+                    if (_n == 0) { set_text(_nomercy != "" ? _nomercy : "* But nobody was TIRED..."); audio_play_sound(snd_cantselect, 1, false); }
                 }
                 break;
                 case "lecture":
-                    var _m = _sp.amount;
-                    with (obj_battle_titanspawn) if (!gone) mercy = min(100, mercy + _m);
-                    audio_play_sound(snd_mercyadd, 1, false);
-                    set_text("* The Titan Spawn look conflicted. (+" + string(_sp.amount) + "% MERCY)");
+                    // they can't be spared, so instead it fires the party up: TP that ignores the darkness
+                    scr_tp_add(_sp.amount);
+                    audio_play_sound(snd_power, 1, false);
+                    set_text("* The party got fired up! (+" + string(_sp.amount) + "% TP)");
                 break;
             }
         }
@@ -338,8 +365,10 @@ apply = function(_a)
 
         case "spare":
             _a.target = retarget(_a.target);
-            if (_a.target != noone && _a.target.mercy >= 100) _a.target.spare();
-            else set_text("* " + _who + " spared the Titan Spawn!\n* But its name wasn't YELLOW...");
+            if (_a.target == noone) break;
+            if (!_a.target.can_spare) set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n" + _a.target.no_mercy_text);
+            else if (_a.target.mercy >= 100) _a.target.spare();
+            else set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n* But its name wasn't YELLOW...");
         break;
     }
 }
@@ -349,6 +378,7 @@ end_battle = function()
 {
     with (obj_UI) ui_hidden = true;
     scr_tp_bar_show(false);
+    scr_queen_shield_takedown();
     if (variable_global_exists("music")) audio_sound_gain(global.music, 0, 900);
     for (var i = 0; i < 3; i++) if (defs[i] != undefined) scr_bm_idle(defs[i]);
     state = "end_wait";
