@@ -223,7 +223,6 @@ with (obj_damage_number)
 draw_set_alpha(1);
 gpu_set_blendmode(bm_normal);
 surface_reset_target();
-scr_gui_reapply();   // switching surfaces resets the GUI's scale
 
 // Draw surface over the GUI layer
 draw_surface(light_surface, 0, 0);

@@ -1,7 +1,7 @@
 // the whole climb, bent around the tower (the normal application surface drawing is off while this is on).
 // wrap_amt 1 = fully bent, 0 = flat (the fight flattens it out)
 if (!wrap_on) exit;
-var _pos = scr_pixel_rect();
+var _pos = application_get_position();
 var _vw  = camera_get_view_width(view_camera[0]);
 
 draw_set_colour(c_black);

@@ -1,1 +1,0 @@
-if (enabled) camera_apply(gui_cam);   // every Draw GUI after this uses the exact scale
