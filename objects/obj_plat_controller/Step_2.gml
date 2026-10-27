@@ -1,4 +1,4 @@
-// End Step: the camera, after everyone's moved this frame (it stays put during the fight)
+cr_// End Step: the camera, after everyone's moved this frame (it stays put during the fight)
 if (!cam_locked)
 {
     var _c = cam_target();

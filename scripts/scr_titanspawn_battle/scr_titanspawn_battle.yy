@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"scr_titanspawn_battle",
   "parent":{
-    "name":"Titan Spawn",
-    "path":"folders/Battle System/Objects/Attacks/Titan Spawn.yy",
+    "name":"Scripts",
+    "path":"folders/Battle System/Objects/Attacks/Titan Spawn/Scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

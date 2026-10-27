@@ -10,8 +10,8 @@
   "name":"obj_battle_titanspawn",
   "overriddenProperties":[],
   "parent":{
-    "name":"Titan Spawn",
-    "path":"folders/Battle System/Objects/Attacks/Titan Spawn.yy",
+    "name":"Overworld",
+    "path":"folders/Battle System/Objects/Attacks/Titan Spawn/Objects/Overworld.yy",
   },
   "parentObjectId":null,
   "persistent":false,

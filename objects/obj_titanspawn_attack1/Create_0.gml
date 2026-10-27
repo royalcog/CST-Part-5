@@ -1,0 +1,46 @@
+// Titan Spawn attack 1: Deltarune Ch4's darkshape attack (obj_darkshape_manager's pattern_default / pattern_default_intro).
+// Deltarune is 30fps and we're 60, so its per-frame speeds/rates are halved and frame counts doubled.
+
+// --- tuning ---
+pattern          = "default";  // "default": a copy every 24 frames (DR 12). "intro": every 48 (DR 24) at 0.85 size, gentler
+attack_duration  = 600;        // frames (~10s)
+aura_radius      = 40;         // the soul's light (Brighten can set global.soul_glow_radius)
+damage           = 90;         // Titan Spawn AT 18
+spawn_ring_min   = 75;         // px outside the box edge they spawn (DR: 150-200 from the centre of its ~150px box)
+spawn_ring_extra = 50;
+ominous_max_gain = 0.6;
+
+spawn_gap   = (pattern == "intro") ? 48 : 24;
+spawn_scale = (pattern == "intro") ? 0.85 : 1;
+
+// --- state ---
+t          = 0;
+dark_count = 0;      // how many have been purified
+in_light   = false;  // set by any copy that's in the light this frame
+particles  = [];
+
+// sounds: snd_spawn_attack loops all attack; the organ loop starts silent at 0.25 pitch and swells while copies are being purified
+spawn_loop = -1;
+var _s = asset_get_index("snd_spawn_attack");
+if (_s != -1) spawn_loop = audio_play_sound(_s, 1, true);
+ominous_loop   = -1;
+ominous_volume = 0;
+var _o = asset_get_index("snd_organ_enemy_loop_temp");
+if (_o != -1) ominous_loop = audio_play_sound(_o, 1, true, 0, 0, 0.25);
+
+/// a copy at a random angle on a ring outside the box (like Deltarune)
+spawn_shape = function()
+{
+    var _c    = scr_box_center();
+    var _in   = scr_get_box_interior();
+    var _half = max(_in.x2 - _in.x1, _in.y2 - _in.y1) / 2;
+    var _dir  = irandom(360);
+    var _dist = _half + spawn_ring_min + irandom(spawn_ring_extra);
+    with (instance_create_depth(_c.x + lengthdir_x(_dist, _dir), _c.y + lengthdir_y(_dist, _dir), depth, obj_darkshape))
+    {
+        ctrl        = other.id;
+        scalefactor = other.spawn_scale;
+        damage      = other.damage;
+        dir         = (y >= _c.y) ? 250 - irandom(10) : 110 + irandom(10);   // DR's starting direction, then it curves in
+    }
+}

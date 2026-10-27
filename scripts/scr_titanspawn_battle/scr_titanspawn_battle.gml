@@ -82,7 +82,9 @@ function scr_titanspawn_battle_start()
     {
         // TODO: the script's rounds go here, one per enemy turn (they loop):
         //   { talk: [ { speaker: obj_susie, text: "..." } ], attack: scr_start_titanspawn_attack1 }
-        rounds = [];
+        rounds = [
+		    { talk: [], attack: scr_start_titanspawn_attack1 },
+		];
         on_win = undefined;   // what happens once they've won (otherwise Z just opens the next self_ line)
     }
 }
