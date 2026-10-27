@@ -25,3 +25,6 @@ panel_full_width = false; // party-box mode: draw this panel stretched edge to e
 ui_hidden   = false; // true = panel + party boxes slide down off the bottom
 hide_y      = 0;
 hide_drop   = 200;   // how far down it slides when hidden
+
+menu_lift        = 0;   // obj_battle_menu raises the boxes while its menu is up
+menu_lift_target = 0;

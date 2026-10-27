@@ -381,6 +381,7 @@
     {"id":{"name":"obj_phone","path":"objects/obj_phone/obj_phone.yy",},},
     {"id":{"name":"obj_pinkbomb","path":"objects/obj_pinkbomb/obj_pinkbomb.yy",},},
     {"id":{"name":"obj_pipis","path":"objects/obj_pipis/obj_pipis.yy",},},
+    {"id":{"name":"obj_pixel_scale","path":"objects/obj_pixel_scale/obj_pixel_scale.yy",},},
     {"id":{"name":"obj_plat_battle","path":"objects/obj_plat_battle/obj_plat_battle.yy",},},
     {"id":{"name":"obj_plat_cloud","path":"objects/obj_plat_cloud/obj_plat_cloud.yy",},},
     {"id":{"name":"obj_plat_controller","path":"objects/obj_plat_controller/obj_plat_controller.yy",},},

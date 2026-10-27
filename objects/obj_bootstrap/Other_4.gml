@@ -20,6 +20,8 @@ if (!variable_global_exists("textbox_plat"))
     global.textbox_plat = false;
 }
 
+if (!instance_exists(obj_pixel_scale)) instance_create_depth(0, 0, 0, obj_pixel_scale);
+
 /* if (!variable_global_exists("dialogue_self"))
 {
     variable_global_set("dialogue_self", 0);

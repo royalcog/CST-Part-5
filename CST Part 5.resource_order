@@ -299,6 +299,7 @@
     {"name":"obj_pedestal","order":6,"path":"objects/obj_pedestal/obj_pedestal.yy",},
     {"name":"obj_phone","order":20,"path":"objects/obj_phone/obj_phone.yy",},
     {"name":"obj_pipis","order":1,"path":"objects/obj_pipis/obj_pipis.yy",},
+    {"name":"obj_pixel_scale","order":3,"path":"objects/obj_pixel_scale/obj_pixel_scale.yy",},
     {"name":"obj_plat_battle","order":9,"path":"objects/obj_plat_battle/obj_plat_battle.yy",},
     {"name":"obj_plat_cloud","order":17,"path":"objects/obj_plat_cloud/obj_plat_cloud.yy",},
     {"name":"obj_plat_controller","order":4,"path":"objects/obj_plat_controller/obj_plat_controller.yy",},

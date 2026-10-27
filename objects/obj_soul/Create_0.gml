@@ -15,7 +15,7 @@ external_move = false; // true while an attack moves the soul itself (still draw
 
 // light blue mode (from the Knight's 5th attack on): 3x3 grid, 4 directions
 base_sprite      = sprite_index;
-lightblue_sprite = asset_get_index("spr_soul_lightblue"); // -1 until it exists; drawn tinted until then
+lightblue_sprite = spr_soul_lightblue;
 lightblue_color  = make_color_rgb(66, 252, 255);
 grid_lerp        = 0.35; // how quickly it glides to the next sector
 grid_ready_dist  = 3;    // how close it has to be before the next move goes through
@@ -25,7 +25,7 @@ grid_buffer = -1;
 grid_blocked = array_create(9, false); // sectors the soul can't move into (Knight attack 9 breaks them)
 
 // green mode (Ralsei's shield): stays put in the middle, arrow keys turn the shield
-green_sprite = asset_get_index("spr_soul_green"); // -1 until it exists; drawn tinted until then
+green_sprite = spr_soul_green;
 green_color  = make_color_rgb(0, 255, 64);
 shield_on    = false;
 shield_dir   = 1;    // 0 right, 1 up, 2 left, 3 down (in 8-direction mode: 0 right, then every 45 degrees counterclockwise)

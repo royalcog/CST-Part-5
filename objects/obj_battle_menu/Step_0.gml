@@ -1,3 +1,8 @@
+// the boxes rise while the menu's up, and drop back for the enemies' turn so the battle box has room
+var _menu_up = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win");
+if (instance_exists(obj_UI)) obj_UI.menu_lift_target = _menu_up ? panel_lift : 0;
+panel_y = panel_y_base - (instance_exists(obj_UI) ? round(obj_UI.menu_lift) : 0);
+
 t++;
 if (text_shown < string_length(text)) text_shown = min(string_length(text), text_shown + type_speed);
 

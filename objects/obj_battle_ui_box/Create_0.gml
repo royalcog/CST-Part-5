@@ -1,3 +1,4 @@
+sel_siner = 0;   // drives Deltarune's selection lines (see Draw GUI)
 char_name = "";
 hp = 0;
 max_hp = 1;

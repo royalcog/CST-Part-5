@@ -20,13 +20,9 @@ in_light   = false;  // set by any copy that's in the light this frame
 particles  = [];
 
 // sounds: snd_spawn_attack loops all attack; the organ loop starts silent at 0.25 pitch and swells while copies are being purified
-spawn_loop = -1;
-var _s = asset_get_index("snd_spawn_attack");
-if (_s != -1) spawn_loop = audio_play_sound(_s, 1, true);
-ominous_loop   = -1;
+spawn_loop     = audio_play_sound(snd_spawn_attack, 1, true);
 ominous_volume = 0;
-var _o = asset_get_index("snd_organ_enemy_loop_temp");
-if (_o != -1) ominous_loop = audio_play_sound(_o, 1, true, 0, 0, 0.25);
+ominous_loop   = audio_play_sound(snd_organ_enemy_loop_temp, 1, true, 0, 0, 0.25);
 
 /// a copy at a random angle on a ring outside the box (like Deltarune)
 spawn_shape = function()

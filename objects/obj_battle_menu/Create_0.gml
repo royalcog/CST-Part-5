@@ -6,16 +6,20 @@
 // what each person has (spells, ACTs, items, numbers) is in scr_battle_menu.
 
 // --- tuning: the text panel under the party boxes (GUI px) ---
-panel_y    = 404;
-panel_h    = 480 - 404;
-text_x     = 30;            // Deltarune's (its battle text's at x 30)
-text_scale = 2;               // the battle text (Deltarune's font is 8px mono at 2x: so is ours)
-name_scale = 2;               // spell / item / enemy / ally names (Deltarune: the same font size as the descriptions)
-desc_scale = 2;               // a spell / item's description and TP cost, on the right
-desc_line  = 22;              // px between description lines
-col_x      = [30, 260];       // the two columns in lists (Deltarune's: 30 and 30 + 230)
-desc_x     = 500;             // a spell/item's description, TP cost under it (Deltarune's 500)
-line_h = 24;
+// Deltarune's layout (numbers from Kristal, which copies it). x's are measured from the party-box row's left edge
+panel_y_base = 404;           // the panel's top with the boxes down
+panel_lift   = 42;            // the boxes + panel rise this much while the menu's up: top at 362, 118 tall, like Deltarune
+panel_y      = panel_y_base;
+text_x     = 30;              // the battle text
+text_scale = 2;               // Deltarune's font at 2x (yours renders the same glyphs)
+name_scale = 2;
+desc_scale = 2;
+text_line  = 28;              // the battle text's lines
+line_h     = 30;              // list rows
+desc_line  = 32;              // description lines
+col_x      = [30, 260];       // list columns (hearts at 5 and 230)
+desc_x     = 500;
+col_attack_lines = make_color_rgb(0, 0, 128);   // FIGHT's dark blue row lines
 type_speed = 2;               // letters per frame
 flavor     = [
     "* The Titan Spawn writhe in the dark.",
@@ -42,8 +46,9 @@ fb_head_x     = 21;     // their face's centre
 fb_icon_rects = { Queen: [23, 15, 25, 26] };   // face rects (box-art px) when the box's own one crops it (Queen's did)
 fb_box_x      = 80;     // the box's left edge...
 fb_box_w      = 123;    // ...and width (Deltarune: 15 bolt steps + 3)
-fb_row_h      = 22;     // box height (Deltarune's is 36: its panel's taller than ours)
+fb_row_h      = 36;     // Deltarune's (the panel's tall enough now)
 fb_row_gap    = 2;
+fb_head_h     = 24;     // their face's height in the row
 fb_bolt_w     = 6;
 fb_target_x   = 84;     // the bolt's left edge on a perfect hit (the target's black middle)
 fb_step       = 8;      // px per "step": how close a hit is gets measured in these (Deltarune's bolt moves 1 step a frame at 30fps)

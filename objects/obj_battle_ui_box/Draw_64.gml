@@ -19,35 +19,32 @@ var _bg_frame = selected_attack ? attack_frame : sprite_frame;
 var _w = sprite_get_width(_bg_frame);
 draw_sprite_part_ext(_bg_frame, 0, 0, 0, _w, divider_y, _sx, _sy, _scale_x * _s, _scale_y * _s, c_white, 1);
 
-if (stretch_to_screen)
+// Deltarune's "selection matrix": on this person's turn, lines in their colour slide inward from both sides
+// of the name strip and fade. drawn on the box's black, then the art's redrawn over them with black keyed out
+if (id == obj_UI.active_box)
 {
-    var _k_x = _scale_x * _s;
-    var _k_y = _scale_y * _s;
-    var _gw  = display_get_gui_width();
+    var _bw = _w * _scale_x * _s;          // the box's width on screen
+    var _bh = divider_y * _scale_y * _s;   // the name/HP strip's height
+    var _k  = _bw / 213;                   // Deltarune's box is 213 wide
+    draw_set_colour(bar_fill_color);
+    for (var i = 0; i < 12; i++)
+    {
+        var _a = sin((sel_siner + i * 10 * pi) / 60);
+        if (cos((sel_siner + i * 10 * pi) / 60) >= 0 || _a <= 0) continue;
+        var _lx = _sx + (31 - _a * 30) * _k;    // Deltarune: 1 at the edge -> 31 as it fades
+        var _rx = _sx + (181 + _a * 30) * _k;   // and 211 -> 181 on the right
+        draw_set_alpha(_a);
+        draw_rectangle(_lx - 1, _sy, _lx, _sy + _bh, false);
+        draw_rectangle(_rx - 1, _sy, _rx, _sy + _bh, false);
+    }
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 
-    // measured from the settled position so the whole panel slides in as one piece
-    var _settled_left  = (obj_UI.onscreen_x + box_offset_x + obj_UI.boxes_x_correction - _vx) * _scale_x;
-    var _settled_right = _settled_left + (stretch_cap_r_x + stretch_cap_w) * _k_x;
-    var _ext_l = max(0, _settled_left + stretch_cap_l_x * _k_x); // screen left -> box's left border
-    var _ext_r = max(0, _gw - _settled_right);                   // box's right border -> screen right
-
-    var _inner_l = _sx + (stretch_cap_l_x + stretch_cap_w) * _k_x; // first interior column of the real box
-    var _inner_r = _sx + stretch_cap_r_x * _k_x;                    // where the real box's right border starts
-
-    // left: fill over the box's own left border, then the cloned border at the screen edge
-    var _l_cap_x = _sx + stretch_cap_l_x * _k_x - _ext_l;
-    draw_sprite_part_ext(_bg_frame, 0, stretch_fill_col, 0, 1, divider_y, _l_cap_x, _sy, _inner_l - _l_cap_x, _k_y, c_white, 1);
-    draw_sprite_part_ext(_bg_frame, 0, stretch_cap_l_x, 0, stretch_cap_w, divider_y, _l_cap_x, _sy, _k_x, _k_y, c_white, 1);
-
-    // right: same thing mirrored
-    var _r_cap_x = _inner_r + _ext_r;
-    draw_sprite_part_ext(_bg_frame, 0, stretch_fill_col, 0, 1, divider_y, _inner_r, _sy, _r_cap_x - _inner_r, _k_y, c_white, 1);
-    draw_sprite_part_ext(_bg_frame, 0, stretch_cap_r_x, 0, stretch_cap_w, divider_y, _r_cap_x, _sy, _k_x, _k_y, c_white, 1);
+    shader_set(shd_black_key);
+    shader_set_uniform_f(shader_get_uniform(shd_black_key, "u_threshold"), 0.05);
+    draw_sprite_part_ext(_bg_frame, 0, 0, 0, _w, divider_y, _sx, _sy, _scale_x * _s, _scale_y * _s, c_white, 1);
+    shader_reset();
 }
-
-// bottom half of the box art — only exists once this character has locked in an attack,
-// and (per _is_active above) stays visible for the rest of the round once it appears,
-// not just during the selection sequence
 if (selected_attack)
 {
     var _bottom_h = sprite_get_height(_bg_frame) - divider_y;

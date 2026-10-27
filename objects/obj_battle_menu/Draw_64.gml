@@ -20,8 +20,9 @@ var _show = (state == "choose" || state == "exec_next" || state == "exec_run" ||
 if (!_show) exit;
 
 var _gw = display_get_gui_width();
+var _gh = display_get_gui_height();
 draw_set_colour(c_black);
-draw_rectangle(0, panel_y, _gw, display_get_gui_height(), false);
+draw_rectangle(0, panel_y, _gw, _gh, false);
 draw_set_colour(col_strip);
 draw_rectangle(0, panel_y, _gw, panel_y + 2, false);
 
@@ -29,20 +30,32 @@ draw_set_font(fnt_determination);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 
-var _row = function(_i) { return panel_y + 4 + _i * line_h; };
-// the heart, by its top-left like Deltarune places it (spr_soul_red's origin is its centre): 10px below the text's top
-var _heart = function(_left, _y) { draw_sprite_ext(spr_soul_red, 0, _left + 8, _y + 16, 1, 1, 0, c_white, 1); };
+// Deltarune measures everything in the panel from its action-box row, which spans its whole 640px screen.
+// ours is centred on a wider screen, so everything below is shifted to the row's left edge (reset at every exit)
+var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0])) : 0;
+matrix_set(matrix_world, matrix_build(_ox, 0, 0, 0, 0, 0, 1, 1, 1));
+
+// Deltarune's UI starts 37px above the panel's top line (_o). GameMaker draws this font 4px higher than Kristal does, hence the +4s
+var _o   = panel_y - 37;
+var _row = function(_i) { return panel_y + 17 + _i * line_h; };   // Deltarune: 50 + row * 30
+// the 16px heart, its top 6px below the text's top (Deltarune: 60 + row * 30)
+var _heart = function(_left, _y) { draw_sprite_ext(spr_soul_red, 0, _left + 8, _y + 14, 1, 1, 0, c_white, 1); };
 // a bar with its % in the font squashed to half height (Deltarune's enemy list)
 var _bar = function(_x, _y, _w, _k, _bg, _fg, _txt, _txt_col)
 {
     draw_set_colour(_bg); draw_rectangle(_x, _y, _x + _w - 1, _y + 15, false);
     if (_k > 0) { draw_set_colour(_fg); draw_rectangle(_x, _y, _x + ceil(_k * _w) - 1, _y + 15, false); }
-    if (_txt != "") { draw_set_colour(_txt_col); draw_text_transformed(_x + 4, _y + 1, _txt, 2, 1, 0); }
+    if (_txt != "") { draw_set_colour(_txt_col); draw_text_transformed(_x + 4, _y + 2, _txt, 2, 1, 0); }
 };
 
-// FIGHT's attack boxes (Deltarune's)
+// FIGHT's attack boxes (Deltarune's: 36px rows, 38 apart)
 if (state == "fight")
 {
+    // the two dark blue lines between the rows (Chapter 2 on)
+    draw_set_colour(col_attack_lines);
+    draw_rectangle(79, _o + 78,  79 + 223, _o + 79,  false);
+    draw_rectangle(79, _o + 116, 79 + 223, _o + 117, false);
+
     for (var i = 0; i < array_length(fighters); i++)
     {
         var _f  = fighters[i];
@@ -56,8 +69,8 @@ if (state == "fight")
         {
             var _r  = variable_struct_exists(fb_icon_rects, names[_f.who]) ? fb_icon_rects[$ names[_f.who]]
                     : [_b.icon_rect_x, _b.icon_rect_y, _b.icon_rect_w, _b.icon_rect_h];
-            var _is = fb_row_h / _r[3];
-            draw_sprite_part_ext(_b.sprite_frame, 0, _r[0], _r[1], _r[2], _r[3], fb_head_x - _r[2] * _is / 2, _y1, _is, _is, c_white, 1);
+            var _is = fb_head_h / _r[3];
+            draw_sprite_part_ext(_b.sprite_frame, 0, _r[0], _r[1], _r[2], _r[3], fb_head_x - _r[2] * _is / 2, _ym - fb_head_h / 2, _is, _is, c_white, 1);
         }
         // the box: a 2px outline in their dark colour (flashes white when Z's pressed)
         var _bx2 = fb_box_x + fb_box_w;
@@ -99,11 +112,12 @@ if (state == "fight")
         {
             draw_set_colour(c_black);
             draw_set_alpha(fb_fade);
-            draw_rectangle(0, _y1 - 2, _gw, _y2 + 2, false);
+            draw_rectangle(-_ox, _y1 - 2, _gw - _ox, _y2 + 2, false);
             draw_set_alpha(1);
         }
         draw_set_colour(c_white);
     }
+    matrix_set(matrix_world, matrix_build_identity());
     exit;
 }
 
@@ -114,36 +128,37 @@ if (state == "choose" && mode != "cmd")
     {
         case "list":
         {
+            // two columns (Deltarune: text at 30 / 260, hearts at 5 / 230)
             var _is_item = (list == items);
             for (var i = 0; i < array_length(list); i++)
             {
-                var _o = list[i];
-                var _x = col_x[i mod 2], _y = _row(i div 2);
-                var _can = _is_item || _o.tp <= global.tp.value;
+                var _o2 = list[i];
+                var _c  = i mod 2;
+                var _x = col_x[_c], _y = _row(i div 2);
+                var _can = _is_item || _o2.tp <= global.tp.value;
                 draw_set_colour(_can ? c_white : col_grey);
-                draw_text_transformed(_x, _y, _o.name, name_scale, name_scale, 0);
-                if (i == list_i) _heart(_x - 25, _y);   // Deltarune: 5 for the left column
+                draw_text_transformed(_x, _y, _o2.name, name_scale, name_scale, 0);
+                if (i == list_i) _heart(5 + _c * 225, _y);
             }
-            // the description in grey, the TP cost under it in orange (Deltarune's layout)
+            // the description in grey at the top right, the TP cost in orange at a fixed spot under it (Deltarune's 500, 50 / 115)
             var _sel = list[list_i];
-            var _lines = (_sel.desc == "") ? 0 : string_count("\n", _sel.desc) + 1;
             draw_set_colour(col_grey);
-            if (_lines > 0) draw_text_ext_transformed(desc_x, _row(0), _sel.desc, desc_line / desc_scale, 1000, desc_scale, desc_scale, 0);
+            if (_sel.desc != "") draw_text_ext_transformed(desc_x, _row(0), _sel.desc, desc_line / desc_scale, 1000, desc_scale, desc_scale, 0);
             if (!_is_item && _sel.tp > 0)
             {
                 draw_set_colour(col_orange);
-                draw_text_transformed(desc_x, _row(0) + _lines * desc_line, string(_sel.tp) + "% TP", desc_scale, desc_scale, 0);
+                draw_text_transformed(desc_x, _o + 119, string(_sel.tp) + "% TP", desc_scale, desc_scale, 0);
             }
         }
         break;
 
         case "enemy":
         {
-            // Deltarune: heart at 55, names at 80, "HP" / "MERCY" over 81x16 bars at 420 / 520
+            // Deltarune: heart at 55, names at 80, "HP" / "MERCY" (half height) over 81x16 bars at 420 / 520
             var _e = enemies();
             draw_set_colour(c_white);
-            draw_text_transformed(424, panel_y - 1, "HP", 2, 1, 0);
-            draw_text_transformed(524, panel_y - 1, "MERCY", 2, 1, 0);
+            draw_text_transformed(424, _o + 41, "HP", 2, 1, 0);
+            draw_text_transformed(524, _o + 41, "MERCY", 2, 1, 0);
             for (var i = 0; i < array_length(_e); i++)
             {
                 var _en = _e[i];
@@ -152,16 +167,16 @@ if (state == "choose" && mode != "cmd")
                 draw_text_transformed(80, _y, _en.enemy_name, name_scale, name_scale, 0);
                 if (_en.can_spare && _en.is_tired()) { draw_set_colour(col_tired); draw_text_transformed(80 + string_width(_en.enemy_name) * name_scale + 20, _y, "(Tired)", name_scale, name_scale, 0); }
                 if (i == pick_i) _heart(55, _y);
-                _bar(420, _y + 5, 81, _en.hp / _en.max_hp, col_hp_bg, col_hp, string(ceil(_en.hp / _en.max_hp * 100)) + "%", c_white);
+                _bar(420, _y + 1, 81, _en.hp / _en.max_hp, col_hp_bg, col_hp, string(ceil(_en.hp / _en.max_hp * 100)) + "%", c_white);
                 if (_en.can_spare)
-                    _bar(520, _y + 5, 81, _en.mercy / 100, col_mercy_bg, col_yellow, string(_en.mercy) + "%", col_mercy_text);
+                    _bar(520, _y + 1, 81, _en.mercy / 100, col_mercy_bg, col_yellow, string(_en.mercy) + "%", col_mercy_text);
                 else
                 {
                     // can't be spared: Deltarune crosses its MERCY bar out
-                    _bar(520, _y + 5, 81, 0, col_mercy_bg, col_yellow, "", c_white);
+                    _bar(520, _y + 1, 81, 0, col_mercy_bg, col_yellow, "", c_white);
                     draw_set_colour(col_mercy_text);
-                    draw_line_width(520, _y + 6, 520 + 81, _y + 5 + 15, 2);
-                    draw_line_width(520, _y + 5 + 15, 520 + 81, _y + 6, 2);
+                    draw_line_width(520, _y + 2, 520 + 81, _y + 1 + 15, 2);
+                    draw_line_width(520, _y + 1 + 15, 520 + 81, _y + 2, 2);
                 }
             }
         }
@@ -177,16 +192,18 @@ if (state == "choose" && mode != "cmd")
                 var _y = _row(i);
                 draw_set_colour(c_white);
                 draw_text_transformed(80, _y, names[i], name_scale, name_scale, 0);
-                _bar(400, _y + 5, 101, max(0, _b.hp / _b.max_hp), col_hp_bg, col_hp, "", c_white);
+                _bar(400, _y + 1, 101, max(0, _b.hp / _b.max_hp), col_hp_bg, col_hp, "", c_white);
                 if (i == pick_i) _heart(55, _y);
             }
         }
         break;
     }
     draw_set_colour(c_white);
+    matrix_set(matrix_world, matrix_build_identity());
     exit;
 }
 
-// otherwise: the battle text, typed out
+// otherwise: the battle text, typed out (Deltarune: x 30, 28px lines, wraps at 580 wide)
 draw_set_colour(c_white);
-draw_text_ext_transformed(text_x, _row(0), string_copy(text, 1, text_shown), line_h / text_scale, (_gw - text_x * 2) / text_scale, text_scale, text_scale, 0);
+draw_text_ext_transformed(text_x, panel_y + 18, string_copy(text, 1, text_shown), text_line / text_scale, 580 / text_scale, text_scale, text_scale, 0);
+matrix_set(matrix_world, matrix_build_identity());

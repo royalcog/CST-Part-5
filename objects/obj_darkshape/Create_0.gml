@@ -17,8 +17,8 @@ art_scale  = 2;           // Deltarune's sprites at your battle scale (the Titan
 anim_speed = 0.125;       // frames per step of its flying animation
 hit_mult   = 0.5;         // hit if within radius * this + 6 of the soul (radius shrinks 20 -> 8 as it's purified)
 
-anim_sprite   = asset_get_index("spr_darkshape_animated");   // flying (8 frames)
-shrink_sprite = asset_get_index("spr_darkshape");            // shrivelling in the light (6 frames)
+anim_sprite   = spr_darkshape_animated;   // flying (8 frames)
+shrink_sprite = spr_darkshape;            // shrivelling in the light (6 frames)
 
 // --- state ---
 myspeed = 0;
@@ -31,5 +31,4 @@ fading  = false;
 image_alpha = 0;
 image_speed = 0;
 
-var _snd = asset_get_index("snd_dark_odd");
-if (_snd != -1) audio_play_sound(_snd, 1, false, 0.25, 0, 0.35 + random(0.35));
+audio_play_sound(snd_dark_odd, 1, false, 0.25, 0, 0.35 + random(0.35));

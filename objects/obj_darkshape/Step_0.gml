@@ -64,7 +64,7 @@ else                   { stage = 0; radius = 20; }
 // fully purified: drops a pellet (DR's check_death)
 if (light >= 1)
 {
-    instance_create_depth(x, y, depth + 1, obj_darkshape_greenblob);
+    instance_create_depth(x, y, depth, obj_darkshape_greenblob);
     if (instance_exists(ctrl)) ctrl.dark_count++;
     instance_destroy();
     exit;
