@@ -70,19 +70,19 @@ end_wait     = 40;                 // frames after it's gone before Z works agai
 end_walk_frames = 45;              // they get this far into walking before the Spawn stop them
 end_walk_dx     = 1.5;             // px per frame (right, toward the Titan; the camera pans with them)
 end_walk_dy     = 0;
-spawn_spots     = [                // where the Titan Spawn end up (room px), over the clouds on the right
-    { x: bcx + 190, y: 175 },
-    { x: bcx + 290, y: 245 },
-    { x: bcx + 200, y: 315 },
+spawn_spots     = [                // where the Titan Spawn end up (room px, their centre), clear of the UI boxes
+    { x: bcx + 190, y: 95 },
+    { x: bcx + 290, y: 165 },
+    { x: bcx + 200, y: 235 },
 ];
 spawn_after     = 50;              // frames into the walk/pan that the first one starts dropping
 spawn_stagger   = 10;              // frames between each one starting to drop
 spawn_from_y    = -80;             // they drop from above the screen
 shock_hold      = 50;              // frames everyone's shocked before the battle starts
 battle_spots    = {                // their feet in battle (room px), on the left facing the Spawn
-    queen:  { x: bcx - 200, y: 215 },
-    susie:  { x: bcx - 275, y: 280 },
-    ralsei: { x: bcx - 265, y: 340 },
+    queen:  { x: bcx - 200, y: 145 },
+    susie:  { x: bcx - 275, y: 210 },
+    ralsei: { x: bcx - 265, y: 270 },
 };
 battle_walk     = 3;               // px per frame they walk to their spots (then draw their weapons)
 battle_wait     = 15;              // frames after the draw-weapon animation before the UI comes in
@@ -127,6 +127,74 @@ place = function(_obj, _spr, _x, _y)
 
 unlock = function() { global.cutscene_lock = false; }
 
+// --- tuning: Susie & Ralsei patch each other up once they're up (before self_6) ---
+heal_full         = { susie: 290, ralsei: 210 };   // their max HP (the climb's)
+susie_heal_frame  = 14;   // frame of spr_susie_heal the heal leaves on
+ralsei_heal_frame = 6;    // frame of spr_ralsei_spell his lands on
+heal_hold         = 50;   // frames after both land before they turn back
+
+/// _o goes to _spr facing _xs (2 = the sprite's own way, -2 = flipped) without its body moving
+pose_flip = function(_o, _spr, _xs)
+{
+    if (!instance_exists(_o)) return;
+    with (_o)
+    {
+        var _bx = x + ((sprite_get_bbox_left(sprite_index) + sprite_get_bbox_right(sprite_index) + 1) / 2 - sprite_get_xoffset(sprite_index)) * image_xscale;
+        var _by = y + (sprite_get_bbox_bottom(sprite_index) + 1 - sprite_get_yoffset(sprite_index)) * image_yscale;
+        image_xscale = _xs;
+        sprite_index = _spr;
+        last_sprite  = _spr;
+        image_index  = 0;
+        x = _bx - ((sprite_get_bbox_left(_spr) + sprite_get_bbox_right(_spr) + 1) / 2 - sprite_get_xoffset(_spr)) * image_xscale;
+        y = _by - (sprite_get_bbox_bottom(_spr) + 1 - sprite_get_yoffset(_spr)) * image_yscale;
+    }
+}
+
+/// a heal lands on _o: snd_heal, a green flash, their HP back (the amount in green, or MAX if they were full)
+heal_land = function(_o, _key)
+{
+    if (!variable_global_exists("plat_hp") || !is_struct(global.plat_hp)) global.plat_hp = { susie: heal_full.susie, ralsei: heal_full.ralsei };
+    var _gain = heal_full[$ _key] - global.plat_hp[$ _key];
+    global.plat_hp[$ _key] = heal_full[$ _key];
+    audio_play_sound(snd_heal, 1, false);
+    var _i = instance_find(_o, 0);
+    var _f = instance_create_depth(0, 0, _i.depth - 1, obj_heal_flash);
+    _f.target   = _o;
+    _f.duration = 40;
+    var _top = (sprite_get_bbox_top(_i.sprite_index) - sprite_get_yoffset(_i.sprite_index)) * _i.image_yscale - 6;
+    scr_trigger_damage_popup(_i, (_gain > 0) ? _gain : "MAX", c_lime, c_lime, 0, _top, noone);
+}
+
+/// Susie heals Ralsei while Ralsei heals Susie, then they turn back and _then runs
+heal_each_other = function(_then)
+{
+    heal_then    = _then;
+    heals_landed = 0;
+    // they face each other (Susie's heal faces left, Ralsei's spell faces right: both flipped)
+    pose_flip(obj_susie,  spr_susie_heal,   -2);
+    pose_flip(obj_ralsei, spr_ralsei_spell, -2);
+    with (obj_susie)  { image_speed = 1; anim_loop = false; charge_snd = scr_audio_fade_in(snd_charge, 600, 1, true); }
+    with (obj_ralsei) { image_speed = 1; anim_loop = false; }
+
+    heal_one_done = function()
+    {
+        heals_landed++;
+        if (heals_landed < 2) return;
+        scr_call_after_frames(function()
+        {
+            with (obj_susie) audio_sound_gain(charge_snd, 0, 300);
+            scr_call_after_frames(function() { audio_stop_sound(obj_susie.charge_snd); }, 20);
+            pose_flip(obj_susie,  susie_left,  2);
+            pose_flip(obj_ralsei, ralsei_left, 2);
+            with (obj_susie)  { image_speed = 0; anim_loop = true; }
+            with (obj_ralsei) { image_speed = 0; anim_loop = true; }
+            heal_then();
+        }, heal_hold);
+    };
+    scr_call_on_anim_frame(obj_susie,  spr_susie_heal,   susie_heal_frame,  function() { heal_land(obj_ralsei, "ralsei"); heal_one_done(); });
+    scr_call_on_anim_frame(obj_ralsei, spr_ralsei_spell, ralsei_heal_frame, function() { heal_land(obj_susie,  "susie");  heal_one_done(); });
+}
+
 /// Susie & Ralsei walk up from the bottom; once they're both there, Queen turns to them and self_6 opens
 pair_enter = function()
 {
@@ -135,15 +203,17 @@ pair_enter = function()
     {
         arrived++;
         if (arrived < 2) return;
-        face(obj_susie,  susie_left);
-        face(obj_ralsei, ralsei_left);
         face(obj_lancer, lancer_right);   // Lancer & Queen turn to them
         face(obj_queen,  queen_right);
-        scr_call_after_frames(function()
+        // Susie & Ralsei patch each other up after the climb, then self_6
+        heal_each_other(function()
         {
-            create_textbox("self_6");
-            global.dialogue_self = 6;   // so the next Z opens self_7
-        }, talk_wait);
+            scr_call_after_frames(function()
+            {
+                create_textbox("self_6");
+                global.dialogue_self = 6;   // so the next Z opens self_7
+            }, talk_wait);
+        });
     };
     scr_walk_feet_to(obj_susie,  susie_left,  susie_right,  susie_up,  susie_down,  susie_x,  pair_y, pair_walk, _done);
     scr_walk_feet_to(obj_ralsei, ralsei_left, ralsei_right, ralsei_up, ralsei_down, ralsei_x, pair_y, pair_walk, _done);

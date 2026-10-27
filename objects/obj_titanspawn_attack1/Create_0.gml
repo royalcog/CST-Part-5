@@ -5,7 +5,8 @@
 pattern          = "default";  // "default": a copy every 24 frames (DR 12). "intro": every 48 (DR 24) at 0.85 size, gentler
 attack_duration  = 600;        // frames (~10s)
 aura_radius      = 40;         // the soul's light (Brighten can set global.soul_glow_radius)
-damage           = 90;         // Titan Spawn AT 18
+damage           = 110;        // Titan Spawn AT 18 -> 90 in Ch4, scaled up for your bigger HP (Susie 230 -> 290, Ralsei 180 -> 210)
+glow_strength    = 1;          // how bright the soul's light is (not how big)
 spawn_ring_min   = 75;         // px outside the box edge they spawn (DR: 150-200 from the centre of its ~150px box)
 spawn_ring_extra = 50;
 ominous_max_gain = 0.6;

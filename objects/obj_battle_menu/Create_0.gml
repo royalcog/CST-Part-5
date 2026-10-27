@@ -20,7 +20,10 @@ desc_line  = 32;              // description lines
 col_x      = [30, 260];       // list columns (hearts at 5 and 230)
 desc_x     = 500;
 col_attack_lines = make_color_rgb(0, 0, 128);   // FIGHT's dark blue row lines
-type_speed = 2;               // letters per frame
+type_speed      = 0.5;        // letters per frame (the textbox's speed)
+text_pause      = 0;
+text_pause_time = 8;          // frames it stops after . ? ! (half that after ,), like the textbox
+sfx_now         = {};         // sounds already started this frame
 flavor     = [
     "* The Titan Spawn writhe in the dark.",
     "* It smells like ozone and old stone.",
@@ -36,6 +39,7 @@ col_mercy_bg   = make_color_rgb(255, 80, 32);
 col_mercy_text = make_color_rgb(128, 0, 0);
 col_tired  = make_color_rgb(0, 162, 232);
 col_yellow = make_color_rgb(255, 255, 0);
+read_time = 30;   // frames an action's text stays up once it's typed out (Z skips)
 
 // --- tuning: FIGHT's attack boxes. Deltarune's, to the pixel across (taken from Kristal, the engine that copies it):
 //     one row per fighter (Susie's row 1, Ralsei's 2, Queen's 3, attacking or not), their head at x 21, a 123px box
@@ -126,7 +130,16 @@ atk_inst = noone;
 talk_chain = noone;
 
 // ---------------------------------------------------------------- helpers
-set_text = function(_s) { text = _s; text_shown = 0; }
+set_text = function(_s) { text = _s; text_shown = 0; text_pause = 0; }
+
+/// plays _snd unless it already started this frame (two bolts on the same spot shouldn't double up)
+play_once = function(_snd)
+{
+    var _k = string(_snd);
+    if (variable_struct_exists(sfx_now, _k)) return;
+    sfx_now[$ _k] = true;
+    audio_play_sound(_snd, 1, false);
+}
 text_done = function() { return text_shown >= string_length(text); }
 
 alive_member = function(_i) { return members[_i] != noone && instance_exists(members[_i]) && members[_i].hp > 0; }
@@ -296,12 +309,13 @@ run_action = function(_a)
                         set_text("* " + _who + " cast SCYTHEMARE!");
                         scr_bm_pose(_d.obj, _d.ready_magic, false);
                     }
-                    else if (_sp.effect == "check" || _sp.effect == "lecture")
+                    else if (_sp.effect == "check" || _sp.effect == "brighten")
                     {
-                        // Queen's ACTs
-                        scr_bm_pose(_d.obj, _d.spell_anim, true);   // her point plays out and holds
-                        if (_sp.effect == "check") { _a.target = retarget(_a.target); set_text((_a.target != noone) ? _a.target.check_text : "* ..."); _a.hold = 110; }
-                        else { set_text("* Queen lectured the Titan Spawn on why the Titan's face is Surprisingly Rather Appealing."); _a.hold = 70; }
+                        // Queen's ACTs: she pulls her arm out (her point plays out and holds), and the text waits for Z
+                        scr_bm_pose(_d.obj, _d.spell_anim, true);
+                        _a.wait_z = true;
+                        if (_sp.effect == "check") { _a.target = retarget(_a.target); set_text((_a.target != noone) ? _a.target.check_text : "* ..."); }
+                        else set_text("* Queen turned her screen brightness all the way up!\n* The SOUL's light grew!");
                     }
                     else
                     {
@@ -314,8 +328,15 @@ run_action = function(_a)
                     if (_d.item_anim != _d.ready_item) scr_bm_pose(_d.obj, _d.item_anim, true);
                 break;
                 case "spare":
+                {
+                    // the whole line up front, so it doesn't start over when it lands
                     _a.target = retarget(_a.target);
-                    set_text("* " + _who + " spared the Titan Spawn!");
+                    var _nm = (_a.target != noone) ? _a.target.enemy_name : "Titan Spawn";
+                    var _s  = "* " + _who + " spared the " + _nm + "!";
+                    if (_a.target != noone && !_a.target.can_spare) _s += "\n" + _a.target.no_mercy_text;
+                    else if (_a.target != noone && _a.target.mercy < 100) _s += "\n* But MERCY was not 100%!";   // Chapter 5's line
+                    set_text(_s);
+                }
                 break;
             }
         break;
@@ -325,7 +346,7 @@ run_action = function(_a)
             var _ready = false;
             if (_a.kind == "spell" && _a.spell.effect == "rudebuster")
                 _ready = !instance_exists(_a.fx) || _a.fx.landed;
-            else if (_a.kind == "spell" && (_a.spell.effect == "check" || _a.spell.effect == "lecture"))
+            else if (_a.kind == "spell" && (_a.spell.effect == "check" || _a.spell.effect == "brighten"))
                 _ready = _a.t >= 18;
             else if (_a.kind == "item" && _d.obj.sprite_index == _d.item_anim && _d.item_anim != _d.ready_item)
                 _ready = _d.obj.image_speed == 0 || _a.t >= 90;
@@ -341,7 +362,10 @@ run_action = function(_a)
         break;
 
         case 2:   // let the number / text sit, then they go back to idle
-            if ((_a.t >= _a.hold && text_done()) || (_a.t >= 15 && text_done() && key_ok()))
+            // ACTs wait for Z once their text's out (Deltarune); everything else moves on by itself
+            // counts from when the text finished, so it's on screen long enough to read
+            _a.read = text_done() ? (variable_struct_exists(_a, "read") ? _a.read + 1 : 1) : 0;
+            if ((!variable_struct_exists(_a, "wait_z") && _a.t >= _a.hold && _a.read >= read_time) || (_a.read >= 5 && key_ok()))
             {
                 if (!(_a.kind == "spell" && _a.spell.effect == "rudebuster")) scr_bm_idle(_d);
                 return true;
@@ -396,11 +420,10 @@ apply = function(_a)
                     if (_n == 0) { set_text(_nomercy != "" ? _nomercy : "* But nobody was TIRED..."); audio_play_sound(snd_cantselect, 1, false); }
                 }
                 break;
-                case "lecture":
-                    // they can't be spared, so instead it fires the party up: TP that ignores the darkness
-                    scr_tp_add(_sp.amount);
+                case "brighten":
+                    // the SOUL's light grows for the rest of the battle (obj_titanspawn_attack1 reads it)
+                    global.soul_glow_radius = min((variable_global_exists("soul_glow_radius") ? global.soul_glow_radius : 40) + _sp.amount, 76);
                     audio_play_sound(snd_power, 1, false);
-                    set_text("* The party got fired up! (+" + string(_sp.amount) + "% TP)");
                 break;
             }
         }
@@ -420,10 +443,7 @@ apply = function(_a)
 
         case "spare":
             _a.target = retarget(_a.target);
-            if (_a.target == noone) break;
-            if (!_a.target.can_spare) set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n" + _a.target.no_mercy_text);
-            else if (_a.target.mercy >= 100) _a.target.spare();
-            else set_text("* " + _who + " spared the " + _a.target.enemy_name + "!\n* But MERCY was not 100%!");   // Chapter 5's line
+            if (_a.target != noone && _a.target.can_spare && _a.target.mercy >= 100) _a.target.spare();
         break;
     }
 }

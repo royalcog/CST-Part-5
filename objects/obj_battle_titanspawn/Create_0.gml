@@ -59,7 +59,9 @@ take_hit = function(_amount, _col)
 {
     if (gone) return noone;
     hp = max(0, hp - _amount);
-    audio_play_sound(snd_damagetaken, 1, false);
+    // the hit + its cry (two hits landing at once still only play each once)
+    if (instance_exists(obj_battle_menu)) { obj_battle_menu.play_once(snd_damagetaken); obj_battle_menu.play_once(snd_titanspawn); }
+    else { audio_play_sound(snd_damagetaken, 1, false); audio_play_sound(snd_titanspawn, 1, false); }
     hurt_t = hurt_len;
     var _p = scr_trigger_damage_popup(id, _amount, _col, _col, 0, -sprite_get_yoffset(sprite_index) * image_yscale - 4, noone);
     if (hp <= 0) { gone = true; gone_t = 0; }

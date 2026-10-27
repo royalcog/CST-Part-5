@@ -1,6 +1,6 @@
 // a mini Titan Spawn (Deltarune's obj_darkshape). homes in on the soul; in the soul's light it slows, shrivels, and is purified
 ctrl        = noone;
-damage      = 90;
+damage      = 110;
 dir         = 270;
 
 // --- Deltarune's values, converted to 60fps (originals in brackets) ---
@@ -13,9 +13,9 @@ pushback_radius = 48;     // copies push each other apart inside this
 scalefactor     = 1;
 
 // --- ours ---
-art_scale  = 2;           // Deltarune's sprites at your battle scale (the Titan Spawn's drawn at 2x)
+art_scale  = 1;           // half size
 anim_speed = 0.125;       // frames per step of its flying animation
-hit_mult   = 0.5;         // hit if within radius * this + 6 of the soul (radius shrinks 20 -> 8 as it's purified)
+hit_mult   = 0.35;        // hit if within radius * this + 4 of the soul (radius shrinks 20 -> 8 as it's purified)
 
 anim_sprite   = spr_darkshape_animated;   // flying (8 frames)
 shrink_sprite = spr_darkshape;            // shrivelling in the light (6 frames)

@@ -4,7 +4,23 @@ if (instance_exists(obj_UI)) obj_UI.menu_lift_target = _menu_up ? panel_lift : 0
 panel_y = panel_y_base - (instance_exists(obj_UI) ? round(obj_UI.menu_lift) : 0);
 
 t++;
-if (text_shown < string_length(text)) text_shown = min(string_length(text), text_shown + type_speed);
+sfx_now = {};   // play_once's "already played this frame" list
+
+// types out like the textbox: half a letter a frame, a beat after . ? ! and half one after ,
+if (text_pause > 0) text_pause--;
+else if (text_shown < string_length(text))
+{
+    var _prev = floor(text_shown);
+    text_shown = min(string_length(text), text_shown + type_speed);
+    var _n = floor(text_shown);
+    if (_n > _prev)
+    {
+        var _c  = string_char_at(text, _n);
+        var _nx = string_char_at(text, _n + 1);
+        if ((_c == "." || _c == "?" || _c == "!") && (_nx == " " || _nx == "" || _nx == "\n")) text_pause = text_pause_time;
+        else if (_c == ",") text_pause = text_pause_time / 2;
+    }
+}
 
 // whoever the cursor's on flashes
 with (obj_battle_titanspawn) targeted = false;
@@ -19,6 +35,7 @@ switch (state)
     // ---------------------------------------------------------------- a new turn
     case "turn_start":
     {
+		global.soul_glow_radius = 40;   // Brighten only lasts the turn it's used
         // anyone DOWN gets a bit back (Deltarune)
         var _down = false;
         with (obj_battle_ui_box) if (hp <= 0) _down = true;
@@ -220,12 +237,12 @@ switch (state)
                 _f.alpha  = 1;
                 if (_f.crit)
                 {
-                    audio_play_sound(snd_criticalswing, 1, false);
+                    play_once(snd_criticalswing);
                     repeat (5) array_push(_f.stars, { x: _f.x, y: 0, vx: random_range(1, 3), vy: random_range(-2.5, 2.5), a: 1 });
                 }
                 // they swing right now
                 scr_bm_pose(_d.obj, _d.attack, true);
-                if (_d.attack_sound_frame <= 0) audio_play_sound(snd_attack, 1, false);
+                if (_d.attack_sound_frame <= 0) play_once(snd_attack);
             }
         }
 
@@ -276,7 +293,7 @@ switch (state)
                     if (_d.attack_sound_frame > 0 && !variable_struct_exists(_f, "snd_done") && floor(_d.obj.image_index) >= _d.attack_sound_frame)
                     {
                         _f.snd_done = true;
-                        audio_play_sound(snd_attack, 1, false);
+                        play_once(snd_attack);
                     }
                     // the hit lands as their swing finishes
                     if (_d.obj.image_speed == 0 || _f.t >= 60)

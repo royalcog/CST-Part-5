@@ -26,3 +26,18 @@ shell_fade  = 20;     // frames it takes to fade after you stop grazing
 shown  = true;
 slide  = 0;           // 0 = hidden, 1 = in
 shown_tp = 0;         // what's drawn, catching up to the real value
+glow  = 0;    // a COURAGE pickup: the bar flashes white + the TP text gets a white outline, fading (Deltarune's tension glow)
+stars = [];   // spare stars rising off the bar
+
+/// a COURAGE pellet was picked up
+courage_flash = function()
+{
+    glow = 1;
+    var _left = bar_x - sprite_get_xoffset(spr_tensionbar);
+    var _top  = bar_y - sprite_get_yoffset(spr_tensionbar);
+    repeat (3 + irandom(2))
+    {
+        var _dur = (10 + irandom(5)) * 2;   // Deltarune's, in our 60fps
+        array_push(stars, { x: _left + irandom(25), y: _top + irandom(160), spd: (3 + random(3)) / 2, dur: _dur, t: 0, f: 0, a: 1 });
+    }
+}

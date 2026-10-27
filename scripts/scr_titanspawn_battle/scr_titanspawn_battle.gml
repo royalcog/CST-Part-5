@@ -7,6 +7,7 @@ function scr_party_init_trio(_susie_hp = 290, _ralsei_hp = 210, _queen_hp = 1510
     scr_party_init([
     {
         name: "Susie", hp: _susie_hp, max_hp: 290, body: obj_susie, body_hurt_sprite: spr_susie_hurt,
+        body_down_sprite: spr_susie_fell, body_idle_sprite: spr_susie_battle_idle,
         box_offset_x: -1, box_offset_y: -1,
         sprite_frame: spr_susiebox_empty, hurt_frame: spr_susiebox_hurtempty,
         frame_scale: 43 / 156, divider_y: 156,
@@ -19,6 +20,7 @@ function scr_party_init_trio(_susie_hp = 290, _ralsei_hp = 210, _queen_hp = 1510
     },
     {
         name: "Ralsei", hp: _ralsei_hp, max_hp: 210, body: obj_ralsei, body_hurt_sprite: spr_ralsei_shocked,
+        body_down_sprite: spr_ralsei_defeat, body_idle_sprite: spr_ralsei_battle_idle,
         box_offset_x: 236, box_offset_y: 0,
         sprite_frame: spr_ralseibox_empty, hurt_frame: spr_ralseibox_hurtempty,
         frame_scale: 42 / 153, divider_y: 153,
@@ -59,6 +61,7 @@ function scr_titanspawn_battle_start()
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
     scr_party_init_trio();
+    global.soul_glow_radius = 40;   // Brighten grows it during the battle
 
     // centre the three boxes on the screen (the King fight's layout sits ~40px right of centre)
     var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;

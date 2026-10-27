@@ -30,6 +30,19 @@ switch (state)
 
         state = "intro";
         t = 0;
+
+        // debug (F6): skip the talk, straight to "Let's end this." -> the Titan Spawn -> the battle
+        if (variable_global_exists("debug_skip_battle") && global.debug_skip_battle)
+        {
+            global.debug_skip_battle = false;
+            place(obj_susie,  susie_right, susie_x, pair_y);
+            place(obj_ralsei, ralsei_right, ralsei_x, pair_y);
+            place(obj_queen,  queen_right, queen_x, queen_y);
+            with (obj_lancer) instance_destroy();   // he's already left on the chair by now
+            with (chair) instance_destroy();
+            global.dialogue_self = 7;               // where "Let's end this." leaves it, so Z after the battle opens self_8
+            end_this();
+        }
     }
     break;
 	

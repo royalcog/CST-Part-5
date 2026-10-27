@@ -53,7 +53,7 @@ function scr_bm_member_def(_name)
             cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
             at: 14, mg: 0,
             idle: spr_queen_walk_right_unhappy, idle_hold: true,
-            ready_fight: spr_queen_pie_throw, ready_magic: -1, ready_act: spr_queen_pointright,
+            ready_fight: spr_queen_pie_throw, ready_magic: -1, ready_act: -1,   // ACT: she stays as she is, then points when it happens
             ready_item: spr_queen_wine_right_unhappy, item_anim: spr_queen_wine_right_unhappy,
             ready_hold: true,                                 // her ready poses hold still (first frame)
             defend: "shield",
@@ -62,8 +62,8 @@ function scr_bm_member_def(_name)
             magic: [   // her ACTs
                 { name: "Check",   tp: 0, target: "enemy", effect: "check",   amount: 0,
                   desc: "" },     // Deltarune's ACTs don't have a description
-                { name: "Lecture", tp: 0, target: "none",  effect: "lecture", amount: 10,
-                  desc: "Raises TP\n10%" },
+                { name: "Brighten", tp: 4, target: "none", effect: "brighten", amount: 12,
+                  desc: "" },     // Deltarune's ACT against the Titan Spawn: the SOUL's light grows (12px a time)
             ],
         };
     }

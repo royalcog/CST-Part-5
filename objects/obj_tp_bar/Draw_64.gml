@@ -23,6 +23,41 @@ if (_fh > 0)
 // the outline on top
 draw_sprite(spr_tensionbar, 0, _bx, _by);
 
+// COURAGE pickup glow: the bar's fill flashes white, and "TP" + the number get a white outline (Deltarune's)
+if (glow > 0)
+{
+    draw_sprite_ext(spr_tension_filling, 2, _bx, _by, 1, 1, 0, c_white, 0.75 * glow);
+    gpu_set_blendmode(bm_add);
+    draw_set_font(fnt_determination);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_colour(c_white);
+    draw_set_alpha(0.75 * glow);
+    for (var _dx = -1; _dx <= 1; _dx++) for (var _dy = -1; _dy <= 1; _dy++)
+    {
+        if (_dx == 0 && _dy == 0) continue;
+        draw_sprite_ext(spr_tensionlogo, 0, logo_x + _ox + _dx, logo_y + _dy, 1, 1, 0, c_white, 0.75 * glow);
+        if (floor(_tp.value) >= 100)
+        {
+            var _m = ["M", "A", "X"];
+            for (var k = 0; k < 3; k++) draw_text_transformed(max_spots[k][0] + _ox + _dx, max_spots[k][1] + _dy, _m[k], num_scale, num_scale, 0);
+        }
+        else
+        {
+            draw_text_transformed(num_x + _ox + _dx, num_y + _dy, string(floor(_tp.value)), num_scale, num_scale, 0);
+            draw_text_transformed(pct_x + _ox + _dx, pct_y + _dy, "%", num_scale, num_scale, 0);
+        }
+    }
+    draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
+}
+// the stars
+for (var i = 0; i < array_length(stars); i++)
+{
+    var _s = stars[i];
+    draw_sprite_ext(spr_sparestar_anim, floor(_s.f) mod sprite_get_number(spr_sparestar_anim), _s.x + _ox, _s.y, 1, 1, 0, c_white, _s.a);
+}
+
 // "TP" and the number (or MAX)
 draw_sprite(spr_tensionlogo, 0, logo_x + _ox, logo_y);
 draw_set_font(fnt_determination);

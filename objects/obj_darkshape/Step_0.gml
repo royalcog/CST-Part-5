@@ -72,7 +72,7 @@ if (light >= 1)
 
 // touched the soul
 if (instance_exists(obj_soul) && !obj_soul.invulnerable
- && point_distance(x, y, obj_soul.x, obj_soul.y) <= radius * hit_mult * scalefactor + 6)
+ && point_distance(x, y, obj_soul.x, obj_soul.y) <= radius * hit_mult * scalefactor + 4)
 {
     scr_soul_take_hit(damage, c_white, c_white);
     instance_destroy();
