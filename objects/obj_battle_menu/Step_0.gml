@@ -177,45 +177,50 @@ switch (state)
 
     // FIGHT: every fighter's cursor slides left on its own. Z hits the leftmost one that's close enough:
     // it stops, flashes, and that person attacks right away (the others keep coming). one that slides past is a MISS
+    // FIGHT: every fighter's bolt slides left at once. Z hits the closest one (and any on the exact same spot):
+    // it bursts and that person attacks right away (the others keep coming). one that slides past is a MISS
     case "fight":
     {
-        var _all_done = true;
+        var _all_done = true, _any_moving = false;
+        fb_flash = max(0, fb_flash - 0.1);
 
-        // Z: the leftmost cursor that can be hit
+        // Z (Deltarune's rules): of the bolts between 15 steps before the target and 5 after, the closest one
+        // goes, along with any other bolt that's exactly as close (bolts that came in on the same spot)
         if (t > 1 && key_ok())
         {
-            var _best = -1;
+            fb_flash = 1;
+            var _closest = infinity;
             for (var i = 0; i < array_length(fighters); i++)
             {
                 var _f = fighters[i];
-                if (_f.phase != "move" || _f.delay > 0 || _f.x > fb_reticle_x + fb_hit_range) continue;
-                if (_best == -1 || _f.x < fighters[_best].x) _best = i;
+                if (_f.phase != "move") continue;
+                var _c = round((_f.x - fb_target_x) / fb_step);
+                if (_c < fb_hit_far && _c > -fb_hit_late) _closest = min(_closest, _c);
             }
-            if (_best != -1)
+            if (_closest != infinity) for (var i = 0; i < array_length(fighters); i++)
             {
-                // that one, and any other cursor sitting on the same spot, all land together
-                var _bx = fighters[_best].x;
-                for (var i = 0; i < array_length(fighters); i++)
+                var _f = fighters[i];
+                if (_f.phase != "move" || round((_f.x - fb_target_x) / fb_step) != _closest) continue;
+                var _d  = defs[_f.who];
+                var _fc = fb_cols[$ names[_f.who]];
+                var _p  = abs(_closest);
+                _f.close  = _closest;
+                _f.x      = fb_target_x + _closest * fb_step;   // it snaps onto its step
+                _f.crit   = (_p == 0);
+                _f.points = _f.crit ? crit_points : (_p == 1 ? 120 : (_p == 2 ? 110 : 100 - _p * 2));
+                _f.col    = _f.crit ? col_yellow : (_p < 15 ? _fc.dmg : _fc.target);
+                _f.phase  = "attack";
+                _f.t      = 0;
+                _f.scale  = 1;
+                _f.alpha  = 1;
+                if (_f.crit)
                 {
-                    var _f = fighters[i];
-                    if (_f.phase != "move" || _f.delay > 0 || abs(_f.x - _bx) > fb_together) continue;
-                    var _d = defs[_f.who];
-                    var _dist = abs(_f.x - fb_reticle_x);
-                    _f.crit   = _dist <= fb_crit;
-                    _f.points = _f.crit ? crit_points : max(10, round(120 - _dist * 0.9));
-                    _f.phase  = "attack";
-                    _f.t      = 0;
-                    _f.flash  = 1;
-                    _f.trail  = [];
-                    if (_f.crit)
-                    {
-                        audio_play_sound(snd_criticalswing, 1, false);
-                        repeat (5) array_push(_f.stars, { x: _f.x, y: 0, vx: random_range(1, 3), vy: random_range(-2.5, 2.5), a: 1 });
-                    }
-                    // they attack right now
-                    scr_bm_pose(_d.obj, _d.attack, true);
-                    if (_d.attack_sound_frame <= 0) audio_play_sound(snd_attack, 1, false);
+                    audio_play_sound(snd_criticalswing, 1, false);
+                    repeat (5) array_push(_f.stars, { x: _f.x, y: 0, vx: random_range(1, 3), vy: random_range(-2.5, 2.5), a: 1 });
                 }
+                // they swing right now
+                scr_bm_pose(_d.obj, _d.attack, true);
+                if (_d.attack_sound_frame <= 0) audio_play_sound(snd_attack, 1, false);
             }
         }
 
@@ -224,7 +229,17 @@ switch (state)
             var _f = fighters[i];
             var _d = defs[_f.who];
             _f.t++;
-            _f.flash = max(0, _f.flash - 0.06);
+            // the hit bolt bursts: grows and fades (faster on a critical)
+            if (_f.phase != "move" && _f.phase != "miss" && _f.alpha > 0)
+            {
+                _f.scale += _f.crit ? 0.1 : 0.05;
+                _f.alpha -= 0.05;
+            }
+            for (var k = array_length(_f.ghosts) - 1; k >= 0; k--)
+            {
+                _f.ghosts[k].a -= 0.02;
+                if (_f.ghosts[k].a <= 0) array_delete(_f.ghosts, k, 1);
+            }
             for (var k = array_length(_f.stars) - 1; k >= 0; k--)
             {
                 var _st = _f.stars[k];
@@ -236,16 +251,16 @@ switch (state)
             {
                 case "move":
                     _all_done = false;
-                    if (_f.delay > 0) { _f.delay--; break; }       // not in yet
-                    array_insert(_f.trail, 0, _f.x);
-                    if (array_length(_f.trail) > fb_trail) array_pop(_f.trail);
+                    _any_moving = true;
                     _f.x -= fb_speed;
-                    if (_f.x < fb_reticle_x - fb_miss_after)
+                    // afterimages, one every 16px it travels (Deltarune's, every 2 of its frames)
+                    _f.ghost_d += fb_speed;
+                    if (_f.ghost_d >= fb_after_every) { _f.ghost_d -= fb_after_every; array_push(_f.ghosts, { x: _f.x, a: 0.4 }); }
+                    if (round((_f.x - fb_target_x) / fb_step) <= fb_miss_at)
                     {
                         // slid past: MISS (no attack)
                         _f.phase = "miss";
                         _f.t = 0;
-                        _f.trail = [];
                         var _tg = retarget(_f.target);
                         if (_tg != noone) scr_trigger_damage_popup(_tg, "MISS", col_grey, col_grey, 0, -sprite_get_yoffset(_tg.sprite_index) * _tg.image_yscale - 4, noone);
                     }
@@ -270,17 +285,15 @@ switch (state)
                 break;
 
                 case "after":   // hold on the swing a moment, then back to idle
-                    _all_done = false;
-                    if (_f.t >= 30) { scr_bm_idle(_d); _f.phase = "done"; }
-                break;
-
                 case "miss":
                     _all_done = false;
                     if (_f.t >= 30) { scr_bm_idle(_d); _f.phase = "done"; }
                 break;
             }
         }
-        if (_all_done) { fighters = []; state = "enemy_check"; t = 0; }
+        // once nothing's moving the rows fade to black, then on to the enemies' turn
+        if (!_any_moving) fb_fade = min(1, fb_fade + fb_fade_speed);
+        if (_all_done && fb_fade >= 1) { fighters = []; state = "enemy_check"; t = 0; }
     }
     break;
 

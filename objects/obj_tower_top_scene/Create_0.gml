@@ -137,6 +137,8 @@ pair_enter = function()
         if (arrived < 2) return;
         face(obj_susie,  susie_left);
         face(obj_ralsei, ralsei_left);
+        face(obj_lancer, lancer_right);   // Lancer & Queen turn to them
+        face(obj_queen,  queen_right);
         scr_call_after_frames(function()
         {
             create_textbox("self_6");
@@ -200,6 +202,9 @@ spawn_shock = function()
     face(obj_queen, queen_right);
     with (obj_susie)  { image_speed = 0; image_index = 0; }
     with (obj_ralsei) { image_speed = 0; image_index = 0; }
+    // the climb's song cuts out the moment they land (the battle's own song starts with the battle)
+    audio_stop_sound(sng_chaostower);
+    global.song = noone;
 }
 
 /// everyone walks to their battle spot (walking animation, the way they're going), then Susie & Ralsei draw their weapons

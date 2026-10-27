@@ -33,6 +33,7 @@ switch (state)
         }
     }
     break;
+
     case "up":
         draw_part(spr_queen_shield, hp_frame(), 0, _top, 1);
         if (flash > 0)

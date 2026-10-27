@@ -18,7 +18,7 @@ first_room = (room == rm_tower);
 next_room  = first_room ? asset_get_index("rm_tower2") : asset_get_index("rm_tower_top");   // land on something above top_y -> up into here
 fall_room  = first_room ? -1 : rm_tower;                       // fall off the bottom -> back down into here
 top_room   = asset_get_index("rm_tower_top");                  // Queen's lift (both at 1 HP) -> here
-top_y      = 40;
+top_y      = first_room ? 40 : 0;   // rm_tower2: only the very last ledge (row 0, top-left) takes you up
 // --- the platforms wrap around the tower ---
 // the room's width is the tower's circumference: run off one side and you come back on the other,
 // and the whole picture gets bent around a cylinder (Post Draw)

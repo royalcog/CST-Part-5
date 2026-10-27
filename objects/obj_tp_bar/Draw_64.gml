@@ -26,19 +26,19 @@ draw_sprite(spr_tensionbar, 0, _bx, _by);
 // "TP" and the number (or MAX)
 draw_sprite(spr_tensionlogo, 0, logo_x + _ox, logo_y);
 draw_set_font(fnt_determination);
-draw_set_halign(fa_center);
+draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 var _pct = floor(_tp.value);
 if (_pct >= 100)
 {
     draw_set_colour(max_col);
-    draw_text_transformed(num_x + _ox, num_y, "MAX", num_scale, num_scale, 0);
+    var _m = ["M", "A", "X"];
+    for (var i = 0; i < 3; i++) draw_text_transformed(max_spots[i][0] + _ox, max_spots[i][1], _m[i], num_scale, num_scale, 0);
 }
 else
 {
     draw_set_colour(c_white);
     draw_text_transformed(num_x + _ox, num_y, string(_pct), num_scale, num_scale, 0);
-    draw_text_transformed(num_x + _ox, num_y + num_gap, "%", num_scale, num_scale, 0);
+    draw_text_transformed(pct_x + _ox, pct_y, "%", num_scale, num_scale, 0);
 }
 draw_set_colour(c_white);
-draw_set_halign(fa_left);

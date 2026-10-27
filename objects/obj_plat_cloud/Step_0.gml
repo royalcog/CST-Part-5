@@ -64,7 +64,11 @@ if (_dist / 300 > 1.5 && max_speed != 0) vspd = min(vspd, catchup);
 if (_playing) cloud_y += vspd;
 
 // it caught you
-if (_playing && hurt_on && _ld.invuln <= 0 && _ld.y > cloud_y + hurt_dist)
+// fell right through it (dropped off a ledge, fell faster than it rises): it sinks back under them, no hurting
+if (_ld.y > cloud_y + hurt_depth) { cloud_y = _ld.y + min_gap; spd = 0; }
+
+// it caught you (only when their feet are actually in it, not below it)
+if (_playing && hurt_on && _ld.invuln <= 0 && _ld.y > cloud_y + hurt_dist && _ld.y <= cloud_y + hurt_depth)
 {
     _ld.take_hit(_ld.x, irandom_range(damage_min, damage_max));
     spd = push_back;

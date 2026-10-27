@@ -51,6 +51,15 @@ draw_band = function(_img, _sy, _sh, _top, _dy, _a)
     else      draw_sprite_part_ext(spr_queen_shield, _img, 0, _sy, _w, _sh, x, _yy, scale, scale, c_white, _a);
 }
 
+/// draws rows _sy to _sy + _sh of the shield (frame _img), at _top + its own row + _dy. mirrored if flip is on
+draw_band = function(_img, _sy, _sh, _top, _dy, _a)
+{
+    var _w = sprite_get_width(spr_queen_shield);
+    var _yy = _top + _sy * scale + _dy;
+    if (flip) draw_sprite_part_ext(spr_queen_shield, _img, 0, _sy, _w, _sh, x + _w * scale, _yy, -scale, scale, c_white, _a);
+    else      draw_sprite_part_ext(spr_queen_shield, _img, 0, _sy, _w, _sh, x, _yy, scale, scale, c_white, _a);
+}
+
 /// draws a frame of _spr at (_lx, _ly) in the shield's own space (0 = its left edge), mirrored if flip is on
 draw_part = function(_spr, _img, _lx, _ly, _a)
 {

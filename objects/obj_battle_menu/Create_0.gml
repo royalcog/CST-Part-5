@@ -8,44 +8,61 @@
 // --- tuning: the text panel under the party boxes (GUI px) ---
 panel_y    = 404;
 panel_h    = 480 - 404;
-text_x     = 24;
-line_h     = 24;
-text_scale = 1.75;            // the battle text
-name_scale = 1.75;            // spell / item / enemy / ally names (Deltarune: the same font size as the descriptions)
-desc_scale = 1.75;            // a spell / item's description and TP cost, on the right
-desc_line  = 18;              // px between description lines
-col_x      = [80, 320];       // the two columns in lists (Deltarune's 60 / 240 on its 640-wide screen)
-desc_x     = 613;             // a spell/item's description, TP cost under it (Deltarune's 460)
+text_x     = 30;            // Deltarune's (its battle text's at x 30)
+text_scale = 2;               // the battle text (Deltarune's font is 8px mono at 2x: so is ours)
+name_scale = 2;               // spell / item / enemy / ally names (Deltarune: the same font size as the descriptions)
+desc_scale = 2;               // a spell / item's description and TP cost, on the right
+desc_line  = 22;              // px between description lines
+col_x      = [30, 260];       // the two columns in lists (Deltarune's: 30 and 30 + 230)
+desc_x     = 500;             // a spell/item's description, TP cost under it (Deltarune's 500)
+line_h = 24;
 type_speed = 2;               // letters per frame
 flavor     = [
     "* The Titan Spawn writhe in the dark.",
     "* It smells like ozone and old stone.",
-    "* The Titan Spawn hunger for light.",
+    "* The Titan Spawn bathe in the shadows.",
     "* The wind howls around the tower.",
 ];
 col_orange = make_color_rgb(255, 160, 64);
 col_grey   = make_color_rgb(128, 128, 128);
+col_strip  = make_color_rgb(51, 32, 51);    // the dark purple line along the top of Deltarune's panel
+col_hp_bg  = make_color_rgb(128, 0, 0);
+col_hp     = make_color_rgb(0, 255, 0);
+col_mercy_bg   = make_color_rgb(255, 80, 32);
+col_mercy_text = make_color_rgb(128, 0, 0);
 col_tired  = make_color_rgb(0, 162, 232);
 col_yellow = make_color_rgb(255, 255, 0);
 
-// --- tuning: FIGHT's attack boxes (Deltarune's, GUI px). one row per fighter: their face, a box in their colour,
-//     the white reticle near its left end, and their cursor sliding left toward it. Z hits the leftmost cursor
-//     that's close enough: it stops dead, flashes, and they attack right then. let it slide past: MISS ---
-fb_icon_x     = 26;    // their face
+// --- tuning: FIGHT's attack boxes. Deltarune's, to the pixel across (taken from Kristal, the engine that copies it):
+//     one row per fighter (Susie's row 1, Ralsei's 2, Queen's 3, attacking or not), their head at x 21, a 123px box
+//     at x 80 in their dark colour, the 8px target at its left end, and their bolt (6px white bar) sliding in from
+//     off to the right. Z hits the bolt closest to the target (bolts on the exact same spot both go); it bursts and
+//     they swing right away. let it get 2 steps past the target: MISS. the rows are squashed to fit our panel ---
+fb_head_x     = 21;     // their face's centre
 fb_icon_rects = { Queen: [23, 15, 25, 26] };   // face rects (box-art px) when the box's own one crops it (Queen's did)
-fb_box_x1     = 70;    // the box. the reticle's at its left end: nothing goes further left than that
-fb_box_w      = 300;
-fb_row_h      = 22;
-fb_cursor_w   = 6;
-fb_reticle_x  = fb_box_x1 + 4 + fb_cursor_w / 2;   // the reticle (a perfect hit lines the cursor up with it)
-fb_speed      = 4.5;   // px per frame
-fb_start      = 150;   // px right of the reticle the first cursor starts (it reaches the reticle ~33 frames later)
-fb_stagger    = [0, 24, 36];   // frames each later cursor comes in after the one before (Deltarune: 0, 12 or 18 of its frames)
-fb_hit_range  = 80;    // px before the reticle a cursor can be hit (~18 frames)
-fb_crit       = 4;     // px either side of the reticle that's a critical
-fb_miss_after = 4;     // px past the reticle before it's a MISS (it's gone the moment it slides out of the box)
-fb_together   = fb_cursor_w;   // cursors this close to the one Z hits get hit with it (two on the same spot both land)
-fb_trail      = 4;     // afterimages behind a moving cursor
+fb_box_x      = 80;     // the box's left edge...
+fb_box_w      = 123;    // ...and width (Deltarune: 15 bolt steps + 3)
+fb_row_h      = 22;     // box height (Deltarune's is 36: its panel's taller than ours)
+fb_row_gap    = 2;
+fb_bolt_w     = 6;
+fb_target_x   = 84;     // the bolt's left edge on a perfect hit (the target's black middle)
+fb_step       = 8;      // px per "step": how close a hit is gets measured in these (Deltarune's bolt moves 1 step a frame at 30fps)
+fb_speed      = 3;      // px per frame. Deltarune's exact speed is 4 (8px a frame at 30fps): raise it back if it feels slow
+fb_first      = 29;     // steps right of the target the first bolt starts (Deltarune: 30 - 1)
+fb_gaps       = [0, 10, 15];   // steps between each bolt and the next (random). after a 0 it's 10 or 15, so never three in a line
+fb_hit_far    = 15;     // a bolt can be hit from this many steps before the target...
+fb_hit_late   = 5;      // ...to this many after
+fb_miss_at    = -2;     // this many steps past the target and it's a MISS
+fb_after_every = 16;    // px between afterimages (Deltarune: one every 2 frames)
+fb_fade_speed = 0.04;   // the rows fade to black once every bolt's done
+// their colours: the target, the box, and the bolt after a hit (Deltarune's for Susie / Ralsei. Queen's made the same way from hers)
+fb_cols = {
+    Susie:  { target: make_color_rgb(234, 121, 200), box: make_color_rgb(128, 0, 128), dmg: make_color_rgb(204, 153, 204) },
+    Ralsei: { target: make_color_rgb(181, 230, 29),  box: make_color_rgb(0, 128, 0),   dmg: make_color_rgb(128, 255, 128) },
+    Queen:  { target: make_color_rgb(111, 209, 255), box: make_color_rgb(55, 104, 127), dmg: make_color_rgb(183, 232, 255) },
+};
+fb_flash = 0;           // every box flashes white when Z's pressed
+fb_fade  = 0;
 
 // --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
 crit_points  = 150;
@@ -201,7 +218,6 @@ begin_choosing = function(_i)
     if (instance_exists(obj_UI)) obj_UI.active_box = members[_i];
 }
 
-/// everyone's picked: spells / ACTs / items / spares in party order, then all the FIGHTs together
 start_execute = function()
 {
     if (instance_exists(obj_UI)) obj_UI.active_box = noone;
@@ -213,15 +229,25 @@ start_execute = function()
         if (_a == undefined || _a.kind == "defend") continue;
         if (_a.kind == "fight")
         {
-            // each later cursor comes in 0, 12 or 18 Deltarune frames (0, 24 or 36 here) after the one before
-            var _n = array_length(fighters);
-            var _gap = (_n == 0) ? 0 : fighters[_n - 1].delay + fb_stagger[irandom(2)];
-            if (_n == 2 && _gap == fighters[1].delay && fighters[1].delay == fighters[0].delay) _gap += fb_stagger[1 + irandom(1)];   // all three at once: reroll
-            array_push(fighters, { who: i, target: _a.target, delay: _gap, x: fb_reticle_x + fb_start + _gap * fb_speed,
-                                   phase: "move", points: 0, crit: false, flash: 0, t: 0, trail: [], stars: [] });
+            array_push(fighters, { who: i, target: _a.target, x: 0, phase: "move", points: 0, crit: false, close: 0,
+                                   col: c_white, scale: 1, alpha: 1, t: 0, ghosts: [], ghost_d: 0, stars: [] });
         }
         else array_push(queue, _a);
     }
+    // Deltarune: the attackers go in a random order, the first one 29 steps out, each next one 0, 10 or 15 steps
+    // further (never 0 twice running). so two bolts can land on the same spot, but only by chance
+    var _order = array_create(array_length(fighters));
+    for (var k = 0; k < array_length(_order); k++) _order[k] = k;
+    for (var k = array_length(_order) - 1; k > 0; k--) { var _j = irandom(k), _tmp = _order[k]; _order[k] = _order[_j]; _order[_j] = _tmp; }
+    var _off = fb_first, _last = -1;
+    for (var k = 0; k < array_length(_order); k++)
+    {
+        if (k > 0) _off += _last;
+        fighters[_order[k]].x = fb_target_x + _off * fb_step;
+        _last = (_last != 0) ? fb_gaps[irandom(2)] : fb_gaps[1 + irandom(1)];
+    }
+    fb_flash = 0;
+    fb_fade  = 0;
     cur = undefined;
     state = "exec_next";
     t = 0;

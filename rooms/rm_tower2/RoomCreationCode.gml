@@ -11,7 +11,7 @@
 // reach the ledge in the top row and you're through to rm_tower_top. fall off the bottom and you're back in rm_tower.
 // (to paint this room by hand instead, delete the scr_plat_build_tower line)
 var _map = [
-    ".......................................",   // 0
+    "..........=====........................",   // 0   <- the last ledge: land on it and you're up
     ".................======................",   // 40
     ".......................................",   // 80
     ".........................CCCC..........",   // 120
