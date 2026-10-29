@@ -25,10 +25,12 @@ text_pause      = 0;
 text_pause_time = 8;          // frames it stops after . ? ! (half that after ,), like the textbox
 sfx_now         = {};         // sounds already started this frame
 flavor     = [
-    "* The Titan Spawn writhe in the dark.",
-    "* It smells like ozone and old stone.",
-    "* The Titan Spawn bathe in the shadows.",
-    "* The wind howls around the tower.",
+    "* The voices from below sound like those in your head.",
+    "* When did you start being yourself?",
+    "* Almost a reflection, but not quite.",
+    "* Ralsei mutters to himself to stay focused.",
+	"* Queen seems oddly sustained.",
+	"* Don't think what you don't deserve to think about.",
 ];
 col_orange = make_color_rgb(255, 160, 64);
 col_grey   = make_color_rgb(128, 128, 128);
@@ -465,7 +467,7 @@ apply = function(_a)
                 break;
                 case "brighten":
                     // the SOUL's light grows for the rest of the battle (obj_titanspawn_attack1 reads it)
-                    global.soul_glow_radius = min((variable_global_exists("soul_glow_radius") ? global.soul_glow_radius : 40) + _sp.amount, 76);
+                    global.soul_glow_radius = 63;   // Deltarune: 48 -> 63 for the turn
                     audio_play_sound(snd_power, 1, false);
                 break;
             }

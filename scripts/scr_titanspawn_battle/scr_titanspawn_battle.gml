@@ -61,7 +61,7 @@ function scr_titanspawn_battle_start()
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
     scr_party_init_trio();
-    global.soul_glow_radius = 40;   // Brighten grows it during the battle
+    global.soul_glow_radius = 48;   // Brighten grows it during the battle
 
     // centre the three boxes on the screen (the King fight's layout sits ~40px right of centre)
     var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;

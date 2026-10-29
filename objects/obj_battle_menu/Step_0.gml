@@ -35,7 +35,7 @@ switch (state)
     // ---------------------------------------------------------------- a new turn
     case "turn_start":
     {
-		global.soul_glow_radius = 40;   // Brighten only lasts the turn it's used
+		global.soul_glow_radius = 48;   // Brighten only lasts the turn it's used
         // anyone DOWN gets a bit back (Deltarune)
         var _down = false;
         with (obj_battle_ui_box) if (hp <= 0) _down = true;
