@@ -1,7 +1,9 @@
 if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
 
 t++;
-if (variable_global_exists("soul_glow_radius")) aura_radius = global.soul_glow_radius;
+// the light grows in at the start of the attack, easing out (DR's light aura: 10% of the way each frame at 30fps)
+var _goal = variable_global_exists("soul_glow_radius") ? global.soul_glow_radius : 48;
+aura_radius = scr_approach(aura_radius, _goal, abs(_goal - aura_radius) * 0.0513);
 
 if (t mod max(1, round(spawn_gap / spawn_rate)) == 0) spawn_shape();
 if (t >= attack_duration) { instance_destroy(); exit; }   // the box closes and whatever's left fades

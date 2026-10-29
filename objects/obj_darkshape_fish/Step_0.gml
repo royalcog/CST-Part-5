@@ -3,28 +3,37 @@ if (obj_battlebox.state == "closing") fading = true;
 if (fading)
 {
     image_alpha -= 0.1;
+    for (var i = 0; i < array_length(segs); i++) with (segs[i].orb) fading = true;
     if (image_alpha <= 0) instance_destroy();
     exit;
 }
 
 t++;
-image_alpha = min(1, image_alpha + 0.05);
+// fades in (flickering in size), already swimming
+image_alpha = min(1, image_alpha + 0.0175);   // DR 0.035
+grow = (image_alpha < 1) ? image_alpha + ((t div 2) mod 2) * 0.1 : 1;
+pop  = lerp(pop, 1, 0.125);
 
-// slithers toward the SOUL, snaking side to side (slowed while it's lit)
-if (instance_exists(obj_soul))
-    heading += clamp(angle_difference(point_direction(x, y, obj_soul.x, obj_soul.y), heading), -turn_rate, turn_rate);
-weave += weave_speed;
-dir = heading + sin(weave) * weave_amp;
-spd = scr_approach(spd, max_speed * (lit ? light_slow : 1), 0.03);
-x += lengthdir_x(spd, dir);
-y += lengthdir_y(spd, dir);
+// swims in surges (DR: 4.25 +- 2.125 at 30fps), turning toward the SOUL: the faster it's going, the wider it turns
+if (!dying)
+{
+    spd = 2.125 + sin(t * 0.05625) * 1.0625;
+    tracking = scr_approach(tracking, tracking_max, 0.01875);
+    if (instance_exists(obj_soul))
+    {
+        var _turn = tracking / (spd * 2 * 1.8) / 2;
+        heading += clamp(angle_difference(point_direction(x, y, obj_soul.x, obj_soul.y), heading), -_turn, _turn);
+    }
+    x += lengthdir_x(spd, heading);
+    y += lengthdir_y(spd, heading);
+}
 
 // the body follows the exact path the head took
 array_insert(hist, 0, { x: x, y: y });
 if (array_length(hist) > 600) array_resize(hist, 600);
-parts = [{ x: x, y: y, a: dir }];
+parts = [{ x: x, y: y, a: heading }];
 var _need = spacing, _acc = 0, _px = x, _py = y;
-for (var h = 1; h < array_length(hist) && array_length(parts) <= pieces; h++)
+for (var h = 1; h < array_length(hist) && array_length(parts) <= array_length(segs); h++)
 {
     _acc += point_distance(_px, _py, hist[h].x, hist[h].y);
     _px = hist[h].x;
@@ -36,57 +45,83 @@ for (var h = 1; h < array_length(hist) && array_length(parts) <= pieces; h++)
         _need += spacing;
     }
 }
+// purified pieces' orbs ride along in their spot
+for (var i = 0; i < array_length(segs); i++)
+    if (instance_exists(segs[i].orb) && i + 1 < array_length(parts)) { segs[i].orb.x = parts[i + 1].x; segs[i].orb.y = parts[i + 1].y; }
 
-// the light purifies the whole fish: faster the more of it's in the light
-lit = false;
-if (instance_exists(obj_soul))
+var _aura = instance_exists(ctrl) ? ctrl.aura_radius : 48;
+var _sx = instance_exists(obj_soul) ? obj_soul.x : -9999;
+var _sy = instance_exists(obj_soul) ? obj_soul.y : -9999;
+
+// the head purifies in the light
+if (!dying)
 {
-    var _aura = instance_exists(ctrl) ? ctrl.aura_radius : 48;
-    var _n_lit = 0;
-    for (var i = 0; i < array_length(parts); i++)
-    {
-        var _p = parts[i];
-        if (point_distance(_p.x, _p.y, obj_soul.x, obj_soul.y) < _aura + 8)
-        {
-            _n_lit++;
-            if (instance_exists(ctrl) && !irandom(5)) array_push(ctrl.particles, {
-                x: _p.x + random_range(-10, 10), y: _p.y + random_range(-10, 10),
-                dir: point_direction(obj_soul.x, obj_soul.y, _p.x, _p.y), spd: 0.5 + random(1.5), size: 2
-            });
-        }
-    }
-    if (_n_lit > 0)
-    {
-        lit = true;
-        light = min(1, light + light_rate * (1 + light_extra * (_n_lit - 1)));
-        if (instance_exists(ctrl)) ctrl.in_light = true;
-    }
-    else light = max(0, light - light_recover);
+    if (point_distance(x, y, _sx, _sy) < _aura + 8) { light = scr_approach(light, 1, head_rate + head_rate * (0.5 - light)); lit_fx(x, y); }
+    else light = scr_approach(light, 0, recover + recover * (0.5 - light));
+}
 
-    if (light >= 1)
+// so does each body piece, on its own (or all by themselves, in a ripple, once the head's gone)
+for (var i = 0; i < array_length(segs); i++)
+{
+    var _s = segs[i];
+    if (instance_exists(_s.orb) || i + 1 >= array_length(parts)) continue;
+    var _p = parts[i + 1];
+    var _auto = (_s.auto >= 0 && die_t >= _s.auto);
+    if (_auto || point_distance(_p.x, _p.y, _sx, _sy) < _aura + 8)
     {
-        // purified: COURAGE spread along its body
-        for (var k = 0; k < pellets; k++)
+        _s.light = scr_approach(_s.light, 1, piece_rate * (_auto ? 2 : 1) + piece_rate * (0.5 - _s.light));
+        if (!_auto) lit_fx(_p.x, _p.y);
+    }
+    else _s.light = scr_approach(_s.light, 0, recover + recover * (0.5 - _s.light));
+
+    if (_s.light >= 1)
+    {
+        // it turns into a grey orb that keeps riding along
+        _s.orb = instance_create_depth(_p.x, _p.y, depth, obj_darkshape_greenblob);
+        _s.orb.orb();
+        if (instance_exists(ctrl)) ctrl.burst = max(ctrl.burst, 0.5);
+    }
+}
+
+// the head's purified: it swells and stops, the body ripples away, and the last fish cuts the turn short
+if (!dying && light >= 1)
+{
+    dying = true;
+    die_t = 0;
+    pop   = 2;
+    audio_play_sound(snd_dark_odd, 1, false, 0.5, 0, 0.65);
+    if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
+    for (var i = 0; i < array_length(segs); i++) segs[i].auto = (i + 1) * 4;
+    if (instance_exists(ctrl))
+    {
+        if (instance_number(obj_darkshape_fish) == 1) ctrl.t = max(ctrl.t, ctrl.attack_duration - 140);
+        else if (ctrl.attack_duration - ctrl.t < 140) ctrl.t -= 140;
+    }
+}
+if (dying)
+{
+    die_t++;
+    if (die_t >= die_time)
+    {
+        // gone: every orb becomes COURAGE, and the head leaves one too
+        for (var i = 0; i < array_length(segs); i++)
         {
-            var _p = parts[floor(k * (array_length(parts) - 1) / max(1, pellets - 1))];
-            instance_create_depth(_p.x, _p.y, depth, obj_darkshape_greenblob);
+            var _s = segs[i];
+            if (!instance_exists(_s.orb) && i + 1 < array_length(parts))
+                _s.orb = instance_create_depth(parts[i + 1].x, parts[i + 1].y, depth, obj_darkshape_greenblob);
+            with (_s.orb) prime();
         }
-        if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
-        audio_play_sound(snd_dark_odd, 1, false, 0.4, 0, 1.3);
+        instance_create_depth(x, y, depth, obj_darkshape_greenblob);
         instance_destroy();
         exit;
     }
 }
 
-// any piece touching the SOUL hurts (it doesn't vanish: the SOUL's flash stops repeat hits)
-if (instance_exists(obj_soul) && !obj_soul.invulnerable)
+// the head and any un-purified piece hurt on touch (orbs don't)
+if (!dying && instance_exists(obj_soul) && !obj_soul.invulnerable)
 {
-    for (var i = 0; i < array_length(parts); i++)
-    {
-        if (point_distance(parts[i].x, parts[i].y, obj_soul.x, obj_soul.y) <= ((i == 0) ? hit_head : hit_piece))
-        {
-            scr_soul_take_hit(damage, c_white, c_white);
-            break;
-        }
-    }
+    var _hit = point_distance(x, y, _sx, _sy) <= hit_head;
+    for (var i = 0; i < array_length(segs) && !_hit; i++)
+        if (!instance_exists(segs[i].orb) && i + 1 < array_length(parts) && point_distance(parts[i + 1].x, parts[i + 1].y, _sx, _sy) <= hit_piece) _hit = true;
+    if (_hit) scr_soul_take_hit(damage, c_white, c_white);
 }
