@@ -7,9 +7,22 @@ if (fading)
     exit;
 }
 
-image_alpha = min(1, image_alpha + 0.05);
-grow        = min(1, grow + 0.05);
-anim_f     += anim_speed;
+t++;
+// appearing (DR): fades in over ~80 frames, flickering in size, and can't move, hurt or be purified until it's
+// all the way in. then it turns to face the SOUL and goes
+if (image_alpha < 1)
+{
+    image_alpha = min(1, image_alpha + 0.0125);   // DR 0.025
+    grow = image_alpha + ((t div 2) mod 2) * 0.1;
+    anim_f += anim_speed;
+    if (image_alpha < 1) exit;
+    grow = 1;
+    if (instance_exists(obj_soul)) dir = point_direction(x, y, obj_soul.x, obj_soul.y);
+}
+// the animation twitches in fast bursts now and then
+if (fast_t > 0) { fast_t--; anim_f += anim_speed * 4; }
+else anim_f += anim_speed;
+if (!irandom(41)) fast_t = 20 + irandom(12);
 
 // chase the soul (DR's chase_heart)
 if (instance_exists(obj_soul))

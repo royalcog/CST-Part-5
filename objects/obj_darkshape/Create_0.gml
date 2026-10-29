@@ -31,5 +31,7 @@ anim_f  = 0;
 fading  = false;
 image_alpha = 0;
 image_speed = 0;
+t      = 0;
+fast_t = 0;   // its animation twitches in fast bursts now and then (DR's fast_timer)
 
 audio_play_sound(snd_dark_odd, 1, false, 0.25, 0, 0.35 + random(0.35));

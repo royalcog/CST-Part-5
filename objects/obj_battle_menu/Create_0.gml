@@ -98,6 +98,8 @@ cur_round = function()
 }
 enemy_wait_frames   = 40;  // a round with no attack: just a pause
 box_x_nudge         = 0;
+box_scale           = 0.75;   // the battle box's size (0.75 stays pixel-perfect at 2x)
+box_y_nudge         = -16;    // px up (negative) or down, so there's room under it
 box_depth           = -5000;
 on_win              = undefined;   // function to run once the battle's won (otherwise Z just works again)
 

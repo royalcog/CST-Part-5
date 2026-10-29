@@ -3,7 +3,7 @@ if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
 t++;
 if (variable_global_exists("soul_glow_radius")) aura_radius = global.soul_glow_radius;
 
-if (t mod spawn_gap == 0) spawn_shape();
+if (t mod max(1, round(spawn_gap / spawn_rate)) == 0) spawn_shape();
 if (t >= attack_duration) { instance_destroy(); exit; }   // the box closes and whatever's left fades
 
 // the organ swells while something's being purified, fades when nothing is

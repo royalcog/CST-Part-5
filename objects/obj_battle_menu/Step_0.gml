@@ -353,6 +353,19 @@ switch (state)
             with (obj_battlebox) instance_destroy();
             box_inst = scr_spawn_battlebox(box_x_nudge);
             box_inst.depth = box_depth;
+            // a smaller box, a bit higher up, so there's room underneath it
+            with (box_inst)
+            {
+                target_scale_x = other.box_scale;
+                target_scale_y = other.box_scale;
+                prev_target_scale_x = target_scale_x;
+                prev_target_scale_y = target_scale_y;
+                image_xscale = target_scale_x;   // starts at that size instead of shrinking in
+                image_yscale = target_scale_y;
+                box_base_y  += other.box_y_nudge;
+                x = box_base_x + (raw_width  - raw_width  * image_xscale) / 2;
+                y = box_base_y + (raw_height - raw_height * image_yscale) / 2;
+            }
             state = "enemy_box_open";
         }
         else if (t >= enemy_wait_frames) state = "turn_end";

@@ -23,7 +23,8 @@ switch (state)
 	        if (!on_open_callback_done)
 	        {
 	            on_open_callback_done = true;
-	            var _soul = instance_create_depth(x + raw_width/2, y + raw_height/2, depth - 2, obj_soul);
+	            var _c = scr_box_center();   // the real middle, whatever size the box is
+	            var _soul = instance_create_depth(_c.x, _c.y, depth - 2, obj_soul);
 	        }
 	    }
 	break;

@@ -12,7 +12,7 @@ track_decay = 0.004375; // ...by this a frame  [DR 0.00875]
 spin        = 1.40625;  // deg a frame it spins  [DR 2.8125]
 wait_time   = 120;      // frames it sits before it goes  [DR alarm[0] = 60]
 hit_radius  = 12;       // DR's radius 22, scaled like the copies' hitboxes
-art_scale   = 0.5;      // same size relative to the copies as in Deltarune
+art_scale   = 1;      // same size relative to the copies as in Deltarune
 
 // --- state ---
 dir   = instance_exists(obj_soul) ? point_direction(x, y, obj_soul.x, obj_soul.y) : 270;   // aimed at the SOUL as it spawns

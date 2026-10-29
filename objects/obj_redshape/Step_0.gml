@@ -8,7 +8,7 @@ if (fading)
 }
 
 t++;
-image_alpha = min(1, image_alpha + 0.05);
+image_alpha = min(1, image_alpha + 0.0125);
 angle += spin;
 track  = max(0, track - track_decay);   // wears off from the moment it appears, even while it waits
 

@@ -58,7 +58,7 @@ spawn_dash = function()
     last_row = _row;
     var _y   = lerp(_in.y1 + 16, _in.y2 - 16, _row / 4);
     var _dir = choose(-1, 1);
-    with (instance_create_depth(0, 0, depth, obj_battle_dashfish))
+    with (instance_create_depth(0, 0, depth, obj_dashfish))
     {
         damage = other.damage;
         dir    = _dir;
