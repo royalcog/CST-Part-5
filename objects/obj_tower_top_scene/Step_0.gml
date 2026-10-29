@@ -49,7 +49,7 @@ switch (state)
         {
             global.debug_skip_titan = false;
             var _fx = forward_dx * forward_frames;   // how far they walk after self_9
-            set_cam(cam_battle_x + _fx);
+            set_cam(cam_battle_x + (forward_cam_follow ? forward_cam_dx * forward_frames : 0));
             place(obj_susie,  susie_right,  regroup_spots.susie.x  + _fx, regroup_spots.susie.y);
             place(obj_ralsei, ralsei_right, regroup_spots.ralsei.x + _fx, regroup_spots.ralsei.y);
             place(obj_queen,  queen_right,  regroup_spots.queen.x  + _fx, regroup_spots.queen.y);

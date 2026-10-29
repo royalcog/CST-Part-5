@@ -329,10 +329,12 @@ after_regroup     = 20;           // frames after they're in place before self_8
 party_heal_frame  = 6;            // frame of spr_ralsei_spell the heal leaves on (same as the climb heal)
 party_heal_hold   = 50;           // frames after it lands before he lowers his arms
 after_heal        = 20;           // frames before self_9
-forward_dx        = 1.5;          // px per frame they walk forward after self_9 (right, toward the Titan)
+forward_dx        = 1;            // px per frame they walk forward after self_9 (right, toward the Titan): 180px
 forward_dy        = 0;
-forward_frames    = 180;          // 1.5 x 180 = 270px (the camera starts at 324, the room's right edge is at 647)
-forward_cam_follow = true;        // the camera moves with them, same px per frame
+forward_frames    = 180;
+forward_cam_follow = true;        // the camera pans along while they walk...
+forward_cam_dx    = 1.5;          // ...this many px per frame (1.5 x 180 = 270px: the camera starts at 324, the room's
+                                  // right edge is at 647). faster than them, so they end up further back on screen
 forward_pause     = 20;           // frames after they stop before titan_reveal()
 cam_follow        = { on: false, t: 0, frames: 0, dx: 0, dy: 0 };
 
@@ -416,7 +418,7 @@ walk_forward = function()
     scr_char_move_now(obj_susie,  susie_right,  true, forward_dx, forward_dy, 1, forward_frames);
     scr_char_move_now(obj_ralsei, ralsei_right, true, forward_dx, forward_dy, 1, forward_frames);
     scr_char_move_now(obj_queen,  queen_right,  true, forward_dx, forward_dy, 1, forward_frames);
-    if (forward_cam_follow) cam_follow = { on: true, t: 0, frames: forward_frames, dx: forward_dx, dy: forward_dy };
+    if (forward_cam_follow) cam_follow = { on: true, t: 0, frames: forward_frames, dx: forward_cam_dx, dy: 0 };
     scr_call_after_frames(function()
     {
         face(obj_susie,  susie_right);
@@ -441,7 +443,7 @@ titan            = noone;
 titan_reveal = function()
 {
     with (obj_titan_reveal) instance_destroy();
-    titan = instance_create_depth(0, 0, 150, obj_titan_reveal);
+    titan = instance_create_depth(0, 0, 25, obj_titan_reveal);
     titan.on_crescent_done = function()
     {
         if (titan_talk_case != "")

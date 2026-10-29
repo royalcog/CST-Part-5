@@ -13,28 +13,25 @@ if (drawstate == "defense end")
     var _sx = _c * _d + _s * _d;
     var _sy = -_s * _d + _c * _d;
 
+    // the shut wings, then (while it's hidden) the same shapes in black over them. Ch4 used a black square
+    // here, but over the cloud sea the square's edges showed: a silhouette hides exactly the Titan and nothing else
+    var _l = [
+        [spr_cover_wings_defense_layer_0, 6, _o[0][0], _o[0][1]],
+        [spr_cover_wings_defense_layer_1, 6, _o[1][0], _o[1][1]],
+        [spr_cover_wings_defense_layer_2, 6, _o[2][0], _o[2][1]],
+        [spr_cover_wings_defense_layer_3, 6, _o[3][0], _o[3][1]],
+        [spr_cover_wings_defense_layer_4, siner, 0, 0],
+        [spr_titan_star_idle, siner, _sx, _sy],
+        [spr_cover_wings_defense_layer_5, 6, _o[4][0], _o[4][1]],
+        [spr_cover_wings_defense_layer_6, 6, _o[5][0], _o[5][1]],
+        [spr_cover_wings_defense_layer_7, 6, _o[6][0], _o[6][1]],
+    ];
     if (show_titan)
-    {
-        draw_tl(spr_cover_wings_defense_layer_0, 6, x + _o[0][0], y + _o[0][1]);
-        draw_tl(spr_cover_wings_defense_layer_1, 6, x + _o[1][0], y + _o[1][1]);
-        draw_tl(spr_cover_wings_defense_layer_2, 6, x + _o[2][0], y + _o[2][1]);
-        draw_tl(spr_cover_wings_defense_layer_3, 6, x + _o[3][0], y + _o[3][1]);
-        draw_tl(spr_cover_wings_defense_layer_4, siner, x, y);
-        draw_tl(spr_titan_star_idle, siner, x + _sx, y + _sy);
-        draw_tl(spr_cover_wings_defense_layer_5, 6, x + _o[4][0], y + _o[4][1]);
-        draw_tl(spr_cover_wings_defense_layer_6, 6, x + _o[5][0], y + _o[5][1]);
-        draw_tl(spr_cover_wings_defense_layer_7, 6, x + _o[6][0], y + _o[6][1]);
-    }
-
-    // the black square over it, then the crescent on top
+        for (var i = 0; i < array_length(_l); i++) { var _e = _l[i]; draw_tl(_e[0], _e[1], x + _e[2], y + _e[3]); }
     if (a_black > 0)
-    {
-        draw_set_colour(c_black);
-        draw_set_alpha(a_black);
-        draw_rectangle(x + black_x, y + black_y, x + black_x + black_size, y + black_y + black_size, false);
-        draw_set_alpha(1);
-        draw_set_colour(c_white);
-    }
+        for (var i = 0; i < array_length(_l); i++) { var _e = _l[i]; draw_tl_black(_e[0], _e[1], x + _e[2], y + _e[3], a_black); }
+
+    // the crescent on top
     if (a_crescent > 0)
         draw_tl(spr_titan_defense_highlight2, 0, x + _o[0][0] + crescent_dx, y + _o[0][1] + crescent_dy, a_crescent);
 }
@@ -65,4 +62,13 @@ if (drawstate == "idle" && show_titan)
     draw_tl(spr_titan_5_backwing, siner, x, y);
     draw_tl(spr_titan_6_backwing, siner, x, y);
     draw_tl(spr_titan_7_backwing, siner, x, y);
+}
+
+// ---------------- the clouds in front of its bottom edge (bobbing like the cloud sea)
+var _tc = current_time;
+for (var i = 0; i < array_length(cloud_puffs); i++)
+{
+    var _p = cloud_puffs[i];
+    draw_sprite_ext(cloud_spr, _p.img, _p.x + sin(_tc / 500 + _p.base_angle) * cloud_bob_x, _p.y + sin(_tc / 250 + _p.base_angle * 0.05) * cloud_bob_y,
+        _p.sc, _p.sc, 0, _p.col, 1);
 }
