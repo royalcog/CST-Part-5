@@ -1,0 +1,1 @@
+draw_sprite_ext(spr_shockwave_explosive, floor(f), round(x), round(y), 2, 2, 0, c_red, 1);

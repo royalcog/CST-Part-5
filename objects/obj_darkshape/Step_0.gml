@@ -20,7 +20,7 @@ if (image_alpha < 1)
     if (instance_exists(obj_soul)) dir = point_direction(x, y, obj_soul.x, obj_soul.y);
 }
 // the animation twitches in fast bursts now and then
-if (fast_t > 0) { fast_t--; anim_f += anim_speed * 4; }
+if (fast_t > 0) { fast_t--; anim_f += anim_speed * fastval; }
 else anim_f += anim_speed;
 if (!irandom(41)) fast_t = 20 + irandom(12);
 
@@ -50,9 +50,12 @@ if (instance_exists(obj_soul))
         light   = scr_approach(light, 0, light_recover);
     }
 
-    dir += angle_difference(point_direction(x, y, _sx, _sy), dir) / tracking_val;
-    x += lengthdir_x(myspeed, dir);
-    y += lengthdir_y(myspeed, dir);
+    // swims in strokes (speed pulses +-60%), and turns hardest between strokes (DR's Begin Step)
+    var _ph   = sin(t * 0.075);                        // DR: sin(true_timer * 0.15)
+    x += lengthdir_x(myspeed * (1 + _ph * 0.6), dir);
+    y += lengthdir_y(myspeed * (1 + _ph * 0.6), dir);
+    var _turn = tracking_val * (0.5 - _ph * 0.5) / 2;  // up to 16 deg a frame at 30fps
+    dir += clamp(angle_difference(point_direction(x, y, _sx, _sy), dir), -_turn, _turn);
 }
 
 // copies push each other apart (DR's do_pushback)

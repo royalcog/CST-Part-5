@@ -13,6 +13,7 @@ spin        = 1.40625;  // deg a frame it spins  [DR 2.8125]
 wait_time   = 120;      // frames it sits before it goes  [DR alarm[0] = 60]
 hit_radius  = 12;       // DR's radius 22, scaled like the copies' hitboxes
 art_scale   = 1;      // same size relative to the copies as in Deltarune
+keep_homing = true;   // DR: reds inherit the copies' stroke-turning, so they never stop homing (false = they fly straight once `track` runs out)
 
 // --- state ---
 dir   = instance_exists(obj_soul) ? point_direction(x, y, obj_soul.x, obj_soul.y) : 270;   // aimed at the SOUL as it spawns

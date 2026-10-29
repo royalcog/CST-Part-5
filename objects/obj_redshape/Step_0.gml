@@ -23,6 +23,12 @@ if (t > wait_time && instance_exists(obj_soul))
 
     // homes in, less and less as `track` wears off
     if (track > 0) dir += angle_difference(point_direction(x, y, _sx, _sy), dir) * track * 0.16;
+    // ...and like every copy, it keeps turning toward the SOUL between strokes
+    if (keep_homing)
+    {
+        var _turn = 16 * (0.5 - sin(t * 0.075) * 0.5) / 2;
+        dir += clamp(angle_difference(point_direction(x, y, _sx, _sy), dir), -_turn, _turn);
+    }
 
     x += lengthdir_x(spd, dir);
     y += lengthdir_y(spd, dir);

@@ -1,29 +1,25 @@
-var _k  = art_scale * scalefactor * grow;
-var _sh = (light > 0) ? random_range(-1, 1) * light : 0;   // shudders as it's purified
-var _dx = round(x + _sh), _dy = round(y);
+// Deltarune's: while it's appearing, each row of the sprite sways side to side and settles as it fades in.
+// it goes white as it's purified (its shrivel frames + white over the top)
+var _k   = art_scale * scalefactor * grow;
 var _ang = face_dir ? dir : 0;
+var _shr = (light > 0 && shrink_sprite != -1);
+var _spr = _shr ? shrink_sprite : anim_sprite;
+var _img = _shr ? stage : floor(anim_f) mod sprite_get_number(anim_sprite);
+var _wob = 4 - image_alpha * 4;   // DR: 4px of sway when it first appears, none once it's in
 
-if (light > 0 && shrink_sprite != -1)
-    draw_sprite_ext(shrink_sprite, stage, _dx, _dy, _k, _k, _ang, c_white, image_alpha);
-	if (light > 0 && shrink_sprite != -1)
-	{
-	    // glows white as the light purifies it
-	    gpu_set_fog(true, c_white, 0, 0);
-	    draw_sprite_ext(shrink_sprite, stage, _dx, _dy, _k, _k, _ang, c_white, image_alpha * light);
-	    gpu_set_fog(false, c_white, 0, 0);
-	}
-else if (anim_sprite != -1)
-    draw_sprite_ext(anim_sprite, floor(anim_f) mod sprite_get_number(anim_sprite), _dx, _dy, _k, _k, _ang, c_white, image_alpha);
-else
+if (_wob > 0.05 && _ang == 0)
 {
-    // placeholder until the sprites are in: black blob with a white outline + eyes
-    var _r = radius * 0.5 * scalefactor * grow;
-    draw_set_alpha(image_alpha);
-    draw_set_colour(merge_colour(c_black, c_white, light));
-    draw_circle(_dx, _dy, _r, false);
-    draw_set_colour(c_white);
-    draw_circle(_dx, _dy, _r, true);
-    draw_circle(_dx - _r * 0.35, _dy - _r * 0.2, max(1, _r * 0.15), false);
-    draw_circle(_dx + _r * 0.35, _dy - _r * 0.2, max(1, _r * 0.15), false);
-    draw_set_alpha(1);
+    var _w  = sprite_get_width(_spr), _h = sprite_get_height(_spr);
+    var _ox = sprite_get_xoffset(_spr), _oy = sprite_get_yoffset(_spr);
+    for (var r = 0; r < _h; r++)
+        draw_sprite_part_ext(_spr, _img, 0, r, _w, 1,
+            round(x - _ox * _k + sin(r + t * 0.5) * _wob), round(y + (r - _oy) * _k), _k, _k, c_white, image_alpha);
+}
+else draw_sprite_ext(_spr, _img, round(x), round(y), _k, _k, _ang, c_white, image_alpha);
+
+if (light > 0)
+{
+    gpu_set_fog(true, c_white, 0, 0);
+    draw_sprite_ext(_spr, _img, round(x) + 1, round(y), _k, _k, _ang, c_white, light);
+    gpu_set_fog(false, c_white, 0, 0);
 }
