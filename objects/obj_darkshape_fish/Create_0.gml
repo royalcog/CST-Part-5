@@ -34,6 +34,7 @@ die_t   = 0;
 fading  = false;
 image_alpha = 0;
 surging = false;
+rumbled = false;   // played its rumble yet
 
 /// light specks + the organ swell for a piece that's in the light
 lit_fx = function(_x, _y)

@@ -24,7 +24,7 @@ landed  = false;
 
 // --- as an enemy (obj_battle_menu). stats are Deltarune's Titan Spawn ---
 enemy_name  = "Titan Spawn";
-max_hp      = 3000;
+max_hp      = 1200;
 hp          = max_hp;
 at          = 18;       // its bullets do about at * 5 to whoever they hit (for when its attacks are built)
 df          = 0;

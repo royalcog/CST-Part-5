@@ -77,7 +77,7 @@ fb_fade  = 0;
 
 // --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
 crit_points  = 150;
-fight_mult   = 1.5;    // FIGHT damage multiplier (1 = Deltarune's own numbers)
+fight_mult   = 2.25;    // FIGHT damage multiplier (1 = Deltarune's own numbers)
 
 // --- tuning: TP from FIGHT (Deltarune: accuracy / 10, or / 26 in darkness, out of 250) ---
 fight_tp_div      = 10;
@@ -450,7 +450,7 @@ apply = function(_a)
                     if (_a.target != noone)
                     {
                         var _rb = max(1, _d.at * 11 + _d.mg * 5 - _a.target.df * 3);
-                        _a.target.take_hit(round(_rb * _a.target.rudebuster_mult * random_range(0.95, 1.05)), _d.color);
+                        _a.target.take_hit(round(_rb * _a.target.rudebuster_mult * fight_mult * random_range(0.95, 1.05)), _d.color);
                     }
                 break;
                 case "heal":

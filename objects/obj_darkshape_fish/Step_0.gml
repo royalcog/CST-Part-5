@@ -22,8 +22,8 @@ if (!dying)
     if (spd < 1.25) surging = false;
     else if (!surging)
     {
-        audio_play_sound(snd_screenshake_bc, 1, false, 1, 0, 0.35);
-        with (obj_darkshape_fish) surging = true;
+        if (!rumbled) audio_play_sound(snd_screenshake_bc, 1, false, 1, 0, 0.35);   // only as it first surges in
+        with (obj_darkshape_fish) { surging = true; rumbled = true; }
     }
     tracking = scr_approach(tracking, tracking_max, 0.01875);
     if (instance_exists(obj_soul))

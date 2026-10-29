@@ -1,3 +1,5 @@
+if (array_length(parts) == 0) exit;   // first frame: it hasn't worked out where its pieces are yet
+
 /// one piece: its animation normally, or its shrivel frames + white glow + shudder while it's being purified
 var _draw = function(_anim, _shrink, _p, _l, _i, _k)
 {

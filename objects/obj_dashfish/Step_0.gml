@@ -28,7 +28,7 @@ if (instance_exists(obj_soul))
     else scr_graze(_bx, _by, hit_r);
 }
 
-// gone once its tail's well past the box
-var _in   = scr_get_box_interior();
+// gone once its tail's off the far side of the screen
+var _vx   = camera_get_view_x(view_camera[0]), _vw = camera_get_view_width(view_camera[0]);
 var _tail = piece(segs + 1);
-if ((dir > 0 && _tail.x > _in.x2 + 60) || (dir < 0 && _tail.x < _in.x1 - 60)) instance_destroy();
+if ((dir > 0 && _tail.x > _vx + _vw + 20) || (dir < 0 && _tail.x < _vx - 20)) instance_destroy();

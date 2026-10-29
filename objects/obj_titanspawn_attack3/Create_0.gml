@@ -63,6 +63,7 @@ spawn_dash = function()
         damage = other.damage;
         dir    = _dir;
         y0     = _y;
-        hx     = (_dir > 0) ? _in.x1 - 30 : _in.x2 + 30;
+        var _vx = camera_get_view_x(view_camera[0]), _vw = camera_get_view_width(view_camera[0]);
+        hx     = (_dir > 0) ? _vx - 20 : _vx + _vw + 20;   // just off the edge of the screen
     }
 }
