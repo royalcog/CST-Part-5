@@ -288,6 +288,7 @@
     {"id":{"name":"obj_darkshape_fish","path":"objects/obj_darkshape_fish/obj_darkshape_fish.yy",},},
     {"id":{"name":"obj_darkshape_greenblob","path":"objects/obj_darkshape_greenblob/obj_darkshape_greenblob.yy",},},
     {"id":{"name":"obj_darkshape","path":"objects/obj_darkshape/obj_darkshape.yy",},},
+    {"id":{"name":"obj_dashfish","path":"objects/obj_dashfish/obj_dashfish.yy",},},
     {"id":{"name":"obj_dating_overlay","path":"objects/obj_dating_overlay/obj_dating_overlay.yy",},},
     {"id":{"name":"obj_datingsim_inverted","path":"objects/obj_datingsim_inverted/obj_datingsim_inverted.yy",},},
     {"id":{"name":"obj_datingsim_UI","path":"objects/obj_datingsim_UI/obj_datingsim_UI.yy",},},

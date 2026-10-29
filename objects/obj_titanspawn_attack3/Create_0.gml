@@ -43,3 +43,26 @@ spawn_fish = function()
         dir     = heading;
     }
 }
+
+// the dashing fish (can't be purified): one every dash_gap frames, on a random row, from a random side
+dash_start = 90;    // first one
+dash_gap   = 70;    // then one every this many frames...
+dash_pair  = 0.25;  // ...and sometimes two at once, on different rows
+last_row   = -1;
+
+spawn_dash = function()
+{
+    var _in  = scr_get_box_interior();
+    var _row;
+    do { _row = irandom(4); } until (_row != last_row);   // 5 rows, never the same one twice running
+    last_row = _row;
+    var _y   = lerp(_in.y1 + 16, _in.y2 - 16, _row / 4);
+    var _dir = choose(-1, 1);
+    with (instance_create_depth(0, 0, depth, obj_battle_dashfish))
+    {
+        damage = other.damage;
+        dir    = _dir;
+        y0     = _y;
+        hx     = (_dir > 0) ? _in.x1 - 30 : _in.x2 + 30;
+    }
+}

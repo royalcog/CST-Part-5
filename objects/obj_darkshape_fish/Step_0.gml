@@ -10,13 +10,12 @@ if (fading)
 t++;
 image_alpha = min(1, image_alpha + 0.05);
 
-// slithers toward the SOUL, snaking side to side. the more it's lost, the faster and twitchier it gets
-var _k = power(panic, pieces_start - pieces);
+// slithers toward the SOUL, snaking side to side (slowed while it's lit)
 if (instance_exists(obj_soul))
-    heading += clamp(angle_difference(point_direction(x, y, obj_soul.x, obj_soul.y), heading), -turn_rate * _k, turn_rate * _k);
-weave += weave_speed * _k;
+    heading += clamp(angle_difference(point_direction(x, y, obj_soul.x, obj_soul.y), heading), -turn_rate, turn_rate);
+weave += weave_speed;
 dir = heading + sin(weave) * weave_amp;
-spd = min(spd + 0.03, max_speed * _k);
+spd = scr_approach(spd, max_speed * (lit ? light_slow : 1), 0.03);
 x += lengthdir_x(spd, dir);
 y += lengthdir_y(spd, dir);
 
@@ -38,39 +37,45 @@ for (var h = 1; h < array_length(hist) && array_length(parts) <= pieces; h++)
     }
 }
 
-// the light burns it from the tail end (only once the whole body's out)
+// the light purifies the whole fish: faster the more of it's in the light
+lit = false;
 if (instance_exists(obj_soul))
 {
     var _aura = instance_exists(ctrl) ? ctrl.aura_radius : 48;
-    var _end  = parts[array_length(parts) - 1];
-    if (array_length(parts) == pieces + 1 && point_distance(_end.x, _end.y, obj_soul.x, obj_soul.y) < _aura + 8)
+    var _n_lit = 0;
+    for (var i = 0; i < array_length(parts); i++)
     {
-        burn = min(1, burn + ((pieces == 0) ? head_rate : light_rate));
-        if (instance_exists(ctrl))
+        var _p = parts[i];
+        if (point_distance(_p.x, _p.y, obj_soul.x, obj_soul.y) < _aura + 8)
         {
-            ctrl.in_light = true;
-            if (!irandom(2)) array_push(ctrl.particles, {
-                x: _end.x + random_range(-10, 10), y: _end.y + random_range(-10, 10),
-                dir: point_direction(obj_soul.x, obj_soul.y, _end.x, _end.y), spd: 0.5 + random(1.5), size: 2
+            _n_lit++;
+            if (instance_exists(ctrl) && !irandom(5)) array_push(ctrl.particles, {
+                x: _p.x + random_range(-10, 10), y: _p.y + random_range(-10, 10),
+                dir: point_direction(obj_soul.x, obj_soul.y, _p.x, _p.y), spd: 0.5 + random(1.5), size: 2
             });
         }
-        if (burn >= 1)
-        {
-            instance_create_depth(_end.x, _end.y, depth, obj_darkshape_greenblob);
-            if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
-            audio_play_sound(snd_dark_odd, 1, false, 0.3, 0, 1.3);
-            if (pieces == 0)
-            {
-                // the head's gone too: one more pellet for finishing it off
-                instance_create_depth(_end.x, _end.y, depth, obj_darkshape_greenblob);
-                instance_destroy();
-                exit;
-            }
-            pieces--;
-            burn = 0;
-        }
     }
-    else burn = max(0, burn - 0.005);   // heals slowly out of the light
+    if (_n_lit > 0)
+    {
+        lit = true;
+        light = min(1, light + light_rate * (1 + light_extra * (_n_lit - 1)));
+        if (instance_exists(ctrl)) ctrl.in_light = true;
+    }
+    else light = max(0, light - light_recover);
+
+    if (light >= 1)
+    {
+        // purified: COURAGE spread along its body
+        for (var k = 0; k < pellets; k++)
+        {
+            var _p = parts[floor(k * (array_length(parts) - 1) / max(1, pellets - 1))];
+            instance_create_depth(_p.x, _p.y, depth, obj_darkshape_greenblob);
+        }
+        if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
+        audio_play_sound(snd_dark_odd, 1, false, 0.4, 0, 1.3);
+        instance_destroy();
+        exit;
+    }
 }
 
 // any piece touching the SOUL hurts (it doesn't vanish: the SOUL's flash stops repeat hits)

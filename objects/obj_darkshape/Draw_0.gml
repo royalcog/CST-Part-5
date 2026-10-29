@@ -5,6 +5,13 @@ var _ang = face_dir ? dir : 0;
 
 if (light > 0 && shrink_sprite != -1)
     draw_sprite_ext(shrink_sprite, stage, _dx, _dy, _k, _k, _ang, c_white, image_alpha);
+	if (light > 0 && shrink_sprite != -1)
+	{
+	    // glows white as the light purifies it
+	    gpu_set_fog(true, c_white, 0, 0);
+	    draw_sprite_ext(shrink_sprite, stage, _dx, _dy, _k, _k, _ang, c_white, image_alpha * light * 0.7);
+	    gpu_set_fog(false, c_white, 0, 0);
+	}
 else if (anim_sprite != -1)
     draw_sprite_ext(anim_sprite, floor(anim_f) mod sprite_get_number(anim_sprite), _dx, _dy, _k, _k, _ang, c_white, image_alpha);
 else

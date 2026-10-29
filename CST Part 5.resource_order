@@ -247,6 +247,7 @@
     {"name":"obj_damage_number","order":2,"path":"objects/obj_damage_number/obj_damage_number.yy",},
     {"name":"obj_darkshape_greenblob","order":2,"path":"objects/obj_darkshape_greenblob/obj_darkshape_greenblob.yy",},
     {"name":"obj_darkshape","order":1,"path":"objects/obj_darkshape/obj_darkshape.yy",},
+    {"name":"obj_dashfish","order":2,"path":"objects/obj_dashfish/obj_dashfish.yy",},
     {"name":"obj_datingsim_inverted","order":2,"path":"objects/obj_datingsim_inverted/obj_datingsim_inverted.yy",},
     {"name":"obj_datingsim_UI","order":3,"path":"objects/obj_datingsim_UI/obj_datingsim_UI.yy",},
     {"name":"obj_delayed_caller","order":14,"path":"objects/obj_delayed_caller/obj_delayed_caller.yy",},
