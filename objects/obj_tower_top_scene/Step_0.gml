@@ -4,7 +4,7 @@ t++;
 if (cam_pan.on)
 {
     cam_pan.t++;
-    var _pk = clamp(cam_pan.t / cam_pan_time, 0, 1);
+    var _pk = clamp(cam_pan.t / cam_pan.time, 0, 1);
     set_cam(lerp(cam_pan.from, cam_pan.to, _pk * _pk * (3 - 2 * _pk)));
     if (_pk >= 1) cam_pan.on = false;
 }
@@ -49,7 +49,7 @@ switch (state)
         {
             global.debug_skip_titan = false;
             var _fx = forward_dx * forward_frames;   // how far they walk after self_9
-            set_cam(cam_battle_x + (forward_cam_follow ? forward_cam_dx * forward_frames : 0));
+            set_cam(cam_battle_x + (forward_cam_pan ? forward_cam_dist : 0));
             place(obj_susie,  susie_right,  regroup_spots.susie.x  + _fx, regroup_spots.susie.y);
             place(obj_ralsei, ralsei_right, regroup_spots.ralsei.x + _fx, regroup_spots.ralsei.y);
             place(obj_queen,  queen_right,  regroup_spots.queen.x  + _fx, regroup_spots.queen.y);
@@ -60,6 +60,24 @@ switch (state)
             state = "titan";
             t = 0;
             scr_call_after_frames(function() { titan_reveal(); }, 30);
+        }
+    }
+    break;
+	
+    case "putaway":
+    {
+        // the draw-weapon animations, backwards (frame by frame here: their own freeze-on-the-last-frame check
+        // would stop them straight away going this direction)
+        var _k = t * putaway_speed;
+        with (obj_susie)  image_index = max(0, image_number - 1 - _k);
+        with (obj_ralsei) image_index = max(0, image_number - 1 - _k);
+        if (obj_susie.image_index <= 0 && obj_ralsei.image_index <= 0)
+        {
+            with (obj_susie)  { sprite_index = other.susie_right;  last_sprite = sprite_index; image_index = 0; }
+            with (obj_ralsei) { sprite_index = other.ralsei_right; last_sprite = sprite_index; image_index = 0; }
+            state = "after_battle";
+            t = 0;
+            putaway_then();
         }
     }
     break;

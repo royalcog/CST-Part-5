@@ -9,7 +9,7 @@
 // --- tuning: where it stands. Ch4 puts its top-left corner 494px in from the right edge of the screen and
 //     88px above the top, at 2x (so it hangs off the right side). measured from the camera when it's made ---
 scale        = 2;
-right_inset  = 494;           // px in from the right edge of the screen (its left edge)
+right_inset  = 450;           // px in from the right edge of the screen (its left edge). Ch4: 494 (on a 640-wide screen)
 top_offset   = -88;           // px from the top of the screen (its top edge)
 depth        = 25;            // in front of the cloud sea (50), behind the floor (Tiles_1, 0) and everyone on it
 
@@ -35,14 +35,10 @@ afterimage_grow = 0.005;      // scale per frame
 afterimage_fade = 0.025;      // alpha per frame (from 0.5)
 
 // --- tuning: the clouds in front of its bottom edge (so it looks like it's standing in them, not cut off).
-//     a band of puffs drawn over it, the same as the cloud sea's. measured from its top-left, room px ---
-cloud_band_top    = 300;      // the band's top (the Titan's 420 tall at 2x: its bottom's at 420)...
-cloud_band_bottom = 480;      // ...and bottom
+//     no new clouds: the cloud sea's own puffs that are already sitting along its bottom edge get drawn again
+//     in front of it, in exactly the same spots, so nothing pops in. measured from its top-left, room px ---
+cloud_band_top    = 375;      // sea puffs lower than this go in front (the Titan's 420 tall at 2x: its bottom's at 420)
 cloud_band_pad    = 40;       // px past its left/right edges
-cloud_spacing     = 28;       // px between puffs (a grid, jittered)
-cloud_jitter      = 10;
-cloud_scale       = [1.8, 2.3];
-cloud_fade_rows   = 2;        // the top few rows thin out (so the band's top edge isn't a straight line)
 
 // what runs when each part's done (the scene sets these)
 on_crescent_done = undefined;
@@ -74,34 +70,22 @@ after_grab  = false;
 after_scale = 1;
 after_alpha = 0.5;
 
-// --- the cloud band (same sprite + colours as the cloud sea, if it's there) ---
-cloud_spr   = spr_rising_cloudx2_outline;
-cloud_bob_x = 4;
-cloud_bob_y = 4;
-var _far = 0.3, _near = 0.85;
-with (obj_plat_cloud) if (mode == "sea") { other.cloud_spr = spr_puff; other.cloud_bob_x = bob_x; other.cloud_bob_y = bob_y; _far = sea_far_light; _near = sea_near_light; }
+// --- the cloud sea's puffs along its bottom edge (picked once: they're the sea's own, so they bob in step with it) ---
+cloud_sea   = noone;
 cloud_puffs = [];
 var _x0 = x - cloud_band_pad;
 var _x1 = min(x + sprite_get_width(spr_titan_0_backwing) * scale, _cx + _vw) + cloud_band_pad;
-var _row = 0;
-for (var _py = y + cloud_band_top; _py <= y + cloud_band_bottom; _py += cloud_spacing)
+var _ytop = y + cloud_band_top;
+with (obj_plat_cloud)
 {
-    for (var _px = _x0; _px <= _x1; _px += cloud_spacing)
+    if (mode != "sea") continue;
+    other.cloud_sea = id;
+    for (var i = 0; i < array_length(puffs); i++)
     {
-        if (_row < cloud_fade_rows && random(1) < 0.5 - _row * 0.2) continue;   // ragged top edge
-        var _yy = _py + random_range(-cloud_jitter, cloud_jitter);
-        var _light = lerp(_far, _near, clamp(_yy / room_height, 0, 1)) + random_range(-0.05, 0.05);
-        array_push(cloud_puffs, {
-            x: _px + random_range(-cloud_jitter, cloud_jitter), y: _yy,
-            img: irandom(sprite_get_number(cloud_spr) - 1),
-            sc: random_range(cloud_scale[0], cloud_scale[1]),
-            col: merge_color(c_black, c_white, clamp(_light, 0, 1)),
-            base_angle: random(360)
-        });
+        var _p = puffs[i];
+        if (_p.y >= _ytop && _p.x >= _x0 && _p.x <= _x1) array_push(other.cloud_puffs, _p);
     }
-    _row++;
 }
-array_sort(cloud_puffs, function(_a, _b) { return sign(_a.y - _b.y); });
 
 /// draws _spr frame _img with its top-left corner at (_x, _y) at our scale (the sprites' origins are centred:
 /// Ch4's were top-left, so this puts them where Ch4's numbers expect)

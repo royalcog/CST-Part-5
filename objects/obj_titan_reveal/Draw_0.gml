@@ -64,11 +64,21 @@ if (drawstate == "idle" && show_titan)
     draw_tl(spr_titan_7_backwing, siner, x, y);
 }
 
-// ---------------- the clouds in front of its bottom edge (bobbing like the cloud sea)
-var _tc = current_time;
-for (var i = 0; i < array_length(cloud_puffs); i++)
+// ---------------- the cloud sea's puffs along its bottom edge, again, in front of it (drawn exactly the way
+// obj_plat_cloud draws them, so they sit right on top of themselves)
+if (instance_exists(cloud_sea))
 {
-    var _p = cloud_puffs[i];
-    draw_sprite_ext(cloud_spr, _p.img, _p.x + sin(_tc / 500 + _p.base_angle) * cloud_bob_x, _p.y + sin(_tc / 250 + _p.base_angle * 0.05) * cloud_bob_y,
-        _p.sc, _p.sc, 0, _p.col, 1);
+    var _tc = current_time;
+    with (cloud_sea)
+    {
+        for (var i = 0; i < array_length(other.cloud_puffs); i++)
+        {
+            var _p  = other.cloud_puffs[i];
+            var _px = _p.x + sin(_tc / 500 + _p.base_angle) * bob_x;
+            var _py = _p.y + sin(_tc / 250 + _p.base_angle * 0.05) * bob_y;
+            if (outline && spr_puff_ol != -1)
+                draw_sprite_ext(spr_puff_ol, _p.img mod sprite_get_number(spr_puff_ol), _px, _py - 1, _p.sc, _p.sc, 0, _p.col, 1);
+            draw_sprite_ext(spr_puff, _p.img, _px, _py, _p.sc, _p.sc, 0, _p.col, 1);
+        }
+    }
 }

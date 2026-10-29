@@ -16,7 +16,7 @@ cam_start_x  = 0;
 cam_battle_x = round((room_width - vw) / 2);
 cam_pan_time = 70;                 // frames
 cam_x        = cam_start_x;
-cam_pan      = { on: false, t: 0, from: 0, to: 0 };
+cam_pan      = { on: false, t: 0, from: 0, to: 0, time: cam_pan_time };
 set_cam = function(_x)
 {
     cam_x = _x;
@@ -24,6 +24,11 @@ set_cam = function(_x)
     if (instance_exists(obj_camera_controller)) obj_camera_controller.cam_x = round(_x);   // it'd put the camera back otherwise
 }
 set_cam(cam_start_x);
+/// pans the camera to x _to over _frames frames (eased in and out). anything can call it
+pan_cam = function(_to, _frames)
+{
+    cam_pan = { on: true, t: 0, from: cam_x, to: _to, time: max(1, _frames) };
+}
 
 // --- tuning: where everyone stands (their feet, room px) ---
 cx          = cam_start_x + vw / 2;   // the middle of the screen while they talk
@@ -250,7 +255,7 @@ end_this = function()
     scr_char_move_now(obj_susie,  susie_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
     scr_char_move_now(obj_ralsei, ralsei_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
     scr_char_move_now(obj_queen,  queen_right, true, end_walk_dx, end_walk_dy, 1, end_walk_frames);
-    cam_pan = { on: true, t: 0, from: cam_x, to: cam_battle_x };
+    pan_cam(cam_battle_x, cam_pan_time);
     spawns = [];
     for (var i = 0; i < array_length(spawn_spots); i++)
     {
@@ -332,21 +337,34 @@ after_heal        = 20;           // frames before self_9
 forward_dx        = 1;            // px per frame they walk forward after self_9 (right, toward the Titan): 180px
 forward_dy        = 0;
 forward_frames    = 180;
-forward_cam_follow = true;        // the camera pans along while they walk...
-forward_cam_dx    = 1.5;          // ...this many px per frame (1.5 x 180 = 270px: the camera starts at 324, the room's
-                                  // right edge is at 647). faster than them, so they end up further back on screen
+forward_cam_pan   = true;         // the camera pans right to where the Titan comes in, while they walk...
+forward_cam_dist  = 270;          // ...this far (the camera starts at 324, the room's right edge is at 647)...
+forward_cam_time  = 180;          // ...over this many frames (eased)
 forward_pause     = 20;           // frames after they stop before titan_reveal()
-cam_follow        = { on: false, t: 0, frames: 0, dx: 0, dy: 0 };
+putaway_speed     = 12 / 60;      // frames per frame they play their draw-weapon animations backwards at (the sprites' 12fps)
+
+/// Susie & Ralsei put their weapons away (their draw-weapon animations, backwards), then they're back in their
+/// walk sprites and _then runs. the battle sprites are origin-aligned with the walk sprites, so it's a straight swap
+put_away = function(_then)
+{
+    with (obj_susie)  { sprite_index = spr_susie_battle_intro;  last_sprite = sprite_index; image_speed = 0; anim_loop = true; image_index = image_number - 1; }
+    with (obj_ralsei) { sprite_index = spr_ralsei_battle_intro; last_sprite = sprite_index; image_speed = 0; anim_loop = true; image_index = image_number - 1; }
+    putaway_then = _then;
+    state = "putaway";
+    t = 0;
+}
 
 /// the battle's won (obj_battle_menu.on_win): weapons away, then everyone walks back together
 after_battle = function()
 {
     global.cutscene_lock = true;
-    // their battle sprites are origin-aligned with the walk sprites they stood in before the battle, so it's a straight swap back
-    with (obj_susie)  { sprite_index = other.susie_right;  last_sprite = sprite_index; image_index = 0; image_speed = 0; anim_loop = true; }
-    with (obj_ralsei) { sprite_index = other.ralsei_right; last_sprite = sprite_index; image_index = 0; image_speed = 0; anim_loop = true; }
     face(obj_queen, queen_right);
+    put_away(function() { regroup(); });
+}
 
+/// everyone walks back into a line, then self_8
+regroup = function()
+{
     scr_call_after_frames(function()
     {
         regrouped = 0;
@@ -418,7 +436,7 @@ walk_forward = function()
     scr_char_move_now(obj_susie,  susie_right,  true, forward_dx, forward_dy, 1, forward_frames);
     scr_char_move_now(obj_ralsei, ralsei_right, true, forward_dx, forward_dy, 1, forward_frames);
     scr_char_move_now(obj_queen,  queen_right,  true, forward_dx, forward_dy, 1, forward_frames);
-    if (forward_cam_follow) cam_follow = { on: true, t: 0, frames: forward_frames, dx: forward_cam_dx, dy: 0 };
+    if (forward_cam_pan) pan_cam(cam_x + forward_cam_dist, forward_cam_time);
     scr_call_after_frames(function()
     {
         face(obj_susie,  susie_right);
