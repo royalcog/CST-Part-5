@@ -966,7 +966,7 @@
     {"name":"spr_shelter_panel","order":16,"path":"sprites/spr_shelter_panel/spr_shelter_panel.yy",},
     {"name":"spr_shelter","order":6,"path":"sprites/spr_shelter/spr_shelter.yy",},
     {"name":"spr_shelterfield","order":7,"path":"sprites/spr_shelterfield/spr_shelterfield.yy",},
-    {"name":"spr_shockwave_explosion","order":2,"path":"sprites/spr_shockwave_explosion/spr_shockwave_explosion.yy",},
+    {"name":"spr_shockwave_explosive","order":2,"path":"sprites/spr_shockwave_explosive/spr_shockwave_explosive.yy",},
     {"name":"spr_soul_green","order":5,"path":"sprites/spr_soul_green/spr_soul_green.yy",},
     {"name":"spr_soul_lightblue","order":4,"path":"sprites/spr_soul_lightblue/spr_soul_lightblue.yy",},
     {"name":"spr_soul_red","order":3,"path":"sprites/spr_soul_red/spr_soul_red.yy",},

@@ -1164,7 +1164,7 @@
     {"id":{"name":"spr_shelter_panel","path":"sprites/spr_shelter_panel/spr_shelter_panel.yy",},},
     {"id":{"name":"spr_shelter","path":"sprites/spr_shelter/spr_shelter.yy",},},
     {"id":{"name":"spr_shelterfield","path":"sprites/spr_shelterfield/spr_shelterfield.yy",},},
-    {"id":{"name":"spr_shockwave_explosion","path":"sprites/spr_shockwave_explosion/spr_shockwave_explosion.yy",},},
+    {"id":{"name":"spr_shockwave_explosive","path":"sprites/spr_shockwave_explosive/spr_shockwave_explosive.yy",},},
     {"id":{"name":"spr_soul_green","path":"sprites/spr_soul_green/spr_soul_green.yy",},},
     {"id":{"name":"spr_soul_lightblue","path":"sprites/spr_soul_lightblue/spr_soul_lightblue.yy",},},
     {"id":{"name":"spr_soul_pink","path":"sprites/spr_soul_pink/spr_soul_pink.yy",},},
