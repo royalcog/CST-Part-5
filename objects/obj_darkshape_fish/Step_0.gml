@@ -18,6 +18,13 @@ pop  = lerp(pop, 1, 0.125);
 if (!dying)
 {
     spd = 2.125 + sin(t * 0.05625) * 1.0625;
+    // a low rumble every time the fish surge back up (DR plays it once for all of them, at 0.35 pitch)
+    if (spd < 1.25) surging = false;
+    else if (!surging)
+    {
+        audio_play_sound(snd_screenshake_bc, 1, false, 1, 0, 0.35);
+        with (obj_darkshape_fish) surging = true;
+    }
     tracking = scr_approach(tracking, tracking_max, 0.01875);
     if (instance_exists(obj_soul))
     {
@@ -89,7 +96,7 @@ if (!dying && light >= 1)
     dying = true;
     die_t = 0;
     pop   = 2;
-    audio_play_sound(snd_dark_odd, 1, false, 0.5, 0, 0.65);
+    audio_play_sound(snd_spearappear_choppy, 1, false, 1, 0, 0.65);   // DR's, at 0.65 pitch
     if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
     for (var i = 0; i < array_length(segs); i++) segs[i].auto = (i + 1) * 4;
     if (instance_exists(ctrl))

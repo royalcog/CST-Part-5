@@ -33,6 +33,7 @@ dying   = false;
 die_t   = 0;
 fading  = false;
 image_alpha = 0;
+surging = false;
 
 /// light specks + the organ swell for a piece that's in the light
 lit_fx = function(_x, _y)
