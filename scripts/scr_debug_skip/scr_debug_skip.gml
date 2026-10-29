@@ -1,11 +1,13 @@
 /// debug: jump straight to the top of the tower (rm_tower_top), as if you'd just climbed off the top of rm_tower2.
 /// _to_battle: also skip the talk up there and go straight into "Let's end this." -> the Titan Spawn battle
-function scr_debug_skip_to_tower_top(_to_battle = false)
+/// _to_titan: skip the battle and the talk after it too, straight to the Titan reveal
+function scr_debug_skip_to_tower_top(_to_battle = false, _to_titan = false)
 {
     global.plat_hp           = { susie: 290, ralsei: 210 };   // full HP, like after the heal
     global.plat_lock         = false;
     global.cutscene_lock     = false;
     global.debug_skip_battle = _to_battle;                     // obj_tower_top_scene checks this
+    global.debug_skip_titan  = _to_titan;                      // (and this)
 
     // anything mid-way through closes
     with (obj_textbox) instance_destroy();

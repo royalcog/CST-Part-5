@@ -1,0 +1,1 @@
+if (surface_exists(after_surf)) surface_free(after_surf);

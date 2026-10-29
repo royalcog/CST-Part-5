@@ -43,6 +43,24 @@ switch (state)
             global.dialogue_self = 7;               // where "Let's end this." leaves it, so Z after the battle opens self_8
             end_this();
         }
+		
+		// debug (F7): skip the battle and the talk after it, straight to where they stop walking -> the Titan reveal
+        if (variable_global_exists("debug_skip_titan") && global.debug_skip_titan)
+        {
+            global.debug_skip_titan = false;
+            var _fx = forward_dx * forward_frames;   // how far they walk after self_9
+            set_cam(cam_battle_x + _fx);
+            place(obj_susie,  susie_right,  regroup_spots.susie.x  + _fx, regroup_spots.susie.y);
+            place(obj_ralsei, ralsei_right, regroup_spots.ralsei.x + _fx, regroup_spots.ralsei.y);
+            place(obj_queen,  queen_right,  regroup_spots.queen.x  + _fx, regroup_spots.queen.y);
+            with (obj_lancer) instance_destroy();
+            with (chair) instance_destroy();
+            global.cutscene_lock = true;
+            global.dialogue_self = 9;
+            state = "titan";
+            t = 0;
+            scr_call_after_frames(function() { titan_reveal(); }, 30);
+        }
     }
     break;
 	

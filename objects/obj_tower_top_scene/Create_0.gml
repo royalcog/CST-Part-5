@@ -426,7 +426,44 @@ walk_forward = function()
     }, forward_frames + 2);
 }
 
-/// TODO: the Titan reveal (built from the reference files)
+// ---------------------------------------------------------------- the Titan reveal (obj_titan_reveal)
+// black-out -> crescent (holds) -> [titan_talk_case, if set] -> the wings open -> titan_after_reveal()
+
+// --- tuning ---
+titan_talk_case  = "";            // "" = no talk: the crescent just holds for titan_hold frames, then it opens.
+                                  // set to a self_ case to talk while the crescent's up: end that case with
+                                  //   scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) titan_open(); }, 0);
+titan_talk_self  = 0;             // that case's number (so the next Z after it is right)
+titan_talk_wait  = 30;            // frames after the crescent's in before the talk opens
+titan_hold       = 120;           // frames the crescent holds when there's no talk
+titan            = noone;
+
 titan_reveal = function()
+{
+    with (obj_titan_reveal) instance_destroy();
+    titan = instance_create_depth(0, 0, 150, obj_titan_reveal);
+    titan.on_crescent_done = function()
+    {
+        if (titan_talk_case != "")
+            scr_call_after_frames(function()
+            {
+                create_textbox(titan_talk_case);
+                global.dialogue_self = titan_talk_self;
+            }, titan_talk_wait);
+        else
+            scr_call_after_frames(function() { titan_open(); }, titan_hold);
+    };
+    titan.on_open_done = function() { titan_after_reveal(); };
+    titan.blackout();
+}
+
+/// the wings open (call this from the end of the talk while the crescent's up)
+titan_open = function()
+{
+    if (instance_exists(titan)) titan.open();
+}
+
+/// TODO: the Titan's standing there, wings open: the battle starts from here
+titan_after_reveal = function()
 {
 }

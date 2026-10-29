@@ -18,6 +18,7 @@ if (keyboard_check_pressed(vk_f4))
     show_debug_message(global.wasd_on ? "Controls: WASD + arrows" : "Controls: arrows only");
 }
 
-// debug: F5 = straight to the top of the tower, F6 = straight into the Titan Spawn battle
+// debug: F5 = straight to the top of the tower, F6 = straight into the Titan Spawn battle, F7 = straight to the Titan reveal
 if (keyboard_check_pressed(vk_f5)) scr_debug_skip_to_tower_top(false);
 if (keyboard_check_pressed(vk_f6)) scr_debug_skip_to_tower_top(true);
+if (keyboard_check_pressed(vk_f7)) scr_debug_skip_to_tower_top(false, true);
