@@ -69,12 +69,20 @@ switch (state)
         // the draw-weapon animations, backwards (frame by frame here: their own freeze-on-the-last-frame check
         // would stop them straight away going this direction)
         var _k = t * putaway_speed;
-        with (obj_susie)  image_index = max(0, image_number - 1 - _k);
-        with (obj_ralsei) image_index = max(0, image_number - 1 - _k);
-        if (obj_susie.image_index <= 0 && obj_ralsei.image_index <= 0)
+        var _done = true;
+        for (var i = 0; i < array_length(putaway_list); i++)
         {
-            with (obj_susie)  { sprite_index = other.susie_right;  last_sprite = sprite_index; image_index = 0; }
-            with (obj_ralsei) { sprite_index = other.ralsei_right; last_sprite = sprite_index; image_index = 0; }
+            var _o = putaway_list[i].o;
+            _o.image_index = max(0, _o.image_number - 1 - _k);
+            if (_o.image_index > 0) _done = false;
+        }
+        if (_done)
+        {
+            for (var i = 0; i < array_length(putaway_list); i++)
+            {
+                var _w = putaway_list[i];
+                with (_w.o) { sprite_index = _w.walk; last_sprite = _w.walk; image_index = 0; }
+            }
             state = "after_battle";
             t = 0;
             putaway_then();

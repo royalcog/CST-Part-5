@@ -345,15 +345,37 @@ putaway_speed     = 12 / 60;      // frames per frame they play their draw-weapo
 
 /// Susie & Ralsei put their weapons away (their draw-weapon animations, backwards), then they're back in their
 /// walk sprites and _then runs. the battle sprites are origin-aligned with the walk sprites, so it's a straight swap
+victory_walk_dx   = { susie: -6, ralsei: -2 };   // sprite px: their victory pose's last frame stands a little off from
+                                                 // where their walk sprite does, so this lines their bodies up on the swap
+
+/// Susie & Ralsei put their weapons away, then they're back in their walk sprites and _then runs.
+/// anyone who just did their victory pose already put theirs away at the end of it: they just swap to walking.
+/// anyone else plays their draw-weapon animation backwards (battle sprites are origin-aligned with the walk sprites)
 put_away = function(_then)
 {
-    with (obj_susie)  { sprite_index = spr_susie_battle_intro;  last_sprite = sprite_index; image_speed = 0; anim_loop = true; image_index = image_number - 1; }
-    with (obj_ralsei) { sprite_index = spr_ralsei_battle_intro; last_sprite = sprite_index; image_speed = 0; anim_loop = true; image_index = image_number - 1; }
+    putaway_list = [];
+    var _who = [
+        { o: obj_susie,  victory: spr_susie_victory,  intro: spr_susie_battle_intro,  walk: susie_right,  dx: victory_walk_dx.susie },
+        { o: obj_ralsei, victory: spr_ralsei_victory, intro: spr_ralsei_battle_intro, walk: ralsei_right, dx: victory_walk_dx.ralsei },
+    ];
+    for (var i = 0; i < array_length(_who); i++)
+    {
+        var _w = _who[i];
+        if (!instance_exists(_w.o)) continue;
+        if (_w.o.sprite_index == _w.victory)
+        {
+            with (_w.o) { x += _w.dx * image_xscale; sprite_index = _w.walk; last_sprite = _w.walk; image_index = 0; image_speed = 0; anim_loop = true; }
+        }
+        else
+        {
+            with (_w.o) { sprite_index = _w.intro; last_sprite = _w.intro; image_speed = 0; anim_loop = true; image_index = image_number - 1; }
+            array_push(putaway_list, _w);
+        }
+    }
     putaway_then = _then;
     state = "putaway";
     t = 0;
 }
-
 /// the battle's won (obj_battle_menu.on_win): weapons away, then everyone walks back together
 after_battle = function()
 {

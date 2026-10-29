@@ -12,4 +12,4 @@ char_id = CharID.Ralsei;
 // battle sprites have hand-aligned origins, so swapping between them shouldn't re-anchor
 keep_feet_skip = [spr_ralsei_battle_intro, spr_ralsei_battle_idle, spr_ralsei_attack_ready,
                   spr_ralsei_attack, spr_ralsei_shocked, spr_ralsei_spellready, spr_ralsei_spell,
-                  spr_ralsei_defend, spr_ralsei_item, spr_ralsei_itemready];
+                  spr_ralsei_defend, spr_ralsei_item, spr_ralsei_itemready, spr_ralsei_victory];

@@ -512,6 +512,29 @@ apply = function(_a)
     }
 }
 
+/// the battle's won: everyone still standing plays their victory pose once (and holds its last frame)
+victory_pose = function()
+{
+    victory_posed = [];
+    for (var i = 0; i < 3; i++)
+    {
+        var _d = defs[i];
+        if (_d == undefined || !variable_struct_exists(_d, "victory")) continue;
+        if (instance_exists(members[i]) && members[i].hp <= 0) continue;   // down: they stay down
+        scr_bm_pose(_d.obj, _d.victory, 1);
+        array_push(victory_posed, _d.obj);
+    }
+}
+
+/// their victory poses have finished (they freeze on the last frame)
+victory_done = function()
+{
+    if (!variable_instance_exists(id, "victory_posed")) return true;
+    for (var i = 0; i < array_length(victory_posed); i++)
+        if (instance_exists(victory_posed[i]) && victory_posed[i].image_speed != 0) return false;
+    return true;
+}
+
 /// the battle's won: everything slides away, Z works again (or on_win runs)
 end_battle = function()
 {
@@ -526,4 +549,12 @@ end_battle = function()
     for (var i = 0; i < 3; i++) if (defs[i] != undefined) scr_bm_idle(defs[i]);
     state = "end_wait";
     t = 0;
+	
+    // back to idle, except whoever's holding their victory pose (they hold it until whatever's next takes over)
+    for (var i = 0; i < 3; i++)
+    {
+        if (defs[i] == undefined) continue;
+        if (variable_instance_exists(id, "victory_posed") && array_contains(victory_posed, defs[i].obj)) continue;
+        scr_bm_idle(defs[i]);
+    }
 }

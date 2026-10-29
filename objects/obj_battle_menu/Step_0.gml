@@ -329,7 +329,7 @@ switch (state)
 
     // ---------------------------------------------------------------- the enemies' turn
     case "enemy_check":
-        if (array_length(enemies()) == 0) { set_text("* You won!"); state = "win"; t = 0; }
+        if (array_length(enemies()) == 0) { set_text("* You won!"); state = "win"; t = 0; victory_pose(); }
         else { state = "enemy_turn"; t = 0; }
     break;
 
@@ -410,7 +410,8 @@ switch (state)
 
     // ---------------------------------------------------------------- won
     case "win":
-        if ((t >= 30 && key_ok()) || t >= 120) end_battle();
+        // (their victory poses play out first)
+        if (victory_done() && ((t >= 30 && key_ok()) || t >= 120)) end_battle();
     break;
 
     case "end_wait":

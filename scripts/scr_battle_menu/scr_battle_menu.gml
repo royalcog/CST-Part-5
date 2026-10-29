@@ -14,6 +14,7 @@ function scr_bm_member_def(_name)
             cmds: ["FIGHT", "MAGIC", "ITEM", "SPARE", "DEFEND"],
             at: 20, mg: 3,
             idle: spr_susie_battle_idle, idle_hold: false,
+            victory: spr_susie_victory,                       // plays once when the battle's won
             ready_fight: spr_susie_attack_ready, ready_magic: -1, ready_act: -1,   // no spell ready yet: falls back to her ACT ready (none yet either: idle)
             ready_item: spr_susie_itemready, item_anim: spr_susie_item,
             defend: spr_susie_defend,
@@ -34,6 +35,7 @@ function scr_bm_member_def(_name)
             cmds: ["FIGHT", "MAGIC", "ITEM", "SPARE", "DEFEND"],
             at: 13, mg: 11,
             idle: spr_ralsei_battle_idle, idle_hold: false,
+            victory: spr_ralsei_victory,
             ready_fight: spr_ralsei_attack_ready, ready_magic: spr_ralsei_spellready, ready_act: -1,
             ready_item: spr_ralsei_itemready, item_anim: spr_ralsei_item,
             defend: spr_ralsei_defend,
