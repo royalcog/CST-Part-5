@@ -9,7 +9,7 @@
 // --- tuning: where it stands. Ch4 puts its top-left corner 494px in from the right edge of the screen and
 //     88px above the top, at 2x (so it hangs off the right side). measured from the camera when it's made ---
 scale        = 2;
-right_inset  = 450;           // px in from the right edge of the screen (its left edge). Ch4: 494 (on a 640-wide screen)
+right_inset  = 550;           // px in from the right edge of the screen (its left edge). Ch4: 494 (on a 640-wide screen)
 top_offset   = -88;           // px from the top of the screen (its top edge)
 depth        = 25;            // in front of the cloud sea (50), behind the floor (Tiles_1, 0) and everyone on it
 
@@ -37,7 +37,7 @@ afterimage_fade = 0.025;      // alpha per frame (from 0.5)
 // --- tuning: the clouds in front of its bottom edge (so it looks like it's standing in them, not cut off).
 //     no new clouds: the cloud sea's own puffs that are already sitting along its bottom edge get drawn again
 //     in front of it, in exactly the same spots, so nothing pops in. measured from its top-left, room px ---
-cloud_band_top    = 375;      // sea puffs lower than this go in front (the Titan's 420 tall at 2x: its bottom's at 420)
+cloud_band_top    = 395;      // sea puffs lower than this go in front (the Titan's 420 tall at 2x: its bottom's at 420)
 cloud_band_pad    = 40;       // px past its left/right edges
 
 // what runs when each part's done (the scene sets these)

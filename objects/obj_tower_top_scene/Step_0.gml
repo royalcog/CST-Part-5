@@ -64,6 +64,26 @@ switch (state)
     }
     break;
 	
+    case "party_heal":
+    {
+        // Ralsei's spell, frame by frame: the heal lands on party_heal_frame, then he holds the last frame
+        var _n = sprite_get_number(spr_ralsei_spell);
+        var _f = t * party_heal_speed;
+        obj_ralsei.image_speed = 0;
+        obj_ralsei.image_index = min(_n - 1, _f);
+        if (!party_heal_landed && _f >= party_heal_frame)
+        {
+            party_heal_landed = true;
+            audio_play_sound(snd_heal, 1, false);
+            party_heal_land(obj_susie,  "Susie");
+            party_heal_land(obj_ralsei, "Ralsei");
+            party_heal_land(obj_queen,  "Queen");
+            party_heal_t = t;
+        }
+        if (party_heal_landed && _f >= _n - 1 && t - party_heal_t >= party_heal_hold) party_heal_end();
+    }
+    break;
+	
     case "putaway":
     {
         // the draw-weapon animations, backwards (frame by frame here: their own freeze-on-the-last-frame check

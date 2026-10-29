@@ -428,28 +428,31 @@ party_heal_land = function(_o, _name)
     scr_trigger_damage_popup(_i, (_gain > 0) ? _gain : "MAX", c_lime, c_lime, 0, _top, noone);
 }
 
-/// after self_8: Ralsei casts (still facing forward), everyone's healed at once, then self_9
+party_heal_speed  = 8 / 60;        // frames per frame his spell animation plays at (the sprite's 8fps)
+
+/// after self_8: Ralsei casts facing right, everyone's healed at once, he goes back to standing, then self_9.
+/// the scene steps his frames itself (state "party_heal" in Step), so nothing else can freeze him partway
 ralsei_heal_all = function()
 {
-    pose_flip(obj_ralsei, spr_ralsei_spell, -2);   // his spell faces left on its own: flipped so he doesn't turn around
-    with (obj_ralsei) { image_speed = 1; anim_loop = false; }
-    scr_call_on_anim_frame(obj_ralsei, spr_ralsei_spell, party_heal_frame, function()
+    pose_flip(obj_ralsei, spr_ralsei_spell, 2);    // faces right on its own
+    with (obj_ralsei) { image_speed = 0; image_index = 0; anim_loop = true; }
+    party_heal_landed = false;
+    state = "party_heal";
+    t = 0;
+}
+
+/// (from Step) his spell's played out and he's held it: back to his right neutral sprite, then self_9
+party_heal_end = function()
+{
+    pose_flip(obj_ralsei, ralsei_right, 2);
+    with (obj_ralsei) { image_speed = 0; image_index = 0; anim_loop = true; }
+    state = "after_heal";
+    t = 0;
+    scr_call_after_frames(function()
     {
-        audio_play_sound(snd_heal, 1, false);
-        party_heal_land(obj_susie,  "Susie");
-        party_heal_land(obj_ralsei, "Ralsei");
-        party_heal_land(obj_queen,  "Queen");
-        scr_call_after_frames(function()
-        {
-            pose_flip(obj_ralsei, ralsei_right, 2);
-            with (obj_ralsei) { image_speed = 0; anim_loop = true; }
-            scr_call_after_frames(function()
-            {
-                create_textbox("self_9");
-                global.dialogue_self = 9;
-            }, after_heal);
-        }, party_heal_hold);
-    });
+        create_textbox("self_9");
+        global.dialogue_self = 9;
+    }, after_heal);
 }
 
 /// after self_9: all three walk forward a little, then the Titan reveal

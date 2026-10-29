@@ -546,10 +546,9 @@ end_battle = function()
     scr_tp_bar_show(false);
     scr_queen_shield_takedown();
     if (variable_global_exists("music")) audio_sound_gain(global.music, 0, 900);
-    for (var i = 0; i < 3; i++) if (defs[i] != undefined) scr_bm_idle(defs[i]);
     state = "end_wait";
     t = 0;
-	
+
     // back to idle, except whoever's holding their victory pose (they hold it until whatever's next takes over)
     for (var i = 0; i < 3; i++)
     {
