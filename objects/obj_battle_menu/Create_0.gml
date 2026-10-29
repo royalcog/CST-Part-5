@@ -75,6 +75,7 @@ fb_fade  = 0;
 
 // --- tuning: FIGHT damage (Deltarune): round(at * points / 20) - df * 3. points: 150 for a perfect hit, less the further off
 crit_points  = 150;
+fight_mult   = 1.5;    // FIGHT damage multiplier (1 = Deltarune's own numbers)
 
 // --- tuning: TP from FIGHT (Deltarune: accuracy / 10, or / 26 in darkness, out of 250) ---
 fight_tp_div      = 10;
@@ -130,7 +131,49 @@ atk_inst = noone;
 talk_chain = noone;
 
 // ---------------------------------------------------------------- helpers
-set_text = function(_s) { text = _s; text_shown = 0; text_pause = 0; }
+text_wrap  = 580;   // px the battle text wraps at (Deltarune's)
+text_lines = [];    // the laid-out text: { x, y, from, len } per line (from = where it starts in text)
+
+/// lays the battle text out like Deltarune: "* " sits in its own column, and every other line (wrapped, or a new
+/// line without a star) lines up with the words above it. done once per line of text, so words don't jump while typing
+layout_text = function(_s)
+{
+    draw_set_font(fnt_determination);
+    var _hang   = string_copy(_s, 1, 2) == "* ";
+    var _indent = _hang ? string_width("* ") * text_scale : 0;
+    var _out = [];
+    var _y   = 0;
+    var _pos = 1;   // where this paragraph starts in _s
+    var _paras = string_split(_s, "\n");
+    for (var p = 0; p < array_length(_paras); p++)
+    {
+        var _par = _paras[p];
+        var _n   = string_length(_par);
+        var _i   = 1;
+        if (string_copy(_par, 1, 2) == "* ") { array_push(_out, { x: 0, y: _y, from: _pos, len: 2 }); _i = 3; }
+        while (_i <= _n)
+        {
+            // as many whole words as fit (a single word that's too long still goes on its own line)
+            var _j = _i, _fit = _i - 1;
+            while (_j <= _n)
+            {
+                var _sp = _j;
+                while (_sp <= _n && string_char_at(_par, _sp) != " ") _sp++;
+                if (_fit >= _i && string_width(string_copy(_par, _i, _sp - _i)) * text_scale > text_wrap - _indent) break;
+                _fit = _sp - 1;
+                _j   = _sp + 1;
+            }
+            array_push(_out, { x: _indent, y: _y, from: _pos + _i - 1, len: _fit - _i + 1 });
+            _i = _fit + 2;
+            if (_i <= _n) _y += text_line;
+        }
+        _y   += text_line;
+        _pos += _n + 1;   // + the \n
+    }
+    return _out;
+}
+
+set_text = function(_s) { text = _s; text_shown = 0; text_pause = 0; text_lines = layout_text(_s); }
 
 /// plays _snd unless it already started this frame (two bolts on the same spot shouldn't double up)
 play_once = function(_snd)

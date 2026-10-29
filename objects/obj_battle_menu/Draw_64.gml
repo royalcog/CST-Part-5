@@ -205,5 +205,11 @@ if (state == "choose" && mode != "cmd")
 
 // otherwise: the battle text, typed out (Deltarune: x 30, 28px lines, wraps at 580 wide)
 draw_set_colour(c_white);
-draw_text_ext_transformed(text_x, panel_y + 18, string_copy(text, 1, floor(text_shown)), text_line / text_scale, 580 / text_scale, text_scale, text_scale, 0);
+var _shown = floor(text_shown);
+for (var i = 0; i < array_length(text_lines); i++)
+{
+    var _l   = text_lines[i];
+    var _vis = clamp(_shown - _l.from + 1, 0, _l.len);
+    if (_vis > 0) draw_text_transformed(text_x + _l.x, panel_y + 18 + _l.y, string_copy(text, _l.from, _vis), text_scale, text_scale, 0);
+}
 matrix_set(matrix_world, matrix_build_identity());

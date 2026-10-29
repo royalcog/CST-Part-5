@@ -9,6 +9,8 @@ max_speed = 3;      // (guess, it's in Deltarune's Create) px a frame
 acc       = 6;      // (guess) it speeds up by acc / distance a frame: much harder up close
 home_delay = 20;    // (guess) frames before it starts homing
 blob_col  = c_yellow;
+blob_scale    = 0.5;   // the pellet
+sparkle_scale = 0.5;   // its sparkle when you pick it up
 
 // it pops out toward the middle of the box first (Deltarune aims it there)
 var _c = scr_box_center();

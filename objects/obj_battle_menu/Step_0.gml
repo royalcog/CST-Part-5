@@ -299,7 +299,7 @@ switch (state)
                     if (_d.obj.image_speed == 0 || _f.t >= 60)
                     {
                         var _tg = retarget(_f.target);
-                        if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20) - _tg.df * 3), _d.color);
+                        if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult) - _tg.df * 3), _d.color);
                         scr_tp_add(_f.points / (global.tp.dark ? fight_tp_div_dark : fight_tp_div) * 0.4);   // TP (much less in darkness)
                         _f.phase = "after";
                         _f.t = 0;

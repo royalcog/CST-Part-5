@@ -65,7 +65,7 @@ else                   { stage = 0; radius = 20; }
 if (light >= 1)
 {
     instance_create_depth(x, y, depth, obj_darkshape_greenblob);
-    if (instance_exists(ctrl)) ctrl.dark_count++;
+    if (instance_exists(ctrl)) { ctrl.dark_count++; ctrl.burst = 1; }
     instance_destroy();
     exit;
 }
