@@ -1,3 +1,11 @@
+// Z / X presses for this frame (only the moment they go down, never the key repeat)
+var _ok_down   = keyboard_check(ord("Z")) || keyboard_check(vk_enter);
+var _back_down = keyboard_check(ord("X")) || keyboard_check(vk_shift);
+ok_press   = _ok_down && !ok_prev;
+back_press = _back_down && !back_prev;
+ok_prev    = _ok_down;
+back_prev  = _back_down;
+
 // the boxes rise while the menu's up, and drop back for the enemies' turn so the battle box has room
 var _menu_up = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win");
 if (instance_exists(obj_UI)) obj_UI.menu_lift_target = _menu_up ? panel_lift : 0;

@@ -166,6 +166,32 @@ function scr_game_text(_text_id)
 			scr_text("* Let's end this.", "susie", 34);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) end_this(); }, 0);
 		break;
+		
+		// ---------------- after the Titan Spawn battle (obj_tower_top_scene opens self_8 once everyone regroups)
+		case "self_8":
+			global.cutscene_lock = true;   // Ralsei heals everyone after this, then self_9 opens on its own
+			scr_text("* Is everyone okay?", "ralsei", 34);
+			scr_text("* Here, let me patch everyone up.", "ralsei", 40);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ralsei_heal_all(); }, 0);
+		break;
+
+		case "self_9":
+			global.cutscene_lock = true;   // they walk forward after this, then the Titan reveal
+			scr_text("* ...", "susie", 31);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* Susie, is everything okay?", "ralsei", 34);
+			scr_text("* Why can we only do this... outside of battles?", "susie", 32);
+			scr_text("* ...What?", "ralsei", 50);
+			scr_text("* Heal each other at will.", "susie", 30);
+			scr_text("* Well, I assume Flowery told you about TP, but...", "ralsei", 51);
+			scr_text("* Screw that!|* If they're gonna treat this like a game, so should we!", "susie", 39);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* This Crashout Is: Valid", "queen", 0);
+			scr_text("* Do What Feels Right", "queen", 3);
+			scr_text("* ...", "susie", 31);
+			scr_text("* ...", "ralsei", 45);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) walk_forward(); }, 0);
+		break;
 /*
 
 */

@@ -312,3 +312,121 @@ battle_draw = function()
     state = "battle_draw";
     t = 0;
 }
+
+// ---------------------------------------------------------------- after the battle
+// weapons away -> everyone regroups -> self_8 (Ralsei offers) -> Ralsei heals all three to max
+// -> self_9 (Susie's "outside of battles" talk) -> they walk forward a little -> titan_reveal()
+
+// --- tuning ---
+regroup_spots = {                 // their feet once they regroup (room px)
+    queen:  { x: bcx - 150, y: 215 },
+    susie:  { x: bcx - 40,  y: 250 },
+    ralsei: { x: bcx + 25,  y: 250 },
+};
+regroup_walk      = 2;            // px per frame
+regroup_pause     = 20;           // frames after the battle UI's gone before they walk
+after_regroup     = 20;           // frames after they're in place before self_8
+party_heal_frame  = 6;            // frame of spr_ralsei_spell the heal leaves on (same as the climb heal)
+party_heal_hold   = 50;           // frames after it lands before he lowers his arms
+after_heal        = 20;           // frames before self_9
+forward_dx        = 1.5;          // px per frame they walk forward after self_9 (right, toward the Titan)
+forward_dy        = 0;
+forward_frames    = 180;          // 1.5 x 180 = 270px (the camera starts at 324, the room's right edge is at 647)
+forward_cam_follow = true;        // the camera moves with them, same px per frame
+forward_pause     = 20;           // frames after they stop before titan_reveal()
+cam_follow        = { on: false, t: 0, frames: 0, dx: 0, dy: 0 };
+
+/// the battle's won (obj_battle_menu.on_win): weapons away, then everyone walks back together
+after_battle = function()
+{
+    global.cutscene_lock = true;
+    // their battle sprites are origin-aligned with the walk sprites they stood in before the battle, so it's a straight swap back
+    with (obj_susie)  { sprite_index = other.susie_right;  last_sprite = sprite_index; image_index = 0; image_speed = 0; anim_loop = true; }
+    with (obj_ralsei) { sprite_index = other.ralsei_right; last_sprite = sprite_index; image_index = 0; image_speed = 0; anim_loop = true; }
+    face(obj_queen, queen_right);
+
+    scr_call_after_frames(function()
+    {
+        regrouped = 0;
+        var _done = function()
+        {
+            regrouped++;
+            if (regrouped < 3) return;
+            face(obj_queen,  queen_right);
+            face(obj_susie,  susie_right);
+            face(obj_ralsei, ralsei_right);   // everyone faces forward, and stays that way through the talk
+            scr_call_after_frames(function()
+            {
+                create_textbox("self_8");
+                global.dialogue_self = 8;
+            }, after_regroup);
+        };
+        scr_walk_feet_to(obj_queen,  queen_left,  queen_right,  spr_queen_walk_up, spr_queen_walk_down_unhappy, regroup_spots.queen.x,  regroup_spots.queen.y,  regroup_walk, _done);
+        scr_walk_feet_to(obj_susie,  susie_left,  susie_right,  susie_up,  susie_down,  regroup_spots.susie.x,  regroup_spots.susie.y,  regroup_walk, _done);
+        scr_walk_feet_to(obj_ralsei, ralsei_left, ralsei_right, ralsei_up, ralsei_down, regroup_spots.ralsei.x, regroup_spots.ralsei.y, regroup_walk, _done);
+    }, regroup_pause);
+}
+
+/// a heal lands on _o: snd_heal, green flash, HP back to max (the amount in green, or MAX if they were full)
+party_heal_land = function(_o, _name)
+{
+    if (!instance_exists(_o)) return;
+    var _gain = 0;
+    if (variable_global_exists("post_battle_hp") && is_struct(global.post_battle_hp) && variable_struct_exists(global.post_battle_hp, _name))
+    {
+        var _h = global.post_battle_hp[$ _name];
+        _gain = max(0, _h.max_hp - _h.hp);
+        _h.hp = _h.max_hp;
+    }
+    var _i = instance_find(_o, 0);
+    var _f = instance_create_depth(0, 0, _i.depth - 1, obj_heal_flash);
+    _f.target   = _i;
+    _f.duration = 40;
+    var _top = (sprite_get_bbox_top(_i.sprite_index) - sprite_get_yoffset(_i.sprite_index)) * _i.image_yscale - 6;
+    scr_trigger_damage_popup(_i, (_gain > 0) ? _gain : "MAX", c_lime, c_lime, 0, _top, noone);
+}
+
+/// after self_8: Ralsei casts (still facing forward), everyone's healed at once, then self_9
+ralsei_heal_all = function()
+{
+    pose_flip(obj_ralsei, spr_ralsei_spell, -2);   // his spell faces left on its own: flipped so he doesn't turn around
+    with (obj_ralsei) { image_speed = 1; anim_loop = false; }
+    scr_call_on_anim_frame(obj_ralsei, spr_ralsei_spell, party_heal_frame, function()
+    {
+        audio_play_sound(snd_heal, 1, false);
+        party_heal_land(obj_susie,  "Susie");
+        party_heal_land(obj_ralsei, "Ralsei");
+        party_heal_land(obj_queen,  "Queen");
+        scr_call_after_frames(function()
+        {
+            pose_flip(obj_ralsei, ralsei_right, 2);
+            with (obj_ralsei) { image_speed = 0; anim_loop = true; }
+            scr_call_after_frames(function()
+            {
+                create_textbox("self_9");
+                global.dialogue_self = 9;
+            }, after_heal);
+        }, party_heal_hold);
+    });
+}
+
+/// after self_9: all three walk forward a little, then the Titan reveal
+walk_forward = function()
+{
+    scr_char_move_now(obj_susie,  susie_right,  true, forward_dx, forward_dy, 1, forward_frames);
+    scr_char_move_now(obj_ralsei, ralsei_right, true, forward_dx, forward_dy, 1, forward_frames);
+    scr_char_move_now(obj_queen,  queen_right,  true, forward_dx, forward_dy, 1, forward_frames);
+    if (forward_cam_follow) cam_follow = { on: true, t: 0, frames: forward_frames, dx: forward_dx, dy: forward_dy };
+    scr_call_after_frames(function()
+    {
+        face(obj_susie,  susie_right);
+        face(obj_ralsei, ralsei_right);
+        face(obj_queen,  queen_right);
+        scr_call_after_frames(function() { titan_reveal(); }, forward_pause);
+    }, forward_frames + 2);
+}
+
+/// TODO: the Titan reveal (built from the reference files)
+titan_reveal = function()
+{
+}

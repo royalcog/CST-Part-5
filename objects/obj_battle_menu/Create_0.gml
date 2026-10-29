@@ -101,7 +101,7 @@ box_x_nudge         = 0;
 box_scale           = 0.75;   // the battle box's size (0.75 stays pixel-perfect at 2x)
 box_y_nudge         = -16;    // px up (negative) or down, so there's room under it
 box_depth           = -5000;
-on_win              = undefined;   // function to run once the battle's won (otherwise Z just works again)
+        on_win = function() { with (obj_tower_top_scene) after_battle(); };   // weapons away, regroup, self_8
 
 // --- the party: boxes and who can do what, Susie / Ralsei / Queen ---
 names   = ["Susie", "Ralsei", "Queen"];
@@ -224,8 +224,14 @@ prev_chooser = function(_from)
     return -1;
 }
 
-key_ok     = function() { return keyboard_check_pressed(ord("Z")) || keyboard_check_pressed(vk_enter); }
-key_back   = function() { return keyboard_check_pressed(ord("X")) || keyboard_check_pressed(vk_shift); }
+// a real press only: the key going from up to down. (keyboard_check_pressed also fires on Windows' key repeat
+// while a key's held, which let a held Z hit every FIGHT bolt.) updated once a frame at the top of Step
+ok_prev   = true;    // true to start, so a Z still held from before the battle doesn't count
+back_prev = true;
+ok_press  = false;
+back_press = false;
+key_ok     = function() { return ok_press; }
+key_back   = function() { return back_press; }
 snd_move   = function() { audio_play_sound(snd_menumove, 1, false); }
 snd_ok     = function() { audio_play_sound(snd_select, 1, false); }
 snd_no     = function() { audio_play_sound(snd_cantselect, 1, false); }
@@ -509,6 +515,10 @@ apply = function(_a)
 /// the battle's won: everything slides away, Z works again (or on_win runs)
 end_battle = function()
 {
+    // remember everyone's HP before the boxes go (the after-battle heal uses it)
+    global.post_battle_hp = {};
+    with (obj_battle_ui_box) global.post_battle_hp[$ char_name] = { hp: hp, max_hp: max_hp };
+
     with (obj_UI) ui_hidden = true;
     scr_tp_bar_show(false);
     scr_queen_shield_takedown();

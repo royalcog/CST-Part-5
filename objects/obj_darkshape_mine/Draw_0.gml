@@ -1,6 +1,10 @@
 // its frames step through 5 stages as the fuse runs (0, 2, 4, 6, 8), flickering with the frame after each;
 // it flushes red as it goes. wobbles in rows while it's appearing, like every darkshape
-var _stage = (fuse > 0.8) ? 8 : (fuse > 0.6) ? 6 : (fuse > 0.4) ? 4 : (fuse > 0.2) ? 2 : 0;
+var _stage = 0;
+if      (fuse > 0.8) _stage = 8;
+else if (fuse > 0.6) _stage = 6;
+else if (fuse > 0.4) _stage = 4;
+else if (fuse > 0.2) _stage = 2;
 var _img   = _stage + ((t div 4) mod 2);
 var _col   = make_color_rgb(255, (1 - fuse) * 255, (1 - fuse) * 255);
 var _k     = art_scale;
