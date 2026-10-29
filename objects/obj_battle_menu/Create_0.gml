@@ -85,6 +85,17 @@ fight_tp_div_dark = 26;
 
 // --- tuning: the enemies' turn ---
 rounds              = [];  // { talk: [ { speaker, text }, ... ], attack: function that starts a box attack and returns it }, cycles
+rounds_loop_from    = 0;   // once they've all played, it loops back to this one (so a first round can play only once)
+
+/// this turn's round (or undefined)
+cur_round = function()
+{
+    var _n = array_length(rounds);
+    if (_n == 0) return undefined;
+    var _from = clamp(rounds_loop_from, 0, _n - 1);
+    var _i = (turn < _n) ? turn : _from + (turn - _from) mod (_n - _from);
+    return rounds[_i];
+}
 enemy_wait_frames   = 40;  // a round with no attack: just a pause
 box_x_nudge         = 0;
 box_depth           = -5000;

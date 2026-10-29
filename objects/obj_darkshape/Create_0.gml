@@ -2,6 +2,7 @@
 ctrl        = noone;
 damage      = 110;
 dir         = 270;
+face_dir = false;   // true: the sprite turns to face where it's going (attack 3's small copies)
 
 // --- Deltarune's values, converted to 60fps (originals in brackets) ---
 speed_max       = 1.125;  // [2.25]

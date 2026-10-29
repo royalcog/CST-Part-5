@@ -85,10 +85,13 @@ function scr_titanspawn_battle_start()
     {
         // TODO: the script's rounds go here, one per enemy turn (they loop):
         //   { talk: [ { speaker: obj_susie, text: "..." } ], attack: scr_start_titanspawn_attack1 }
-		rounds = [
-		    { talk: [], attack: scr_start_titanspawn_attack1 },
-		    { talk: [], attack: scr_start_titanspawn_attack2 },
-		];
+        rounds = [
+            { talk: [], attack: scr_start_titanspawn_attack1 },   // intro (only once)
+            { talk: [], attack: scr_start_titanspawn_attack4 },   // speedup
+            { talk: [], attack: scr_start_titanspawn_attack2 },   // with red
+            { talk: [], attack: scr_start_titanspawn_attack3 },   // your centipede twist
+        ];
+        rounds_loop_from = 1;   // after the intro: speedup -> with red -> centipede -> speedup...
         on_win = undefined;   // what happens once they've won (otherwise Z just opens the next self_ line)
     }
 }

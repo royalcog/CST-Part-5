@@ -2,8 +2,8 @@
 // Deltarune is 30fps and we're 60, so its per-frame speeds/rates are halved and frame counts doubled.
 
 // --- tuning ---
-pattern          = "default";  // "default": a copy every 24 frames (DR 12). "intro": every 48 (DR 24) at 0.85 size, gentler
-attack_duration  = 660;        // frames (~10s)
+pattern          = "intro";    // the real turn 1: a copy every 48 frames (DR 24) at 0.85 size, no red shapes
+attack_duration  = 720;        // Deltarune's 12-second turn
 aura_radius      = 48;         // the soul's light: Deltarune's light_radius (Brighten makes it 63)
 damage           = 110;        // Titan Spawn AT 18 -> 90 in Ch4, scaled up for your bigger HP (Susie 230 -> 290, Ralsei 180 -> 210)
 glow_strength    = 1;          // how bright the soul's light is (not how big)
@@ -31,14 +31,21 @@ spawn_loop     = audio_play_sound(snd_spawn_attack, 1, true);
 ominous_volume = 0;
 ominous_loop   = audio_play_sound(snd_organ_enemy_loop_temp, 1, true, 0, 0, 0.25);
 
+/// where on the ring the next spawn goes: { dir, dist }. attack 4 overrides it
+spawn_pos = function(_half)
+{
+    return { dir: irandom(360), dist: _half + spawn_ring_min + irandom(spawn_ring_extra) };
+}
+
 /// a copy (or a red shape) at a random angle on a ring outside the box (like Deltarune)
 spawn_shape = function()
 {
     var _c    = scr_box_center();
     var _in   = scr_get_box_interior();
     var _half = max(_in.x2 - _in.x1, _in.y2 - _in.y1) / 2;
-    var _dir  = irandom(360);
-    var _dist = _half + spawn_ring_min + irandom(spawn_ring_extra);
+    var _sp   = spawn_pos(_half);
+    var _dir  = _sp.dir;
+    var _dist = _sp.dist;
     var _x    = _c.x + lengthdir_x(_dist, _dir), _y = _c.y + lengthdir_y(_dist, _dir);
 
     // Deltarune: every 5th one's a red shape, fired straight at the SOUL

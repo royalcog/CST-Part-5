@@ -328,7 +328,7 @@ switch (state)
     case "enemy_turn":
     {
         set_text("");
-        var _r = (array_length(rounds) > 0) ? rounds[turn mod array_length(rounds)] : undefined;
+        var _r = cur_round();
         if (_r != undefined && variable_struct_exists(_r, "talk") && array_length(_r.talk) > 0)
         {
             talk_chain = instance_create_depth(0, 0, 0, obj_dialogue_chain);
@@ -346,7 +346,7 @@ switch (state)
 
     case "enemy_attack":
     {
-        var _r = (array_length(rounds) > 0) ? rounds[turn mod array_length(rounds)] : undefined;
+        var _r = cur_round();
         if (_r != undefined && variable_struct_exists(_r, "attack") && _r.attack != undefined)
         {
             with (obj_soul) instance_destroy();
@@ -362,7 +362,7 @@ switch (state)
     case "enemy_box_open":
         if (instance_exists(box_inst) && box_inst.state == "idle")
         {
-            var _r = rounds[turn mod array_length(rounds)];
+            var _r = cur_round();
             atk_inst = _r.attack();
             state = "enemy_box_attack";
         }
