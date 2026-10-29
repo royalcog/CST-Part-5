@@ -32,8 +32,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"Titan Mine",
-    "path":"folders/Sprites/Characters/Titan/Titan Mine.yy",
+    "name":"Titan",
+    "path":"folders/Sprites/Characters/Titan.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
