@@ -16,6 +16,13 @@ switch (state)
         x = lerp(start_x, land_x, _t);
         y = lerp(start_y, land_y, _t) - arc_height * 4 * _t * (1 - _t);
         image_angle += spin_speed * spin_dir;
+        if (flash_timer > 0) flash_timer--;
+        if (erupt_frames > 0)   // popping out to full size
+        {
+            var _e = min(timer / erupt_frames, 1);
+            image_xscale = bomb_scale * _e;
+            image_yscale = bomb_scale * _e;
+        }
 
         if (_t >= 1)
         {

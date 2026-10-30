@@ -64,7 +64,8 @@ if (dim_phase == 2) // run dialogue
 					var _top = sp.y + (sprite_get_bbox_top(_spr) - sprite_get_yoffset(_spr)) * sp.image_yscale;
 					var _h   = (sprite_get_bbox_bottom(_spr) + 1 - sprite_get_bbox_top(_spr)) * abs(sp.image_yscale);
 					var _cx  = (_xa + _xb) / 2, _hw = abs(_xb - _xa) / 2;
-					ox = _cx + _face * (_hw * mouth_reach + mouth_gap) - sp.x;
+					var _nudge = (cid < array_length(mouth_nudge) && is_real(mouth_nudge[cid])) ? mouth_nudge[cid] : 0;
+					ox = _cx + _face * (_hw * mouth_reach + mouth_gap + _nudge) - sp.x;
 					oy = _top + _h * mouth_height - sp.y;
 				}
 				else if (_mirrored) ox = -ox;   // their set offset, mirrored across them

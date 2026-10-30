@@ -74,11 +74,11 @@ function scr_titan_battle_start()
         // the enemy turns: { talk: [ TALKbox lines ], attack }. once they've all played it keeps repeating from rounds_loop_from
         rounds = [
             { talk: scr_titan_round1_talk(), attack: scr_start_titan_attack1 },
-            // TODO: the next turns. for now it's attack 1 again (no talk), with Lancer back to his normal sprite
-            { talk: [ { run: function() { with (obj_lancer) { sprite_index = spr_lancer_battle; image_index = 0; } } } ],
-              attack: scr_start_titan_attack1 },
+            { talk: scr_titan_round2_talk(), attack: scr_start_titan_attack2 },
+            // TODO: the next turns. for now it's attack 2 again (no talk)
+            { talk: [], attack: scr_start_titan_attack2 },
         ];
-        rounds_loop_from = 1;
+        rounds_loop_from = 2;
 
         // after attack 1: the first time Susie goes to FIGHT, "I take it back.", and Lancer's row comes back
         takeback_done = false;
@@ -151,6 +151,14 @@ function scr_start_titan_attack1()
     return instance_create_depth(0, 0, _d, obj_titan_attack1);
 }
 
+/// attack 2: Titan Spawn attack 3, with King's spade bombs flying in from the sides instead of the dashing fish
+/// (obj_titan_attack2)
+function scr_start_titan_attack2()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack2);
+}
+
 /// the enemy turn before attack 1 (TALKbox lines). King faces right in this fight, so his bubbles go on his right
 function scr_titan_round1_talk()
 {
@@ -172,5 +180,21 @@ function scr_titan_round1_talk()
           wait: 20 },
         { speaker: obj_lancer, text: "Susie, I..." },
         { speaker: obj_susie,  text: "..." },
+    ];
+}
+
+/// the enemy turn before attack 2 (TALKbox lines)
+function scr_titan_round2_talk()
+{
+    return [
+        // (Lancer's back to his normal sprite, if he was still shocked from "I take it back.")
+        { run: function() { with (obj_lancer) { sprite_index = spr_lancer_battle; image_index = 0; } } },
+        { speaker: obj_queen,  text: "You Do Understand That What You're Doing Here Is Insane" },
+        { speaker: obj_king,   text: "You didn't even know about the Roaring until recently." },
+        { speaker: obj_king,   text: "What kind of \"villain\" are you?" },
+        { speaker: obj_queen,  text: "One That Sees The Strength Of These Heroes" },
+        { speaker: obj_queen,  text: "And The Idiocy Of You And Your \"Team\"" },
+        { speaker: obj_lancer, text: "Girldad...?" },
+        { speaker: obj_queen,  text: "..." },
     ];
 }

@@ -11,7 +11,9 @@ spade_damage     = 50;
 spade_scale      = 1.5;  // (bigger than King's own, so it reads against the copies)
 spade_wait       = 30;   // frames each one sits just outside the box (where you can see it) before it comes in
 spade_hit_radius = 12;   // spade centre -> SOUL centre (smaller than the art, so it's fair)
-spade_offset     = 30;   // how far outside the box they appear (px, to the spade's middle)
+spade_offset     = 30;   // how far outside the box they stop and wait (px, to the spade's middle)
+spade_approach   = 80;   // how much further out than that they first appear, gliding in from there
+spade_approach_time = 20; // frames that glide in takes
 spade_start      = 60;   // frames into the attack before the first one
 spade_stop       = 90;   // no new ones in the last this-many frames (so none get cut off by the box closing)
 

@@ -2,6 +2,7 @@
 bomb_sprite    = spr_spade; // swap for a real spade-bomb sprite when you have one
 bomb_scale     = 1.5;
 toss_frames    = 40;   // how long the arc from King takes
+erupt_frames   = 0;    // >0: it pops out from nothing to full size over this many frames at the start of the toss
 arc_height     = 90;   // how high the arc goes
 spin_speed     = 12;   // deg/frame while it's in the air
 fuse_frames    = 70;   // time on the ground before it bursts

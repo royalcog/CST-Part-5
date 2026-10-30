@@ -76,6 +76,11 @@ mouth_height = 0.3;   // the mouth: this far down from the top of their sprite (
 mouth_reach  = 0.6;   // ...and this far from the middle of their sprite toward its front edge (0 = middle, 1 = the very
                       // front: that's often a weapon or a cape, not their face)
 mouth_gap    = 6;     // px out in front of that to the bubble's tip
+// ...plus this much more for anyone whose face sits further forward or back than that (px; + = further out in front
+// of them, - = back toward them)
+mouth_nudge = [];
+mouth_nudge[CharID.Susie]  = 20;
+mouth_nudge[CharID.Lancer] = 20;
 dim_timer = 0;
 dim_phase = 1;
 target_alpha = 0.4;

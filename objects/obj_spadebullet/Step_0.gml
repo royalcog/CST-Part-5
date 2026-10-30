@@ -1,7 +1,22 @@
 if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
 if (obj_battlebox.state == "closing") fading_out = true;
 
-// (a beat where it spawned first, if it's been given one: it fades in there, so you can see it coming)
+// (gliding in to where it'll wait first, if it's been given that: fading in on the way)
+if (approach_t < approach_frames)
+{
+    if (approach_t == 0) approach_from = lx;
+    approach_t++;
+    var _k = approach_t / approach_frames;
+    _k = 1 - sqr(1 - _k);   // slows down as it arrives
+    lx = lerp(approach_from, approach_to, _k);
+    var _aw = scr_box_local_to_world(lx, ly);
+    x = _aw.x; y = _aw.y;
+    image_angle = obj_battlebox.box_angle;
+    image_alpha = min(image_alpha + 1 / fade_frames, 1);
+    exit;
+}
+
+// (then a beat where it stopped, if it's been given one, so you can see where it's coming from)
 if (wait_frames > 0)
 {
     wait_frames--;
