@@ -101,7 +101,7 @@ function scr_titan_battle_start()
                         with (obj_lancer) { sprite_index = spr_lancer_battle_hurt; image_index = 0; }   // shocked
                     } },
                 { wait: 50 },
-                { talk: [ { speaker: obj_lancer, text: "S-Susie...?" } ] },
+                { talk: [ { speaker: obj_lancer, text: "S-Susie...?", to: obj_susie } ] },
                 { wait: 20 },
             ], function() { state = "choose"; t = 0; });   // (straight back to picking her target: still on FIGHT)
             return true;
@@ -164,22 +164,22 @@ function scr_titan_round1_talk()
 {
     var _king = { offx: 10, offy: 50, flip: true };   // (from his x, mirrored: just in front of his face)
     return [
-        { speaker: obj_susie,  text: "I thought you were my friend, Lancer..." },
-        { speaker: obj_lancer, text: "I am, Susie! I just..." },
-        { speaker: obj_susie,  text: "Shut up." },
-        { speaker: obj_lancer, text: "..." },
-        { speaker: obj_king,   text: "Do not disrespect my son, Lightner." },
-        { speaker: obj_susie,  text: "You gonna try kicking our asses again?" },
-        { speaker: obj_susie,  text: "Good luck with that." },
-        { speaker: obj_king,   text: "Who said I need to do anything?" },
-        { speaker: obj_susie,  text: "..." },
-        { speaker: obj_susie,  text: "Lancer, you better no", instant_cutoff: true },   // cut off by...
+        { speaker: obj_susie,  text: "I thought you were my friend, Lancer...", to: obj_lancer },
+        { speaker: obj_lancer, text: "I am, Susie! I just...", to: obj_susie },
+        { speaker: obj_susie,  text: "Shut up.", to: obj_lancer },
+        { speaker: obj_lancer, text: "...", to: obj_susie },
+        { speaker: obj_king,   text: "Do not disrespect my son, Lightner.", to: obj_susie },
+        { speaker: obj_susie,  text: "You gonna try kicking our asses again?", to: obj_king },
+        { speaker: obj_susie,  text: "Good luck with that.", to: obj_king },
+        { speaker: obj_king,   text: "Who said I need to do anything?", to: obj_susie },
+        { speaker: obj_susie,  text: "...", to: obj_king },
+        { speaker: obj_susie,  text: "Lancer, you better no", instant_cutoff: true, to: obj_lancer },   // cut off by...
         // ...a spade from King, straight at her, really fast. she guards just in time
         { run: function() { with (obj_tower_top_scene) battle_spade_at_susie(); },
           wait_until: function() { return !instance_exists(obj_tower_top_scene) || obj_tower_top_scene.battle_spade_done; },
           wait: 20 },
-        { speaker: obj_lancer, text: "Susie, I..." },
-        { speaker: obj_susie,  text: "..." },
+        { speaker: obj_lancer, text: "Susie, I...", to: obj_susie },
+        { speaker: obj_susie,  text: "...", to: obj_lancer },
     ];
 }
 
@@ -189,12 +189,12 @@ function scr_titan_round2_talk()
     return [
         // (Lancer's back to his normal sprite, if he was still shocked from "I take it back.")
         { run: function() { with (obj_lancer) { sprite_index = spr_lancer_battle; image_index = 0; } } },
-        { speaker: obj_queen,  text: "You Do Understand That What You're Doing Here Is Insane" },
-        { speaker: obj_king,   text: "You didn't even know about the Roaring until recently." },
-        { speaker: obj_king,   text: "What kind of \"villain\" are you?" },
-        { speaker: obj_queen,  text: "One That Sees The Strength Of These Heroes" },
-        { speaker: obj_queen,  text: "And The Idiocy Of You And Your \"Team\"" },
-        { speaker: obj_lancer, text: "Girldad...?" },
-        { speaker: obj_queen,  text: "..." },
+        { speaker: obj_queen,  text: "You Do Understand That What You're Doing Here Is Insane", to: obj_king },
+        { speaker: obj_king,   text: "You didn't even know about the Roaring until recently.", to: obj_queen },
+        { speaker: obj_king,   text: "What kind of \"villain\" are you?", to: obj_queen },
+        { speaker: obj_queen,  text: "One That Sees The Strength Of These Heroes", to: obj_king },
+        { speaker: obj_queen,  text: "And The Idiocy Of You And Your \"Team\"", to: obj_king },
+        { speaker: obj_lancer, text: "Girldad...?", to: obj_queen },
+        { speaker: obj_queen,  text: "...", to: obj_lancer },
     ];
 }

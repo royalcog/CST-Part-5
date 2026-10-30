@@ -933,6 +933,7 @@
     {"name":"spr_ralsei_right_annoyed_more","order":21,"path":"sprites/spr_ralsei_right_annoyed_more/spr_ralsei_right_annoyed_more.yy",},
     {"name":"spr_ralsei_right_neutral","order":14,"path":"sprites/spr_ralsei_right_neutral/spr_ralsei_right_neutral.yy",},
     {"name":"spr_ralsei_right","order":2,"path":"sprites/spr_ralsei_right/spr_ralsei_right.yy",},
+    {"name":"spr_ralsei_run_left","order":37,"path":"sprites/spr_ralsei_run_left/spr_ralsei_run_left.yy",},
     {"name":"spr_ralsei_shocked_behind","order":25,"path":"sprites/spr_ralsei_shocked_behind/spr_ralsei_shocked_behind.yy",},
     {"name":"spr_ralsei_shocked","order":3,"path":"sprites/spr_ralsei_shocked/spr_ralsei_shocked.yy",},
     {"name":"spr_ralsei_sitting_head_down","order":1,"path":"sprites/spr_ralsei_sitting_head_down/spr_ralsei_sitting_head_down.yy",},

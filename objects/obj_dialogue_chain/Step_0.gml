@@ -52,6 +52,13 @@ if (dim_phase == 2) // run dialogue
 				var ox  = offx[cid] + (variable_instance_exists(sp, "talk_nudge_x") ? sp.talk_nudge_x : 0);
 				var oy  = offy[cid] + (variable_instance_exists(sp, "talk_nudge_y") ? sp.talk_nudge_y : 0);
 				var fp  = flip[cid];
+				// talking to someone: turn to face them first (just flipped where they stand), if they're not already
+				if (variable_struct_exists(e, "to") && instance_exists(e.to))
+				{
+					var _want = sign(e.to.x - sp.x);
+					var _now  = (fp ? 1 : -1) * ((sp.image_xscale < 0) ? -1 : 1);
+					if (_want != 0 && _now != _want) sp.image_xscale = -sp.image_xscale;
+				}
 				// which way they're facing: their usual bubble direction (flip), the other way if their sprite's mirrored
 				var _mirrored = (sp.image_xscale < 0);
 				var _face = (fp ? 1 : -1) * (_mirrored ? -1 : 1);
@@ -66,7 +73,8 @@ if (dim_phase == 2) // run dialogue
 					var _cx  = (_xa + _xb) / 2, _hw = abs(_xb - _xa) / 2;
 					var _nudge = (cid < array_length(mouth_nudge) && is_real(mouth_nudge[cid])) ? mouth_nudge[cid] : 0;
 					ox = _cx + _face * (_hw * mouth_reach + mouth_gap + _nudge) - sp.x;
-					oy = _top + _h * mouth_height - sp.y;
+					var _lift = (cid < array_length(mouth_lift) && is_real(mouth_lift[cid])) ? mouth_lift[cid] : 0;
+					oy = _top + _h * mouth_height - _lift - sp.y;
 				}
 				else if (_mirrored) ox = -ox;   // their set offset, mirrored across them
 				fp = (_face > 0);               // the bubble opens out the way they're facing

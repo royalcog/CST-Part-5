@@ -81,6 +81,10 @@ mouth_gap    = 6;     // px out in front of that to the bubble's tip
 mouth_nudge = [];
 mouth_nudge[CharID.Susie]  = 20;
 mouth_nudge[CharID.Lancer] = 20;
+mouth_nudge[CharID.Queen]  = 12;
+// ...and this much higher (px; + = up, - = down)
+mouth_lift = [];
+mouth_lift[CharID.Queen] = 12;
 dim_timer = 0;
 dim_phase = 1;
 target_alpha = 0.4;

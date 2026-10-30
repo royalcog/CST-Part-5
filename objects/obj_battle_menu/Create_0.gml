@@ -297,6 +297,8 @@ pick_step = function(_e, _i, _dir)
 }
 
 /// _i turns to face _dir (-1 left, 1 right): just flipped where they stand
+// --- a line with `to: <who they're talking to>` turns the speaker to face them first (if they aren't already), and they
+//     stay turned that way after ---
 face_member = function(_i, _dir)
 {
     var _d = defs[_i];

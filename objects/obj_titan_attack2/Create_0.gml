@@ -19,6 +19,7 @@ bomb_damage    = 50;    // (the bomb itself and its ring of spades)
 bomb_edge      = 16;    // px in from the edge of the screen it erupts
 land_margin    = 28;    // lands at least this far from the box's walls
 bomb_spacing   = 40;    // ...and this far from any other bomb
+bomb_sound_gain = 0.4;  // the throw sound (once per throw, even when two come at once)
 
 with (obj_box_bullet_drawer) instance_destroy();   // (the ring spades get drawn clipped to the box by this)
 instance_create_depth(0, 0, instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : depth, obj_box_bullet_drawer);
@@ -53,5 +54,4 @@ spawn_bomb = function(_side)
     _b.bomb_damage  = bomb_damage;
     _b.ring_damage  = bomb_damage;
     _b.flash_timer  = 6;   // a white pop as it erupts
-    audio_play_sound(snd_bombfall, 5, false);
 }

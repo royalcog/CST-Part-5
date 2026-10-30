@@ -33,8 +33,12 @@ y += lengthdir_y(spd, dir);
 // picked up (only once it's done priming)
 if (state == "active" && instance_exists(obj_soul) && point_distance(x, y, obj_soul.x, obj_soul.y) <= pickup_r)
 {
-    scr_tp_add(tp_gain);
-    with (obj_tp_bar) courage_flash();
+    if (global.tp.broken) scr_courage_heal(1);   // the TP bar's broken: it heals someone instead
+    else
+    {
+        scr_tp_add(tp_gain);
+        with (obj_tp_bar) courage_flash();
+    }
     audio_stop_sound(snd_swallow);
     audio_stop_sound(snd_eye_telegraph);
     audio_play_sound(snd_swallow, 1, false, size * 0.2);

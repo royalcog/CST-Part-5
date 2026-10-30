@@ -7,4 +7,6 @@ if (t >= bomb_start && t < attack_duration - bomb_stop && (t - bomb_start) mod b
     var _side = choose(-1, 1);
     spawn_bomb(_side);
     if (random(1) < bomb_pair) spawn_bomb(-_side);
+    audio_stop_sound(snd_bombfall);   // (never on top of the last one)
+    audio_play_sound(snd_bombfall, 5, false, bomb_sound_gain);
 }

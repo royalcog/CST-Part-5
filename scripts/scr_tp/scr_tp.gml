@@ -117,3 +117,18 @@ function scr_tp_break()
     if (!instance_exists(obj_tp_bar)) instance_create_depth(0, 0, -100, obj_tp_bar);
     with (obj_tp_bar) break_bar();
 }
+
+/// COURAGE once the TP bar's broken: _amt HP to a random party member who isn't at full (downed ones too). green number
+/// over their head, no heal sound (the pickup has its own). false if everyone's already full
+function scr_courage_heal(_amt = 1)
+{
+    var _need = [];
+    with (obj_battle_ui_box) if (hp < max_hp) array_push(_need, id);
+    if (array_length(_need) == 0) return false;
+    var _box = _need[irandom(array_length(_need) - 1)];
+    var _new = min(_box.max_hp, _box.hp + _amt);
+    if (_box.hp <= 0 && _new > 0) scr_party_revive(_box);   // (back up: battle idle)
+    _box.hp = _new;
+    scr_party_head_popup(_box, _amt, make_color_rgb(0, 255, 0), noone);
+    return true;
+}
