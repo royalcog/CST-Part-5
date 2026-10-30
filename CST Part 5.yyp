@@ -959,6 +959,7 @@
     {"id":{"name":"spr_kris_left","path":"sprites/spr_kris_left/spr_kris_left.yy",},},
     {"id":{"name":"spr_kris_right","path":"sprites/spr_kris_right/spr_kris_right.yy",},},
     {"id":{"name":"spr_kris_up","path":"sprites/spr_kris_up/spr_kris_up.yy",},},
+    {"id":{"name":"spr_lancer_battle","path":"sprites/spr_lancer_battle/spr_lancer_battle.yy",},},
     {"id":{"name":"spr_lancer_chair_sad","path":"sprites/spr_lancer_chair_sad/spr_lancer_chair_sad.yy",},},
     {"id":{"name":"spr_lancer_dialogue","path":"sprites/spr_lancer_dialogue/spr_lancer_dialogue.yy",},},
     {"id":{"name":"spr_lancer_down","path":"sprites/spr_lancer_down/spr_lancer_down.yy",},},

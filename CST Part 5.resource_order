@@ -780,6 +780,7 @@
     {"name":"spr_kris_left","order":1,"path":"sprites/spr_kris_left/spr_kris_left.yy",},
     {"name":"spr_kris_right","order":2,"path":"sprites/spr_kris_right/spr_kris_right.yy",},
     {"name":"spr_kris_up","order":3,"path":"sprites/spr_kris_up/spr_kris_up.yy",},
+    {"name":"spr_lancer_battle","order":9,"path":"sprites/spr_lancer_battle/spr_lancer_battle.yy",},
     {"name":"spr_lancer_chair_sad","order":7,"path":"sprites/spr_lancer_chair_sad/spr_lancer_chair_sad.yy",},
     {"name":"spr_lancer_dialogue","order":4,"path":"sprites/spr_lancer_dialogue/spr_lancer_dialogue.yy",},
     {"name":"spr_lancer_down","order":1,"path":"sprites/spr_lancer_down/spr_lancer_down.yy",},
