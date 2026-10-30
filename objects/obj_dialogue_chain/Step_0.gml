@@ -63,8 +63,8 @@ if (dim_phase == 2) // run dialogue
 					var _xb  = sp.x + (sprite_get_bbox_right(_spr) + 1 - sprite_get_xoffset(_spr)) * sp.image_xscale;
 					var _top = sp.y + (sprite_get_bbox_top(_spr) - sprite_get_yoffset(_spr)) * sp.image_yscale;
 					var _h   = (sprite_get_bbox_bottom(_spr) + 1 - sprite_get_bbox_top(_spr)) * abs(sp.image_yscale);
-					var _mx  = (_face > 0) ? max(_xa, _xb) : min(_xa, _xb);
-					ox = _mx + _face * mouth_gap - sp.x;
+					var _cx  = (_xa + _xb) / 2, _hw = abs(_xb - _xa) / 2;
+					ox = _cx + _face * (_hw * mouth_reach + mouth_gap) - sp.x;
 					oy = _top + _h * mouth_height - sp.y;
 				}
 				else if (_mirrored) ox = -ox;   // their set offset, mirrored across them
@@ -81,6 +81,8 @@ if (dim_phase == 2) // run dialogue
 				// pause before the next line starts either (goes "instantly" to the next speaker)
 				var _instant = variable_struct_exists(e, "instant_cutoff") && e.instant_cutoff;
 				curr_box = scr_talkbox_show(sp, txt, ww, ox, oy, fp, cps, _keep_anim, _dim, _animate, _instant);
+				// (the talkbox always nudges its tip 20px left and 40px up, for the old fixed offsets: not wanted here)
+				if (auto_mouth) { curr_box.triangle_xoff = 0; curr_box.triangle_yoff = 0; }
 				if (variable_struct_exists(e, "snd") && e.snd != noone)
 				{
 				    audio_play_sound(e.snd, 1, false);

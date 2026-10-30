@@ -9,13 +9,11 @@ spade_gap_max    = 70;
 spade_speed      = 4;    // px per frame across the box
 spade_damage     = 50;
 spade_scale      = 1.5;  // (bigger than King's own, so it reads against the copies)
-warn_time        = 36;   // frames its lane flashes before it comes in
-warn_col         = c_red;
-warn_width       = 2;    // px
+spade_wait       = 30;   // frames each one sits just outside the box (where you can see it) before it comes in
 spade_hit_radius = 12;   // spade centre -> SOUL centre (smaller than the art, so it's fair)
-spade_offset     = 20;   // how far outside the box they start (hidden until they're in)
+spade_offset     = 30;   // how far outside the box they appear (px, to the spade's middle)
 spade_start      = 60;   // frames into the attack before the first one
 spade_stop       = 90;   // no new ones in the last this-many frames (so none get cut off by the box closing)
 
 spade_timer = spade_start;
-warnings    = [];        // lanes about to get a spade: { side, ly, t }
+next_side   = choose(-1, 1);   // they alternate: left, right, left... (-1: in from the left)

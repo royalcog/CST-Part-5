@@ -1,6 +1,17 @@
 if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
 if (obj_battlebox.state == "closing") fading_out = true;
 
+// (a beat where it spawned first, if it's been given one: it fades in there, so you can see it coming)
+if (wait_frames > 0)
+{
+    wait_frames--;
+    var _ww = scr_box_local_to_world(lx, ly);
+    x = _ww.x; y = _ww.y;
+    image_angle = obj_battlebox.box_angle;
+    image_alpha = min(image_alpha + 1 / fade_frames, 1);
+    exit;
+}
+
 // move in the box's frame, then place in the world at the box's current rotation
 lx += dir * move_speed;
 var _w = scr_box_local_to_world(lx, ly);

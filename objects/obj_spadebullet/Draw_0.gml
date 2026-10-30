@@ -1,5 +1,12 @@
 if (!instance_exists(obj_battlebox)) exit;
 
+// shown whole (outside the box too), so it can be seen waiting before it comes in
+if (show_outside)
+{
+    draw_sprite_ext(sprite_index, image_index, x, y, image_xscale, image_yscale, obj_battlebox.box_angle, image_blend, image_alpha);
+    exit;
+}
+
 var _in  = scr_get_box_interior(); // box's own (unrotated) frame
 var _spr = sprite_index;
 var _w   = sprite_get_width(_spr);
