@@ -1,6 +1,8 @@
 t++;
 flash = max(0, flash - 0.15);
 bob += bob_speed;
+side_k = lerp(side_k, side, side_lerp);
+if (abs(side_k - side) < 0.01) side_k = side;
 if (state != "shatter") follow_queen();
 
 switch (state)

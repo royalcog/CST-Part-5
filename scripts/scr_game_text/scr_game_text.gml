@@ -192,6 +192,62 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "ralsei", 45);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) walk_forward(); }, 0);
 		break;
+		
+		// ---------------- the Titan's out (obj_tower_top_scene opens self_10 once its wings are open)
+		case "self_10":
+			global.cutscene_lock = true;   // everyone turns round after this, then self_11 opens on its own
+			scr_text("* Are you guys ready?", "susie", 30);
+			scr_text("* ...Let's hope so.", "ralsei", 34);
+			scr_text("* Lancer Should Be Obtaining Help Soon In Theory", "queen", 0);
+			scr_text("* I'm back!|* And I brought backup!", "lancer", 1);   // (he's off the left of the screen)
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_turn(); }, 0);
+		break;
+
+		case "self_11":
+			global.cutscene_lock = true;   // spades from behind the moment Queen's cut off
+			scr_text("* ...", "susie", 16);
+				scr_call_on_page(function() { with (obj_tower_top_scene) pose_dir(obj_susie, susie_shock_spr, susie_shock_native, -1); }, 1, global.page_number - 1);
+			scr_text("* ...", "ralsei", 32);
+				scr_call_on_page(function() { with (obj_tower_top_scene) pose_dir(obj_ralsei, ralsei_shock_spr, ralsei_shock_native, -1); }, 1, global.page_number - 1);
+			scr_text("* Why Are You Like Thi-", "queen", 21);
+				scr_text_cutoff(string_length("* Why Are You Like Thi-"));   // the textbox shuts the moment the last letter's out
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_first(); }, 0);
+		break;
+
+		case "self_12":
+			global.cutscene_lock = true;   // the second wave of spades after this
+			scr_text("* I'm sorry, I...", "lancer", 11);
+			scr_text("* You betray us a few days ago, and now this?", "susie", 17);
+			scr_text("* After everything we've been through?", "susie", 32);
+			scr_text("* He told me things would get better...", "lancer", 10);
+			scr_text("* I...", "lancer", 11);
+			scr_text("* I'm so sorry, Susie...", "lancer", 10);
+			scr_text("* Now, now, my son.", "king", 1);
+			scr_text("* You have done well.|* Do not apologize to these... traitors.", "king", 5);
+			scr_text("* How The Hell Did You Survive My Acid Pie Attack", "queen", 2);
+			scr_text("* Lancer here brought me some healing items to get me back to my full power.", "king", 8);
+			scr_text("* ...", "susie", 31);
+			scr_text("* ...", "lancer", 11);
+			scr_text("* Now, since the Knight has left us for more important reasons...", "king", 3);
+			scr_text("* I will take their place.", "king", 0);
+			scr_text("* You already lost this fight, asshole.", "susie", 34);
+				scr_call_on_page(function() { with (obj_tower_top_scene) susie_challenge(); }, 1, global.page_number - 1);
+			scr_text("* Really? Does the Titan behind you agree with that opinion?", "king", 4);
+			scr_text("* Foolish Lightner.", "king", 9);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_second(); }, 0);
+		break;
+
+		case "self_13":
+			global.cutscene_lock = true;   // they ready up, King's cape + laugh, then the battle
+			scr_text("* Ralsei, what do we do???", "susie", 47);
+			scr_text("* ...", "ralsei", 45);
+			scr_text("* Defend.", "ralsei", 36);
+			scr_text("* ???", "susie", 15);
+			scr_text("* Just keep defending, Susie.", "ralsei", 35);
+			scr_text("* I'll... I'll think of a plan in the meantime.", "ralsei", 51);
+			scr_text("* ...", "susie", 31);
+				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ready_up(); }, 0);
+		break;
 /*
 
 */

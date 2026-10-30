@@ -66,6 +66,9 @@ if (drawstate == "idle")
     }
 }
 
+// in battle: the red from a hit fades
+hurt_red = max(0, hurt_red - 0.04);
+
 // the screen afterimage grows and fades
 if (after_on)
 {

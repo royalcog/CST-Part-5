@@ -8,6 +8,18 @@ _tp.flash = max(0, _tp.flash - 0.08);
 _tp.grazing++;
 _tp.fresh++;
 
+// broken: the pieces fall away
+for (var i = array_length(shards) - 1; i >= 0; i--)
+{
+    var _s = shards[i];
+    _s.vy += shard_gravity;
+    _s.x  += _s.vx;
+    _s.y  += _s.vy;
+    _s.rot += _s.vr;
+    _s.a  -= 0.015;
+    if (_s.a <= 0 || _s.y > display_get_gui_height() + 60) array_delete(shards, i, 1);
+}
+
 // the graze shell sits just behind the soul
 if (instance_exists(obj_soul)) depth = obj_soul.depth + 1;
 

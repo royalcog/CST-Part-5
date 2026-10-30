@@ -29,6 +29,36 @@ shown_tp = 0;         // what's drawn, catching up to the real value
 glow  = 0;    // a COURAGE pickup: the bar flashes white + the TP text gets a white outline, fading (Deltarune's tension glow)
 stars = [];   // spare stars rising off the bar
 
+// --- the bar breaking (scr_tp_break) ---
+broken        = false;
+shards        = [];
+shard_strips  = 9;        // the bar's cut into this many strips...
+shard_gravity = 0.35;
+break_shake   = 6;
+break_sounds  = [snd_glassbreak, snd_impact];
+
+/// it shatters: the bar, "TP" and the number all burst apart and fall off the screen
+break_bar = function()
+{
+    if (broken) return;
+    broken = true;
+    var _ox  = -slide_dist * (1 - slide);
+    var _left = bar_x + _ox - sprite_get_xoffset(spr_tensionbar);
+    var _top  = bar_y - sprite_get_yoffset(spr_tensionbar);
+    var _h    = sprite_get_height(spr_tensionbar);
+    var _sh   = ceil(_h / shard_strips);
+    var _fill = clamp(shown_tp / 100, 0, 1);
+    for (var i = 0; i < shard_strips; i++)
+    {
+        var _sy = i * _sh;
+        array_push(shards, { kind: "bar", sy: _sy, sh: min(_sh, _h - _sy), x: _left, y: _top + _sy, fill: _fill,
+                             vx: random_range(-1, 3), vy: random_range(-5, -1), rot: 0, vr: random_range(-6, 6), a: 1 });
+    }
+    array_push(shards, { kind: "logo", x: logo_x + _ox, y: logo_y, vx: random_range(1, 3), vy: random_range(-6, -3), rot: 0, vr: random_range(-8, 8), a: 1 });
+    for (var i = 0; i < array_length(break_sounds); i++) audio_play_sound(break_sounds[i], 1, false);
+    scr_camera_shake(break_shake, 14);
+}
+
 /// a COURAGE pellet was picked up
 courage_flash = function()
 {

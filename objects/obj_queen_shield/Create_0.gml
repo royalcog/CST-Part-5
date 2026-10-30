@@ -23,6 +23,11 @@ build_sound   = snd_power;
 hit_sound     = snd_damagetaken;
 break_sound   = snd_glassbreak;
 
+side          = 1;      // 1: on Queen's right, -1: on her left (set it and the shield swings round; cutscenes use this)
+side_lerp     = 0.2;
+// it starts on the side she's facing (her battle sprites face right; mirrored = facing left)
+if (instance_exists(obj_queen) && obj_queen.image_xscale < 0) side = -1;
+
 // --- state ---
 hp      = max_hp;
 state   = "build";
@@ -31,13 +36,19 @@ flash   = 0;
 shards  = [];
 bob     = 0;
 
+side_k  = side;         // where it is between her left (-1) and right (1) right now
+
 follow_queen = function()
 {
     if (!instance_exists(obj_queen)) return;
-    // the front of Queen (her sprite's right edge) + a gap. her origin's at her feet
-    var _q = obj_queen;
-    var _front = _q.x + (sprite_get_width(_q.sprite_index) - sprite_get_xoffset(_q.sprite_index)) * abs(_q.image_xscale);
-    x = _front + front_gap;
+    // beside Queen (her sprite's right edge, or left with side = -1) + a gap. her origin's at her feet
+    var _q  = obj_queen;
+    var _e1 = _q.x + (0 - sprite_get_xoffset(_q.sprite_index)) * _q.image_xscale;
+    var _e2 = _q.x + (sprite_get_width(_q.sprite_index) - sprite_get_xoffset(_q.sprite_index)) * _q.image_xscale;
+    var _right_x = max(_e1, _e2) + front_gap;
+    var _left_x  = min(_e1, _e2) - front_gap - sprite_get_width(spr_queen_shield) * scale;
+    x = lerp(_left_x, _right_x, (side_k + 1) / 2);
+    flip = side_k > 0;                       // its curved side faces out, whichever side it's on
     y = _q.y - float_h;
     depth = _q.depth - 1;                    // in front of her
 }

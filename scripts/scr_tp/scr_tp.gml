@@ -25,7 +25,8 @@ function scr_tp_init()
         grazing:   999,           // frames since the last graze (the shell fades out from this)
         fresh:     999,           // frames since a bullet was FIRST grazed (the shell's bright white just after)
         grazed:    ds_map_create(), // bullets that have already given their first graze
-        flash:     0              // the bar flashes white when you gain
+        flash:     0,              // the bar flashes white when you gain
+		broken:    0
     };
 }
 
@@ -37,6 +38,7 @@ function scr_tp_reset(_dark = false)
     global.tp.dark  = _dark;
     global.tp.grazing = 999;
     global.tp.fresh   = 999;
+	global.tp.broken = false;
     ds_map_clear(global.tp.grazed);
 }
 
@@ -51,12 +53,13 @@ function scr_tp_add(_pct)
     if (global.tp.value > _before) global.tp.flash = 1;
 }
 
-function scr_tp_can_spend(_pct) { scr_tp_init(); return global.tp.value >= _pct; }
+function scr_tp_can_spend(_pct) { scr_tp_init(); return global.tp.broken || global.tp.value >= _pct; }
 
 /// spend _pct TP. false (and nothing spent) if there isn't enough
 function scr_tp_spend(_pct)
 {
     scr_tp_init();
+    if (global.tp.broken) return true;   // the bar's broken: free
     if (global.tp.value < _pct) return false;
     global.tp.value -= _pct;
     return true;
@@ -103,4 +106,14 @@ function scr_tp_bar_show(_on = true)
     scr_tp_init();
     if (!instance_exists(obj_tp_bar)) instance_create_depth(0, 0, -100, obj_tp_bar);
     with (obj_tp_bar) shown = _on;
+}
+
+/// the TP bar shatters (Susie's "This game is OVER!"): everything's free from now on (scr_tp_reset puts it back)
+function scr_tp_break()
+{
+    scr_tp_init();
+    if (global.tp.broken) return;
+    global.tp.broken = true;
+    if (!instance_exists(obj_tp_bar)) instance_create_depth(0, 0, -100, obj_tp_bar);
+    with (obj_tp_bar) break_bar();
 }

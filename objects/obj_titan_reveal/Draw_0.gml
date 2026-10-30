@@ -53,15 +53,23 @@ if (drawstate == "undefense" && show_titan && wing_t < 6)
 // ---------------- open: the full Titan, idling
 if (drawstate == "idle" && show_titan)
 {
-    draw_tl(spr_titan_0_backwing, siner, x, y);
-    draw_tl(spr_titan_1_backwing, siner, x, y);
-    draw_tl(spr_titan_2_backwing, siner, x, y);
-    draw_tl(spr_titan_3_backwing, siner, x, y);
-    draw_tl(spr_cover_wings_defense_layer_4, siner, x, y);
-    draw_tl(spr_titan_star_dissapear, 0, x, y);
-    draw_tl(spr_titan_5_backwing, siner, x, y);
-    draw_tl(spr_titan_6_backwing, siner, x, y);
-    draw_tl(spr_titan_7_backwing, siner, x, y);
+    var _idle = [
+        [spr_titan_0_backwing, siner], [spr_titan_1_backwing, siner], [spr_titan_2_backwing, siner], [spr_titan_3_backwing, siner],
+        [spr_cover_wings_defense_layer_4, siner], [spr_titan_star_dissapear, 0],
+        [spr_titan_5_backwing, siner], [spr_titan_6_backwing, siner], [spr_titan_7_backwing, siner],
+    ];
+    for (var i = 0; i < array_length(_idle); i++) draw_tl(_idle[i][0], _idle[i][1], x, y);
+
+    // in battle: red when it's hit, a white pulse while the menu's cursor is on it
+    var _fx = [];
+    if (hurt_red > 0) array_push(_fx, [c_red, hurt_red * 0.6]);
+    if (target_flash) array_push(_fx, [c_white, 0.35 + 0.25 * sin(current_time / 120)]);
+    for (var k = 0; k < array_length(_fx); k++)
+    {
+        gpu_set_fog(true, _fx[k][0], 0, 0);
+        for (var i = 0; i < array_length(_idle); i++) draw_tl(_idle[i][0], _idle[i][1], x, y, _fx[k][1]);
+        gpu_set_fog(false, c_white, 0, 0);
+    }
 }
 
 // ---------------- the cloud sea's puffs along its bottom edge, again, in front of it (drawn exactly the way

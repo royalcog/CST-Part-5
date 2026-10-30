@@ -145,6 +145,32 @@ box_inst = noone;
 atk_inst = noone;
 talk_chain = noone;
 
+
+// --- facing whoever they're aiming at (for fights with enemies on both sides). off unless the battle turns it on ---
+facing_enabled = false;
+default_facing = 1;        // -1 left, 1 right: which way they face at the start of each turn
+
+// --- the panel can show a party member's face next to the text (Deltarune's in-battle lines) ---
+text_face   = undefined;   // { spr, img } while someone's talking in the panel
+say_indent  = 112;         // px the text moves right to make room for the face
+face_x      = 10;          // the face's left edge / top, from the panel (GUI px)
+face_y      = 10;
+face_scale  = 2;
+
+// --- a line (or a few) said in the panel before the first turn: { spr, img, text, on_start (optional function) } ---
+intro_lines = [];
+intro_wait  = 45;          // frames after the battle starts before the first line (the UI sliding in)
+
+// --- "we're not attacking him": choosing protect_target for an attack makes Susie say protect_lines, then Rude Buster
+//     its row in the target list. that row's broken from then on (it can't be picked) ---
+protect_target  = noone;
+protect_lines   = [];      // { spr, img, text }
+protect         = undefined;
+protect_proj_speed = 14;
+protect_hold    = 40;      // frames after the row breaks before they're back to picking
+row_shards      = [];      // the broken row's pieces
+proj_anim_speed = 10 / 60;
+
 // ---------------------------------------------------------------- helpers
 text_wrap  = 580;   // px the battle text wraps at (Deltarune's)
 text_lines = [];    // the laid-out text: { x, y, from, len } per line (from = where it starts in text)
@@ -188,7 +214,15 @@ layout_text = function(_s)
     return _out;
 }
 
-set_text = function(_s) { text = _s; text_shown = 0; text_pause = 0; text_lines = layout_text(_s); }
+/// the battle text. _face = { spr, img } shows someone's face next to it (their in-battle line), undefined = just the text
+set_text = function(_s, _face = undefined)
+{
+    text_face = _face;
+    var _wrap = text_wrap;
+    if (_face != undefined) text_wrap -= say_indent;   // less room next to the face
+    text = _s; text_shown = 0; text_pause = 0; text_lines = layout_text(_s);
+    text_wrap = _wrap;
+}
 
 /// plays _snd unless it already started this frame (two bolts on the same spot shouldn't double up)
 play_once = function(_snd)
@@ -207,8 +241,56 @@ enemies = function()
 {
     var _a = [];
     with (obj_battle_titanspawn) if (!gone) array_push(_a, id);
+    with (obj_battle_target) if (!gone) array_push(_a, id);
     array_sort(_a, function(_p, _q) { return sign(_p.home_y - _q.home_y); });
     return _a;
+}
+
+/// its row in the target list was smashed (it can't be picked)
+row_broken = function(_inst) { return variable_instance_exists(_inst, "line_broken") && _inst.line_broken; }
+
+/// from _i, step _dir (1 down / -1 up) through the target list to the next one that can be picked (_i itself if it can)
+pick_step = function(_e, _i, _dir)
+{
+    var _n = array_length(_e);
+    if (_n == 0) return 0;
+    _i = ((_i mod _n) + _n) mod _n;
+    for (var k = 0; k < _n; k++)
+    {
+        if (!row_broken(_e[_i])) return _i;
+        _i = (_i + _dir + _n) mod _n;
+    }
+    return _i;
+}
+
+/// _i turns to face _dir (-1 left, 1 right), mirrored around the middle of their battle idle, so they stay put
+face_member = function(_i, _dir)
+{
+    var _d = defs[_i];
+    if (_d == undefined || !instance_exists(_d.obj) || _dir == 0) return;
+    with (_d.obj)
+    {
+        if (sign(image_xscale) == _dir) exit;
+        var _mid = (sprite_get_bbox_left(_d.idle) + sprite_get_bbox_right(_d.idle) + 1) / 2 - sprite_get_xoffset(_d.idle);
+        x += 2 * _mid * image_xscale;
+        image_xscale = abs(image_xscale) * _dir;
+    }
+}
+
+/// is this an attack (FIGHT, or a spell that hurts)? (used for protect_target)
+is_attack = function(_pending)
+{
+    if (_pending == "fight") return true;
+    return is_struct(_pending) && variable_struct_exists(_pending, "effect") && _pending.effect == "rudebuster";
+}
+
+/// _i picked protect_target to attack: Susie stops them (her lines, then her Rude Buster smashes its row)
+start_protect = function()
+{
+    protect = { phase: "say", i: 0, t: 0, proj: undefined, saved: undefined, back_mode: mode };
+    set_text(protect_lines[0].text, { spr: protect_lines[0].spr, img: protect_lines[0].img });
+    state = "protect";
+    t = 0;
 }
 
 /// first party member from _from on who can still act (-1: nobody)
@@ -548,12 +630,4 @@ end_battle = function()
     if (variable_global_exists("music")) audio_sound_gain(global.music, 0, 900);
     state = "end_wait";
     t = 0;
-
-    // back to idle, except whoever's holding their victory pose (they hold it until whatever's next takes over)
-    for (var i = 0; i < 3; i++)
-    {
-        if (defs[i] == undefined) continue;
-        if (variable_instance_exists(id, "victory_posed") && array_contains(victory_posed, defs[i].obj)) continue;
-        scr_bm_idle(defs[i]);
-    }
 }

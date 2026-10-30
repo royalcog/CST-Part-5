@@ -508,7 +508,294 @@ titan_open = function()
     if (instance_exists(titan)) titan.open();
 }
 
-/// TODO: the Titan's standing there, wings open: the battle starts from here
+// ---------------------------------------------------------------- the ambush (after the Titan's wings open)
+// self_10 ("Are you guys ready?" ... Lancer: "I'm back!") -> everyone turns round -> self_11 (cut off) -> spades from the
+// Titan's side knock Susie & Ralsei down (Queen's shield catches hers) -> the camera pans left: Lancer, with King ->
+// self_12 -> spades from above + one from the front: knocked down again and shoved right (Queen's shield swings round)
+// -> King & Lancer walk up, the camera pans to the fight's spot -> self_13 -> everyone readies -> King's cape + laugh ->
+// scr_titan_battle_start()
+// every spot below is in screen px from where the camera is at that moment (so it all moves if the camera does)
+
+// --- tuning: the camera ---
+ambush_pan_dist  = 280;           // px the camera pans left to show King + Lancer (from where it is after the reveal)
+ambush_pan_time  = 120;
+fight_cam_dx     = 160;           // then for the fight it ends up this far back right of that
+fight_pan_time   = 100;
+
+// --- tuning: where King + Lancer stand (screen px, their feet) ---
+king_start       = { x: 120, y: 250 };   // when the camera pans over to them
+lancer_start     = { x: 225, y: 262 };
+king_fight       = { x: 120, y: 245 };   // where they walk up to for the fight (clear of the UI boxes)
+lancer_fight     = { x: 230, y: 268 };
+king_walk        = 2;
+// --- tuning: where the party lands after the second hit (screen px, their feet; Queen centred between the other two) ---
+susie_land       = { x: 415, y: 262 };
+ralsei_land      = { x: 500, y: 262 };
+queen_land_y     = 210;
+land_time        = 22;            // frames they're shoved over
+land_hop         = 18;            // px
+
+// --- tuning: the spades ---
+spade_scale      = 1.5;
+spade_spin       = 25;            // degrees per frame
+spade_speed      = 14;            // px per frame (from behind / the front)
+spade_fall_speed = 12;            // px per frame (from above)
+spade_delay      = 12;            // frames after the cut-off before the first wave flies in
+shield_build_every = 1;           // Queen's shield builds this fast here (frames per piece; her DEFEND's is 3)
+knock_dx         = -36;           // px the first wave knocks Susie & Ralsei forward (left: they're facing left)
+knock_time       = 16;
+knock_hop        = 14;
+ambush_hold      = 50;            // frames after the first wave before the camera pans over
+reveal_hold      = 30;            // frames after the pan before self_12
+approach_hold    = 30;            // frames after the second wave before King + Lancer walk up
+talk_hold        = 25;
+spade_hit_sounds = [snd_impact, snd_hurt];
+
+// --- tuning: getting ready, King's cape + laugh ---
+ready_hold       = 30;            // frames after they ready before his cape comes
+laugh_time       = 90;            // frames he laughs for
+battle_hold      = 20;            // frames after the laugh before the battle starts
+
+// --- tuning: poses (which way each sprite faces as drawn: 1 right, -1 left) ---
+susie_down_spr   = spr_susie_landed;      susie_down_native  = -1;
+ralsei_down_spr  = spr_ralsei_fall_wince; ralsei_down_native = 1;
+susie_shock_spr  = spr_susie_shocked;     susie_shock_native = -1;
+ralsei_shock_spr = spr_ralsei_shocked;    ralsei_shock_native = 1;
+king_walk_r      = spr_king_walk_right;
+lancer_sad_r     = spr_lancer_right_sad;
+lancer_walk_r    = spr_lancer_right;
+
+// --- state ---
+spades = [];
+chunks = [];
+slides = [];
+king   = noone;
+lancer = noone;
+
+/// _o into _spr facing _dir (-1 left, 1 right), body kept where it is. _native: which way _spr faces as drawn
+pose_dir = function(_o, _spr, _native, _dir)
+{
+    pose_flip(_o, _spr, 2 * _native * _dir);
+}
+
+/// a spinning spade from (_x, _y) to (_tx, _ty) at _spd px a frame, after _delay frames. _on_hit() runs when it lands
+add_spade = function(_x, _y, _tx, _ty, _spd, _delay, _on_hit)
+{
+    array_push(spades, { x: _x, y: _y, tx: _tx, ty: _ty, spd: _spd, delay: _delay, rot: random(360), on_hit: _on_hit, thrown: false });
+}
+
+/// a spade breaking apart where it landed
+spade_break = function(_x, _y)
+{
+    repeat (5) array_push(chunks, { x: _x, y: _y, vx: random_range(-3, 3), vy: random_range(-4, -1), rot: random(360), vr: random_range(-15, 15), t: 0 });
+}
+
+/// the middle of _o's body (room px)
+body_mid = function(_o)
+{
+    var _i = instance_find(_o, 0);
+    var _b = scr_get_body(_i);
+    var _top = _i.y + (sprite_get_bbox_top(_i.sprite_index) - sprite_get_yoffset(_i.sprite_index)) * _i.image_yscale;
+    return { x: _b.x, y: (_b.y + _top) / 2 };
+}
+
+/// shoves _o by (_dx, _dy) over _frames, hopping _hop px. keeps whatever pose it's in
+slide = function(_o, _dx, _dy, _frames, _hop)
+{
+    var _i = instance_find(_o, 0);
+    if (_i == noone) return;
+    // (one at a time: a new shove on the same thing replaces the old one)
+    for (var i = array_length(slides) - 1; i >= 0; i--) if (slides[i].o == _i) array_delete(slides, i, 1);
+    array_push(slides, { o: _i, x0: _i.x, y0: _i.y, dx: _dx, dy: _dy, frames: max(1, _frames), hop: _hop, t: 0 });
+}
+
+/// a spade hits _o: down (in their knocked-down pose, facing left), shoved by _dx
+spade_hit = function(_o, _dx, _frames, _hop)
+{
+    for (var i = 0; i < array_length(spade_hit_sounds); i++) audio_play_sound(spade_hit_sounds[i], 1, false);
+    scr_camera_shake(4, 10);
+    if (_o == obj_susie)  pose_dir(obj_susie,  susie_down_spr,  susie_down_native,  -1);
+    if (_o == obj_ralsei) pose_dir(obj_ralsei, ralsei_down_spr, ralsei_down_native, -1);
+    with (_o) { image_speed = 0; image_index = 0; anim_loop = true; }
+    slide(_o, _dx, 0, _frames, _hop);
+}
+
+/// the Titan's wings are open: a beat, then self_10
 titan_after_reveal = function()
 {
+    scr_call_after_frames(function()
+    {
+        create_textbox("self_10");
+        global.dialogue_self = 10;
+    }, talk_hold);
+}
+
+/// after self_10 (Lancer, offscreen: "I'm back!"): everyone turns round to the left, then self_11
+ambush_turn = function()
+{
+    face(obj_susie,  susie_left);
+    face(obj_ralsei, ralsei_left);
+    face(obj_queen,  queen_left);
+    scr_call_after_frames(function()
+    {
+        create_textbox("self_11");
+        global.dialogue_self = 11;
+    }, talk_hold);
+}
+
+/// after self_11 (cut off): Queen throws her shield up behind her, spades fly in from the Titan's side
+ambush_first = function()
+{
+    depth = -5000;   // the spades draw over everyone
+    // King + Lancer are already standing over there (off the left of the screen until the camera pans)
+    var _cam_after = cam_x - ambush_pan_dist;
+    king   = place(obj_king,   king_walk_r,  _cam_after + king_start.x,   king_start.y);
+    lancer = place(obj_lancer, lancer_sad_r, _cam_after + lancer_start.x, lancer_start.y);
+
+    // her shield, quick, on her right (behind her: she's facing left)
+    with (obj_queen_shield) instance_destroy();
+    with (instance_create_depth(0, 0, 0, obj_queen_shield)) { section_every = other.shield_build_every; side = 1; side_k = 1; follow_queen(); }
+
+    var _sx = cam_x + vw + 40;   // in from the right edge (the Titan's side)
+    var _s = body_mid(obj_susie), _r = body_mid(obj_ralsei);
+    add_spade(_sx, _s.y, _s.x, _s.y, spade_speed, spade_delay,     function() { spade_hit(obj_susie,  knock_dx, knock_time, knock_hop); });
+    add_spade(_sx, _r.y, _r.x, _r.y, spade_speed, spade_delay + 4, function() { spade_hit(obj_ralsei, knock_dx, knock_time, knock_hop); });
+    // Queen's hits her shield
+    var _q  = body_mid(obj_queen);
+    var _sh = instance_find(obj_queen_shield, 0);
+    var _qx = (_sh != noone) ? _sh.x + sprite_get_width(spr_queen_shield) * _sh.scale / 2 : _q.x;
+    add_spade(_sx, _q.y, _qx, _q.y, spade_speed, spade_delay + 2, function()
+    {
+        audio_play_sound(snd_impact, 1, false);
+        with (obj_queen_shield) flash = 1;
+    });
+
+    // then the camera pans over to them
+    var _wait = ceil((vw + 40) / spade_speed) + spade_delay + 4 + ambush_hold;
+    scr_call_after_frames(function()
+    {
+        pan_cam(cam_x - ambush_pan_dist, ambush_pan_time);
+        scr_call_after_frames(function()
+        {
+            create_textbox("self_12");
+            global.dialogue_self = 12;
+        }, ambush_pan_time + reveal_hold);
+    }, _wait);
+}
+
+/// self_12, "You already lost this fight, asshole.": Susie's up, axe out at King
+susie_challenge = function()
+{
+    pose_dir(obj_susie, spr_susie_attack_ready, 1, -1);
+    with (obj_susie) { image_speed = 0; image_index = 0; anim_loop = true; }
+    audio_play_sound(snd_swing, 1, false);
+}
+
+/// after self_12 ("Foolish Lightner."): a spade over Susie and one over Ralsei, one coming at them from the front, one at
+/// Queen from the front. they guard; the ones from above knock them down, the one from the front shoves them right
+ambush_second = function()
+{
+    pose_dir(obj_susie,  spr_susie_defend,  1, -1);
+    pose_dir(obj_ralsei, spr_ralsei_defend, 1, -1);
+    with (obj_susie)  { image_speed = 0; image_index = 0; anim_loop = true; }
+    with (obj_ralsei) { image_speed = 1; image_index = 0; anim_loop = false; }
+    // Queen's shield swings round in front of her (built again if it's gone)
+    if (!instance_exists(obj_queen_shield)) with (instance_create_depth(0, 0, 0, obj_queen_shield)) { section_every = other.shield_build_every; follow_queen(); }
+    with (obj_queen_shield) side = -1;
+
+    // where they'll end up (the camera's about to move: these are from where it'll be)
+    var _cam_fight = cam_x + fight_cam_dx;
+    var _sb = scr_get_body(instance_find(obj_susie, 0)), _rb = scr_get_body(instance_find(obj_ralsei, 0));
+    var _sdx = _cam_fight + susie_land.x  - _sb.x, _sdy = susie_land.y  - _sb.y;
+    var _rdx = _cam_fight + ralsei_land.x - _rb.x, _rdy = ralsei_land.y - _rb.y;
+    var _qf  = scr_get_feet(instance_find(obj_queen, 0));
+    var _qdx = _cam_fight + (susie_land.x + ralsei_land.x) / 2 - _qf.x, _qdy = queen_land_y - _qf.y;
+    land = { sdx: _sdx, sdy: _sdy, rdx: _rdx, rdy: _rdy, qdx: _qdx, qdy: _qdy };
+
+    // from above
+    var _s = body_mid(obj_susie), _r = body_mid(obj_ralsei);
+    var _top = camera_get_view_y(view_camera[0]) - 40;
+    add_spade(_s.x, _top, _s.x, _s.y - 20, spade_fall_speed, 0, function() { spade_hit(obj_susie,  0, 1, 0); });
+    add_spade(_r.x, _top, _r.x, _r.y - 20, spade_fall_speed, 2, function() { spade_hit(obj_ralsei, 0, 1, 0); });
+    // from the front (King's side): it shoves them both right, onto their spots
+    var _kx = instance_exists(king) ? body_mid(obj_king).x : cam_x - 40;
+    var _fy = (_s.y + _r.y) / 2;
+    add_spade(_kx, _fy, min(_s.x, _r.x), _fy, spade_speed + 2, 6, function()
+    {
+        for (var i = 0; i < array_length(spade_hit_sounds); i++) audio_play_sound(spade_hit_sounds[i], 1, false);
+        scr_camera_shake(6, 14);
+        slide(obj_susie,  land.sdx, land.sdy, land_time, land_hop);
+        slide(obj_ralsei, land.rdx, land.rdy, land_time, land_hop);
+    });
+    // and one at Queen's shield, from the front (it slides her back too, but she stays standing)
+    var _q = body_mid(obj_queen);
+    add_spade(_kx, _q.y, _q.x - 60, _q.y, spade_speed + 2, 8, function()
+    {
+        audio_play_sound(snd_impact, 1, false);
+        with (obj_queen_shield) flash = 1;
+        slide(obj_queen, land.qdx, land.qdy, land_time, 0);
+    });
+
+    // then King + Lancer walk up, the camera following
+    var _far = max(abs(_kx - min(_s.x, _r.x)), abs(_kx - _q.x));
+    scr_call_after_frames(function() { approach(); }, ceil(_far / (spade_speed + 2)) + 8 + land_time + approach_hold);
+}
+
+/// King + Lancer walk up to their fight spots, the camera pans to the fight's spot, then self_13
+approach = function()
+{
+    var _cam_fight = cam_x + fight_cam_dx;
+    pan_cam(_cam_fight, fight_pan_time);
+    arrived = 0;
+    var _done = function()
+    {
+        arrived++;
+        if (arrived < 2) return;
+        face(obj_king, king_walk_r);
+        face(obj_lancer, lancer_sad_r);
+        scr_queen_shield_takedown();
+        scr_call_after_frames(function()
+        {
+            create_textbox("self_13");
+            global.dialogue_self = 13;
+        }, talk_hold);
+    };
+    scr_walk_feet_to(obj_king,   king_walk_r,   king_walk_r,   king_walk_r,   king_walk_r,   _cam_fight + king_fight.x,   king_fight.y,   king_walk, _done);
+    scr_walk_feet_to(obj_lancer, lancer_walk_r, lancer_walk_r, lancer_walk_r, lancer_walk_r, _cam_fight + lancer_fight.x, lancer_fight.y, king_walk, _done);
+}
+
+/// after self_13: all three ready toward King + Lancer, then King's cape flies onto him and he laughs
+ready_up = function()
+{
+    pose_dir(obj_susie,  spr_susie_attack_ready,  1, -1);
+    pose_dir(obj_ralsei, spr_ralsei_attack_ready, 1, -1);
+    pose_dir(obj_queen,  spr_queen_pie_throw,     1, -1);
+    with (obj_susie)  { image_speed = 0; image_index = 0; anim_loop = true; }
+    with (obj_ralsei) { image_speed = 0; image_index = 0; anim_loop = true; }
+    with (obj_queen)  { image_speed = 0; image_index = 0; }
+    audio_play_sound(snd_taking_out_sword, 1, false);
+    scr_call_after_frames(function() { king_cape(); }, ready_hold);
+}
+
+/// his cape flies in from the left onto his back (the dark screen), then he laughs, then the battle
+king_cape = function()
+{
+    if (!instance_exists(obj_king)) { scr_titan_battle_start(); return; }
+    var _c = instance_create_depth(cam_x - 60, obj_king.y + 37, -99999, obj_king_cape);
+    _c.image_xscale  = -2;   // he's facing right: everything's mirrored from the King fight
+    _c.back_offset_x = sprite_get_width(obj_king.sprite_index) * 2 - 46;
+    _c.laugh = false;
+    _c.on_merge = function()
+    {
+        pose_flip(obj_king, spr_king_laugh, -2);   // his battle sprites face left as drawn
+        with (obj_king) image_speed = 1;
+        audio_play_sound(snd_kinglaugh, 1, false);
+        scr_call_after_frames(function()
+        {
+            pose_flip(obj_king, spr_king_battle_idle, -2);
+            with (obj_king) image_speed = 1;
+            scr_call_after_frames(function() { state = "titan_battle"; scr_titan_battle_start(); }, battle_hold);
+        }, laugh_time);
+    };
+    audio_play_sound(snd_wing, 1, false);
 }

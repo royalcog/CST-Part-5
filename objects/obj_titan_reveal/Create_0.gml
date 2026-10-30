@@ -63,6 +63,8 @@ a_black     = 0;              // the black square
 a_crescent  = 0;
 show_titan  = false;          // Ch4: introcon > 0
 open_done   = false;
+target_flash = false;         // in battle: the menu's cursor is on it (obj_battle_target sets this)
+hurt_red     = 0;             // in battle: it was just hit (1, fading)
 
 after_surf  = -1;             // the screen afterimage
 after_on    = false;

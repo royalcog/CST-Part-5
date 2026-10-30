@@ -7,7 +7,8 @@ ok_prev    = _ok_down;
 back_prev  = _back_down;
 
 // the boxes rise while the menu's up, and drop back for the enemies' turn so the battle box has room
-var _menu_up = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win");
+var _menu_up = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win"
+             || state == "intro_say" || state == "protect");
 if (instance_exists(obj_UI)) obj_UI.menu_lift_target = _menu_up ? panel_lift : 0;
 panel_y = panel_y_base - (instance_exists(obj_UI) ? round(obj_UI.menu_lift) : 0);
 
@@ -30,12 +31,20 @@ else if (text_shown < string_length(text))
     }
 }
 
-// whoever the cursor's on flashes
 with (obj_battle_titanspawn) targeted = false;
+with (obj_battle_target) targeted = false;
 if (mode == "enemy" && (state == "choose"))
 {
     var _e = enemies();
     if (pick_i < array_length(_e)) _e[pick_i].targeted = true;
+}
+
+// the smashed row's pieces fall
+for (var i = array_length(row_shards) - 1; i >= 0; i--)
+{
+    var _s = row_shards[i];
+    _s.vy += 0.35; _s.x += _s.vx; _s.y += _s.vy; _s.rot += _s.vr; _s.a -= 0.02;
+    if (_s.a <= 0) array_delete(row_shards, i, 1);
 }
 
 switch (state)
@@ -52,6 +61,7 @@ switch (state)
         actions = array_create(3, undefined);
         with (obj_battle_ui_box) defending = false;
         for (var i = 0; i < 3; i++) if (alive_member(i)) scr_bm_idle(defs[i]);
+        if (facing_enabled) for (var i = 0; i < 3; i++) if (alive_member(i)) face_member(i, default_facing);
 
         set_text(flavor[irandom(array_length(flavor) - 1)]);
         var _first = next_chooser(0);
@@ -119,7 +129,7 @@ switch (state)
 
                 var _o = list[list_i];
                 var _is_item = (list == items);
-                if (!_is_item && _o.tp > global.tp.value) { snd_no(); break; }
+                if (!_is_item && !scr_tp_can_spend(_o.tp)) { snd_no(); break; }
                 pending = _o;
                 pick_i = 0;
                 if (_o.target == "enemy") { mode = "enemy"; snd_ok(); }
@@ -139,9 +149,11 @@ switch (state)
                 var _e = enemies();
                 var _n = array_length(_e);
                 if (_n == 0) { mode = "cmd"; break; }
-                pick_i = min(pick_i, _n - 1);
-                if (keyboard_check_pressed(vk_down)) { pick_i = (pick_i + 1) mod _n; snd_move(); }
-                if (keyboard_check_pressed(vk_up))   { pick_i = (pick_i + _n - 1) mod _n; snd_move(); }
+                pick_i = pick_step(_e, min(pick_i, _n - 1), 1);   // (never on a smashed row)
+                if (keyboard_check_pressed(vk_down)) { pick_i = pick_step(_e, pick_i + 1, 1); snd_move(); }
+                if (keyboard_check_pressed(vk_up))   { pick_i = pick_step(_e, pick_i - 1, -1); snd_move(); }
+                // they turn to whoever the cursor's on
+                if (facing_enabled && variable_instance_exists(_e[pick_i], "side")) face_member(chooser, _e[pick_i].side);
                 if (key_back())
                 {
                     if (is_struct(pending)) mode = "list";            // back to the spell / ACT list: still in its ready
@@ -151,6 +163,12 @@ switch (state)
                 if (!key_ok()) break;
 
                 var _tg = _e[pick_i];
+                // "we are NOT attacking him": Susie steps in instead (nothing's committed or spent)
+                if (_tg == protect_target && is_attack(pending) && !row_broken(_tg) && array_length(protect_lines) > 0)
+                {
+                    start_protect();
+                    break;
+                }
                 if (pending == "fight")      commit({ kind: "fight", target: _tg, phase: 0, t: 0 });
                 else if (pending == "spare") commit({ kind: "spare", target: _tg, phase: 0, t: 0 });
                 else
@@ -182,6 +200,140 @@ switch (state)
                     commit({ kind: "spell", spell: pending, target: _box, phase: 0, t: 0 });
                 }
                 t = 0;
+            }
+            break;
+        }
+    }
+    break;
+	
+    // ---------------------------------------------------------------- lines said in the panel before the first turn
+    case "intro_say":
+    {
+        if (!variable_instance_exists(id, "intro_i")) intro_i = -1;
+        var _show_line = function(_i)
+        {
+            var _l = intro_lines[_i];
+            set_text(_l.text, { spr: _l.spr, img: _l.img });
+            if (variable_struct_exists(_l, "on_start")) _l.on_start();
+        };
+        if (intro_i == -1)
+        {
+            if (t >= intro_wait) { intro_i = 0; _show_line(0); t = 0; }
+        }
+        else if (t > 2 && text_done() && key_ok())
+        {
+            intro_i++;
+            if (intro_i < array_length(intro_lines)) { _show_line(intro_i); t = 0; }
+            else { set_text(""); state = "turn_start"; t = 0; }
+        }
+    }
+    break;
+
+    // ---------------------------------------------------------------- Susie stops someone attacking protect_target
+    case "protect":
+    {
+        var _p = protect;
+        _p.t++;
+        switch (_p.phase)
+        {
+            case "say":   // her lines (Z through them)
+                if (t > 2 && text_done() && key_ok())
+                {
+                    _p.i++;
+                    if (_p.i < array_length(protect_lines))
+                    {
+                        set_text(protect_lines[_p.i].text, { spr: protect_lines[_p.i].spr, img: protect_lines[_p.i].img });
+                        t = 0;
+                    }
+                    else
+                    {
+                        // her Rude Buster swing (her ready/idle comes back once it's done)
+                        set_text("");
+                        if (instance_exists(obj_susie))
+                        {
+                            with (obj_susie)
+                            {
+                                _p.saved = { spr: sprite_index, img: image_index, spd: image_speed, loop: anim_loop };
+                                sprite_index = spr_susie_rudebuster; last_sprite = sprite_index;
+                                image_index = 0; image_speed = 1; anim_loop = false;
+                            }
+                        }
+                        _p.phase = "swing";
+                        _p.t = 0;
+                    }
+                }
+            break;
+
+            case "swing":   // it leaves her swing on frame 7 (obj_rude_buster's), headed for the row
+                if (!instance_exists(obj_susie) || floor(obj_susie.image_index) >= 7 || _p.t >= 90)
+                {
+                    var _cx = camera_get_view_x(view_camera[0]), _cy = camera_get_view_y(view_camera[0]);
+                    var _sx = instance_exists(obj_susie) ? obj_susie.x + 38 * obj_susie.image_xscale - _cx : 100;
+                    var _sy = instance_exists(obj_susie) ? obj_susie.y - 41 * obj_susie.image_yscale - _cy : 200;
+                    // the row: same spot Draw GUI puts it (the panel's shifted to the boxes' row)
+                    var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - _cx) : 0;
+                    var _e  = enemies();
+                    var _ri = 0;
+                    for (var i = 0; i < array_length(_e); i++) if (_e[i] == protect_target) _ri = i;
+                    var _tx = _ox + 230, _ty = panel_y + 17 + _ri * line_h + 14;
+                    _p.proj = { x: _sx, y: _sy, tx: _tx, ty: _ty, dir: point_direction(_sx, _sy, _tx, _ty), frame: 0, trail: [], row: _ri, ox: _ox };
+                    audio_play_sound(snd_boost, 1, false);
+                    _p.phase = "fly";
+                    _p.t = 0;
+                }
+            break;
+
+            case "fly":
+            {
+                var _pr = _p.proj;
+                array_push(_pr.trail, { x: _pr.x, y: _pr.y, a: 0.6 });
+                if (array_length(_pr.trail) > 6) array_delete(_pr.trail, 0, 1);
+                _pr.frame += proj_anim_speed;
+                var _d = point_distance(_pr.x, _pr.y, _pr.tx, _pr.ty);
+                if (_d <= protect_proj_speed)
+                {
+                    // it smashes the row
+                    _pr.x = _pr.tx; _pr.y = _pr.ty;
+                    protect_target.line_broken = true;
+                    var _y0 = panel_y + 17 + _pr.row * line_h;
+                    repeat (18)
+                    {
+                        array_push(row_shards, { x: _pr.ox + random_range(75, 610), y: _y0 + random_range(0, 28),
+                            w: irandom_range(4, 18), h: irandom_range(3, 10), col: choose(c_white, c_white, col_hp, col_hp_bg, col_mercy_bg),
+                            vx: random_range(-4, 4), vy: random_range(-6, -1), rot: random(360), vr: random_range(-12, 12), a: 1 });
+                    }
+                    audio_play_sound(snd_glassbreak, 1, false);
+                    audio_play_sound(snd_impact, 1, false);
+                    scr_camera_shake(6, 14);
+                    _p.proj = undefined;
+                    _p.phase = "after";
+                    _p.t = 0;
+                }
+                else
+                {
+                    _pr.x += lengthdir_x(protect_proj_speed, _pr.dir);
+                    _pr.y += lengthdir_y(protect_proj_speed, _pr.dir);
+                }
+            }
+            break;
+
+            case "after":   // a beat, Susie back to how she was, then back to picking a target
+            {
+                var _ready = !instance_exists(obj_susie) || obj_susie.image_speed == 0;
+                if (_ready && _p.saved != undefined)
+                {
+                    var _sv = _p.saved;
+                    with (obj_susie) { sprite_index = _sv.spr; last_sprite = _sv.spr; image_index = _sv.img; image_speed = _sv.spd; anim_loop = _sv.loop; }
+                    _p.saved = undefined;
+                }
+                if (_ready && _p.t >= protect_hold)
+                {
+                    protect = undefined;
+                    state = "choose";
+                    mode  = "enemy";
+                    pick_i = pick_step(enemies(), 0, 1);
+                    t = 0;
+                }
             }
             break;
         }

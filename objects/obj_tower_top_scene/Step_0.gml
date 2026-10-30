@@ -1,5 +1,43 @@
 t++;
 
+// ---- the ambush: spades flying, their bits, people being shoved
+for (var i = array_length(spades) - 1; i >= 0; i--)
+{
+    var _s = spades[i];
+    if (_s.delay > 0) { _s.delay--; continue; }
+    if (!_s.thrown) { _s.thrown = true; audio_play_sound(snd_swing, 1, false); }
+    _s.rot += spade_spin;
+    var _d = point_distance(_s.x, _s.y, _s.tx, _s.ty);
+    if (_d <= _s.spd)
+    {
+        spade_break(_s.tx, _s.ty);
+        var _f = _s.on_hit;
+        array_delete(spades, i, 1);
+        _f();
+        continue;
+    }
+    var _dir = point_direction(_s.x, _s.y, _s.tx, _s.ty);
+    _s.x += lengthdir_x(_s.spd, _dir);
+    _s.y += lengthdir_y(_s.spd, _dir);
+}
+for (var i = array_length(chunks) - 1; i >= 0; i--)
+{
+    var _c = chunks[i];
+    _c.t++; _c.vy += 0.3; _c.x += _c.vx; _c.y += _c.vy; _c.rot += _c.vr;
+    if (_c.t >= 30) array_delete(chunks, i, 1);
+}
+for (var i = array_length(slides) - 1; i >= 0; i--)
+{
+    var _sl = slides[i];
+    if (!instance_exists(_sl.o)) { array_delete(slides, i, 1); continue; }
+    _sl.t++;
+    var _k = clamp(_sl.t / _sl.frames, 0, 1);
+    var _e = 1 - power(1 - _k, 2);   // eases out
+    _sl.o.x = _sl.x0 + _sl.dx * _e;
+    _sl.o.y = _sl.y0 + _sl.dy * _e - sin(_k * pi) * _sl.hop;
+    if (_k >= 1) array_delete(slides, i, 1);
+}
+
 // the camera pan toward the Titan (after "Let's end this.")
 if (cam_pan.on)
 {
@@ -187,7 +225,7 @@ switch (state)
 }
 
 // --- whoever's lower on the screen is in front ---
-var _sort = [obj_susie, obj_ralsei, obj_lancer, obj_queen];
+var _sort = [obj_susie, obj_ralsei, obj_lancer, obj_queen, obj_king];
 for (var i = 0; i < array_length(_sort); i++)
     with (_sort[i]) depth = -2000 - scr_get_feet(id).y;
 

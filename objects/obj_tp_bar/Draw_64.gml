@@ -1,3 +1,24 @@
+// broken: only its falling pieces (the strips keep the fill they had when it broke)
+if (broken)
+{
+    for (var i = 0; i < array_length(shards); i++)
+    {
+        var _s = shards[i];
+        if (_s.kind == "logo") { draw_sprite_ext(spr_tensionlogo, 0, _s.x, _s.y, 1, 1, _s.rot, c_white, _s.a); continue; }
+        var _w = sprite_get_width(spr_tensionbar);
+        var _fill_top = 5 + (192 - 5) * (1 - _s.fill);   // the fill's pixels, as in the normal bar below
+        draw_sprite_part_ext(spr_tensionbar, global.tp.dark ? 2 : 1, 0, _s.sy, _w, _s.sh, _s.x, _s.y, 1, 1, c_white, _s.a);
+        var _fy0 = max(_s.sy, _fill_top), _fy1 = _s.sy + _s.sh;
+        if (_fy1 > _fy0)
+        {
+            if (global.tp.dark) draw_sprite_part_ext(spr_tension_filling, 2, 0, _fy0, _w, _fy1 - _fy0, _s.x, _s.y + (_fy0 - _s.sy), 1, 1, fill_col_dark, _s.a);
+            else                draw_sprite_part_ext(spr_tension_filling, 0, 0, _fy0, _w, _fy1 - _fy0, _s.x, _s.y + (_fy0 - _s.sy), 1, 1, c_white, _s.a);
+        }
+        draw_sprite_part_ext(spr_tensionbar, 0, 0, _s.sy, _w, _s.sh, _s.x, _s.y, 1, 1, c_white, _s.a);
+    }
+    exit;
+}
+
 if (slide <= 0) exit;
 var _ox  = -slide_dist * (1 - slide);
 var _tp  = global.tp;

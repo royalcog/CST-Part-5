@@ -16,7 +16,8 @@ if (state == "choose" && mode == "cmd" && members[chooser] != noone && instance_
 }
 
 // ---------------------------------------------------------------- the text panel (Deltarune's: black, a 3px dark purple line on top)
-var _show = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win");
+var _show = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win"
+          || state == "intro_say" || state == "protect");
 if (!_show) exit;
 
 var _gw = display_get_gui_width();
@@ -121,10 +122,11 @@ if (state == "fight")
     exit;
 }
 
-// picking from a list / a target
-if (state == "choose" && mode != "cmd")
+// picking from a list / a target (and the target list while Susie's Rude Buster is on its way to a row)
+var _protect_list = (state == "protect" && protect != undefined && protect.phase != "say");
+if ((state == "choose" && mode != "cmd") || _protect_list)
 {
-    switch (mode)
+    switch (_protect_list ? "enemy" : mode)
     {
         case "list":
         {
@@ -135,7 +137,7 @@ if (state == "choose" && mode != "cmd")
                 var _o2 = list[i];
                 var _c  = i mod 2;
                 var _x = col_x[_c], _y = _row(i div 2);
-                var _can = _is_item || _o2.tp <= global.tp.value;
+                var _can = _is_item || scr_tp_can_spend(_o2.tp);
                 draw_set_colour(_can ? c_white : col_grey);
                 draw_text_transformed(_x, _y, _o2.name, name_scale, name_scale, 0);
                 if (i == list_i) _heart(5 + _c * 225, _y);
@@ -163,6 +165,7 @@ if (state == "choose" && mode != "cmd")
             {
                 var _en = _e[i];
                 var _y = _row(i);
+                if (row_broken(_en)) continue;   // smashed: just its empty slot
                 draw_set_colour((_en.can_spare && _en.mercy >= 100) ? col_yellow : c_white);
                 draw_text_transformed(80, _y, _en.enemy_name, name_scale, name_scale, 0);
                 if (_en.can_spare && _en.is_tired()) { draw_set_colour(col_tired); draw_text_transformed(80 + string_width(_en.enemy_name) * name_scale + 20, _y, "(Tired)", name_scale, name_scale, 0); }
@@ -200,16 +203,43 @@ if (state == "choose" && mode != "cmd")
     }
     draw_set_colour(c_white);
     matrix_set(matrix_world, matrix_build_identity());
+
+    // Susie's Rude Buster on its way to the row, and the row's pieces (screen px: they already include the row's shift)
+    if (protect != undefined && protect.proj != undefined)
+    {
+        var _pr = protect.proj;
+        var _ps = spr_rudebuster_projectile;
+        for (var k = 0; k < array_length(_pr.trail); k++)
+            draw_sprite_ext(_ps, floor(_pr.frame) mod sprite_get_number(_ps), _pr.trail[k].x, _pr.trail[k].y, 2, 2, _pr.dir, c_white, _pr.trail[k].a * (k + 1) / array_length(_pr.trail));
+        draw_sprite_ext(_ps, floor(_pr.frame) mod sprite_get_number(_ps), _pr.x, _pr.y, 2, 2, _pr.dir, c_white, 1);
+    }
+    for (var k = 0; k < array_length(row_shards); k++)
+    {
+        var _s = row_shards[k];
+        draw_set_colour(_s.col);
+        draw_set_alpha(_s.a);
+        draw_rectangle(_s.x - _s.w / 2, _s.y - _s.h / 2, _s.x + _s.w / 2, _s.y + _s.h / 2, false);
+    }
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
     exit;
 }
 
-// otherwise: the battle text, typed out (Deltarune: x 30, 28px lines, wraps at 580 wide)
+// otherwise: the battle text, typed out (Deltarune: x 30, 28px lines, wraps at 580 wide).
+// someone talking in the panel: their face on the left, the text moved over next to it
 draw_set_colour(c_white);
+var _tx0 = text_x;
+if (text_face != undefined)
+{
+    draw_sprite_ext(text_face.spr, text_face.img, face_x + sprite_get_xoffset(text_face.spr) * face_scale,
+        panel_y + face_y + sprite_get_yoffset(text_face.spr) * face_scale, face_scale, face_scale, 0, c_white, 1);
+    _tx0 += say_indent;
+}
 var _shown = floor(text_shown);
 for (var i = 0; i < array_length(text_lines); i++)
 {
     var _l   = text_lines[i];
     var _vis = clamp(_shown - _l.from + 1, 0, _l.len);
-    if (_vis > 0) draw_text_transformed(text_x + _l.x, panel_y + 18 + _l.y, string_copy(text, _l.from, _vis), text_scale, text_scale, 0);
+    if (_vis > 0) draw_text_transformed(_tx0 + _l.x, panel_y + 18 + _l.y, string_copy(text, _l.from, _vis), text_scale, text_scale, 0);
 }
 matrix_set(matrix_world, matrix_build_identity());
