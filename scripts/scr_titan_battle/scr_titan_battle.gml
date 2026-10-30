@@ -82,7 +82,7 @@ function scr_titan_battle_start()
             "* Defending seems like a good idea.",
         ];
         facing_enabled = true;
-        default_facing = -1;   // toward King and Lancer at the start of each turn
+        default_facing = -1;   // toward King and Lancer to start with
 
         // "This game is OVER!": as she says it she Rude Busters the TP bar, and it breaks
         intro_lines = [

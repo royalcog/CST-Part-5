@@ -135,7 +135,6 @@ switch (state)
         actions = array_create(3, undefined);
         with (obj_battle_ui_box) defending = false;
         for (var i = 0; i < 3; i++) if (alive_member(i)) scr_bm_idle(defs[i]);
-        if (facing_enabled) for (var i = 0; i < 3; i++) if (alive_member(i)) face_member(i, default_facing);
 
         set_text(flavor[irandom(array_length(flavor) - 1)]);
         var _first = next_chooser(0);
@@ -232,6 +231,7 @@ switch (state)
                 {
                     if (is_struct(pending)) mode = "list";            // back to the spell / ACT list: still in its ready
                     else { mode = "cmd"; scr_bm_idle(_d); }           // back to the buttons: idle again
+                    if (facing_enabled) face_member(chooser, choose_facing);   // backed out: whichever way they were facing
                     snd_move(); t = 0; break;
                 }
                 if (!key_ok()) break;

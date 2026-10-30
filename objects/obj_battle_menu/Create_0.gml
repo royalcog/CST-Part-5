@@ -148,7 +148,9 @@ talk_chain = noone;
 
 // --- facing whoever they're aiming at (for fights with enemies on both sides). off unless the battle turns it on ---
 facing_enabled = false;
-default_facing = 1;        // -1 left, 1 right: which way they face at the start of each turn
+default_facing = 1;        // -1 left, 1 right: which way they face when the battle starts (after that they keep
+                           // facing whoever they last picked, turn to turn, until they pick someone the other way)
+choose_facing  = 1;        // (which way the one choosing faced before the cursor turned them: X puts them back)
 
 // --- the panel can show a party member's face next to the text (Deltarune's in-battle lines) ---
 text_face   = undefined;   // { spr, img } while someone's talking in the panel
@@ -443,6 +445,7 @@ begin_choosing = function(_i)
     chooser = _i;
     mode = "cmd";
     pending = undefined;
+    if (defs[_i] != undefined && instance_exists(defs[_i].obj)) choose_facing = sign(defs[_i].obj.image_xscale);
     if (instance_exists(obj_UI)) obj_UI.active_box = members[_i];
 }
 

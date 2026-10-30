@@ -199,6 +199,7 @@ function scr_game_text(_text_id)
 			scr_text("* Are you guys ready?", "susie", 30);
 			scr_text("* ...Let's hope so.", "ralsei", 34);
 			scr_text("* Lancer Should Be Obtaining Help Soon In Theory", "queen", 0);
+				scr_text_cutoff_skip(string_pos("Theory", "* Lancer Should Be Obtaining Help Soon In Theory") + 1);   // cut off at "...In Th", straight into Lancer
 			scr_text("* I'm back!|* And I brought backup!", "lancer", 1, noone, false, true);   // (off the left of the screen: no face, still his colour + voice)
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_turn(); }, 0);
 		break;
