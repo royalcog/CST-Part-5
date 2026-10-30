@@ -630,4 +630,12 @@ end_battle = function()
     if (variable_global_exists("music")) audio_sound_gain(global.music, 0, 900);
     state = "end_wait";
     t = 0;
+
+    // back to idle, except whoever's holding their victory pose (they hold it until whatever's next takes over)
+    for (var i = 0; i < 3; i++)
+    {
+        if (defs[i] == undefined) continue;
+        if (variable_instance_exists(id, "victory_posed") && array_contains(victory_posed, defs[i].obj)) continue;
+        scr_bm_idle(defs[i]);
+    }
 }
