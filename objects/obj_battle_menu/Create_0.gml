@@ -157,7 +157,7 @@ face_x      = 10;          // the face's left edge / top, from the panel (GUI px
 face_y      = 10;
 face_scale  = 2;
 
-voice_delay = 2;           // like the textbox: a blip every few frames while letters are typing (snd_delay)
+voice_delay = 1;           // like the textbox: a blip every few frames while letters are typing (snd_delay)
 voice_count = 0;
 
 /// whose voice goes with a face sprite (the same sounds scr_text gives each character)

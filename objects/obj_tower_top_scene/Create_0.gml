@@ -556,8 +556,8 @@ spade_hit_sounds = [snd_impact, snd_hurt];
 
 // --- tuning: getting ready, King's cape + laugh ---
 ready_hold       = 30;            // frames after they ready before his cape comes
-laugh_time       = 90;            // frames he laughs for
-battle_hold      = 90;            // frames after the laugh before the battle starts
+laugh_time       = 120;            // frames he laughs for
+battle_hold      = 0;            // frames after the laugh before the battle starts
 
 // --- tuning: poses (which way each sprite faces as drawn: 1 right, -1 left) ---
 susie_down_spr   = spr_susie_landed;      susie_down_native  = -1;
@@ -796,8 +796,9 @@ king_cape = function()
         audio_play_sound(snd_kinglaugh, 1, false);
         scr_call_after_frames(function()
         {
-            pose_flip(obj_king, spr_king_battle_idle, -2);
-            with (obj_king) image_speed = 1;
+            // his laugh and battle idle are already lined up by their origins (the King fight swaps them straight):
+            // re-centring him between them is what made him shift
+            with (obj_king) { sprite_index = spr_king_battle_idle; image_index = 0; image_speed = 1; }
             scr_call_after_frames(function()
             {
                 state = "titan_battle";
