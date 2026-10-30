@@ -34,8 +34,10 @@ line_broken     = false;  // its row in the target list got smashed: it can't be
 
 hurt_t     = 0;           // frames left of its hurt reaction
 hurt_len   = 24;
-hurt_shake = 4;           // px (Lancer, who has no hurt sprite: he just shakes)
+hurt_shake = 4;           // px (Lancer: he shakes in his hurt sprite)
 shake_base = undefined;
+hurt_sprite = spr_lancer_battle_hurt;   // (Lancer's)
+pre_hurt    = undefined;
 
 is_tired = function() { return can_spare && !gone && hp <= max_hp * tired_at; }
 is_alive = function() { return !gone; }
@@ -68,7 +70,13 @@ take_hit = function(_amount, _col)
             }
         break;
         case "lancer":
-            if (instance_exists(body) && shake_base == undefined) shake_base = body.x;
+            if (instance_exists(body))
+            {
+                if (shake_base == undefined) shake_base = body.x;
+                if (pre_hurt == undefined) pre_hurt = { spr: body.sprite_index, img: body.image_index };
+                body.sprite_index = hurt_sprite;
+                body.image_index  = 0;
+            }
         break;
         case "titan":
             if (instance_exists(body)) body.hurt_red = 1;

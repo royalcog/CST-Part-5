@@ -14,6 +14,7 @@ enum CharID {
     Spamton,
     Queen,
     King,
-	Knight
+	Knight,
+	Lancer
     //ADD ENTRIES HERE
 }

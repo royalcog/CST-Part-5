@@ -20,6 +20,16 @@ for (var i = array_length(spades) - 1; i >= 0; i--)
     _s.x += lengthdir_x(_s.spd, _dir);
     _s.y += lengthdir_y(_s.spd, _dir);
 }
+// (in the battle) Susie guards against King's spade the moment it's close enough
+if (!battle_spade_done && variable_instance_exists(id, "battle_guard_spade") && battle_guard_spade != undefined
+ && array_contains(spades, battle_guard_spade))
+{
+    if (point_distance(battle_guard_spade.x, battle_guard_spade.y, body_mid(obj_susie).x, body_mid(obj_susie).y) <= battle_guard_at)
+    {
+        scr_bm_pose(obj_susie, spr_susie_defend, 0);   // (her battle sprites line up by origin: a straight swap, still facing King)
+        battle_guard_spade = undefined;
+    }
+}
 for (var i = array_length(chunks) - 1; i >= 0; i--)
 {
     var _c = chunks[i];

@@ -71,9 +71,36 @@ function scr_titan_battle_start()
     with (obj_battle_menu) instance_destroy();
     with (instance_create_depth(0, 0, -10050, obj_battle_menu))
     {
-        // TODO: King / the Titan's turns go here, one per enemy turn (they loop):
-        //   { talk: [ { speaker: obj_king, text: "..." } ], attack: scr_start_... }
-        rounds = [];
+        // the enemy turns: { talk: [ TALKbox lines ], attack }. once they've all played it keeps repeating from rounds_loop_from
+        rounds = [
+            { talk: scr_titan_round1_talk(), attack: scr_start_titan_attack1 },
+            // TODO: the next turns. for now it's attack 1 again (no talk), with Lancer back to his normal sprite
+            { talk: [ { run: function() { with (obj_lancer) { sprite_index = spr_lancer_battle; image_index = 0; } } } ],
+              attack: scr_start_titan_attack1 },
+        ];
+        rounds_loop_from = 1;
+
+        // after attack 1: the first time Susie goes to FIGHT, "I take it back.", and Lancer's row comes back
+        takeback_done = false;
+        fight_hook = function(_who)
+        {
+            if (_who != 0 || turn < 1 || takeback_done) return false;
+            takeback_done = true;
+            start_script([
+                { say: { spr: spr_susie_dialogue, img: 17, text: "* I take it back." } },
+                { list: true },
+                { run: function()
+                    {
+                        protect_target = noone;   // she won't stop anyone now
+                        with (obj_battle_target) if (kind == "lancer") other.rebuild_row(id);
+                        with (obj_lancer) { sprite_index = spr_lancer_battle_hurt; image_index = 0; }   // shocked
+                    } },
+                { wait: 50 },
+                { talk: [ { speaker: obj_lancer, text: "S-Susie...?" } ] },
+                { wait: 20 },
+            ], function() { state = "choose"; t = 0; });   // (straight back to picking her target: still on FIGHT)
+            return true;
+        };
         flavor = [
             "* The Castle Top is covered in darkness.",
             "* King's spades glint in the dark.",
@@ -108,4 +135,36 @@ function scr_titan_battle_start()
             face_member(i, default_facing);
         }
     }
+}
+
+
+/// attack 1: Titan Spawn attack 1, with King's spades flying through the box (obj_titan_attack1)
+function scr_start_titan_attack1()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack1);
+}
+
+/// the enemy turn before attack 1 (TALKbox lines). King faces right in this fight, so his bubbles go on his right
+function scr_titan_round1_talk()
+{
+    var _king = { offx: 10, offy: 50, flip: true };   // (from his x, mirrored: just in front of his face)
+    return [
+        { speaker: obj_susie,  text: "I thought you were my friend, Lancer..." },
+        { speaker: obj_lancer, text: "I am, Susie! I just..." },
+        { speaker: obj_susie,  text: "Shut up." },
+        { speaker: obj_lancer, text: "..." },
+        { speaker: obj_king,   text: "Do not disrespect my son, Lightner.", offx: _king.offx, offy: _king.offy, flip: _king.flip },
+        { speaker: obj_susie,  text: "You gonna try kicking our asses again?" },
+        { speaker: obj_susie,  text: "Good luck with that." },
+        { speaker: obj_king,   text: "Who said I need to do anything?", offx: _king.offx, offy: _king.offy, flip: _king.flip },
+        { speaker: obj_susie,  text: "..." },
+        { speaker: obj_susie,  text: "Lancer, you better no", instant_cutoff: true },   // cut off by...
+        // ...a spade from King, straight at her, really fast. she guards just in time
+        { run: function() { with (obj_tower_top_scene) battle_spade_at_susie(); },
+          wait_until: function() { return !instance_exists(obj_tower_top_scene) || obj_tower_top_scene.battle_spade_done; },
+          wait: 20 },
+        { speaker: obj_lancer, text: "Susie, I..." },
+        { speaker: obj_susie,  text: "..." },
+    ];
 }

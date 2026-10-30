@@ -37,6 +37,8 @@ offx[CharID.King] = 35; // placeholder — tune to taste
 offy[CharID.King] = 95;
 offx[CharID.Knight] = 90; // placeholder — tune to taste
 offy[CharID.Knight] = 82;
+offx[CharID.Lancer] = 20;  // (his mouth, facing right)
+offy[CharID.Lancer] = -45;
 
 if (!variable_global_exists("dbg_friend_offx")) { global.dbg_friend_offx = offx[CharID.Friend]; }
 if (!variable_global_exists("dbg_friend_offy")) { global.dbg_friend_offy = offy[CharID.Friend]; }
@@ -63,6 +65,7 @@ flip[CharID.Jevil] = true;
 flip[CharID.Queen] = true; // placeholder — tune to taste
 flip[CharID.King] = false; // placeholder — tune to taste
 flip[CharID.Knight] = false; // placeholder — tune to taste
+flip[CharID.Lancer] = true;
 next_delay = 0;
 dim_timer = 0;
 dim_phase = 1;

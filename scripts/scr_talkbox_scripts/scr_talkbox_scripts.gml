@@ -25,6 +25,7 @@ function scr_talkbox_show(_speaker, _text, _wrap_w, _offx, _offy, _fp, _cps, _ke
             case CharID.King: speak_snd = snd_king; snd_delay = 0; speak_vol = 0.7; break;
             case CharID.Queen: speak_snd = snd_queen; snd_delay = 0; speak_vol = 0.7; break;
             case CharID.Ralsei: speak_snd = snd_ralsei; snd_delay = 0; speak_vol = 0.7; break;
+            case CharID.Lancer: speak_snd = snd_lancer; snd_delay = 0; speak_vol = 0.7; break;
             default:          speak_snd = noone; speak_vol = 0.7;             break;
         }
         _recalc_layout();

@@ -781,6 +781,31 @@ ready_up = function()
     scr_call_after_frames(function() { king_cape(); }, ready_hold);
 }
 
+// ---------------------------------------------------------------- in the battle
+battle_spade_speed = 30;          // the one King flings at Susie mid-conversation: really fast
+battle_guard_at    = 140;         // she snaps into her guard when it's this close (px)
+battle_guard_hold  = 45;          // frames she holds her guard after it breaks on it
+battle_spade_done  = true;
+
+/// King flings a spade at Susie from the front, really fast; she guards just in time and it breaks on her guard.
+/// battle_spade_done goes true once she's back to her idle (the battle's dialogue waits on it)
+battle_spade_at_susie = function()
+{
+    battle_spade_done = false;
+    var _k = body_mid(obj_king), _s = body_mid(obj_susie);
+    add_spade(_k.x, _k.y, _s.x, _s.y, battle_spade_speed, 0, function()
+    {
+        audio_play_sound(snd_impact, 1, false);
+        scr_camera_shake(4, 10);
+        scr_call_after_frames(function()
+        {
+            with (obj_battle_menu) scr_bm_idle(defs[0]);
+            battle_spade_done = true;
+        }, battle_guard_hold);
+    });
+    battle_guard_spade = spades[array_length(spades) - 1];
+}
+
 /// his cape flies in from the left onto his back (the dark screen), then he laughs, then the battle
 king_cape = function()
 {

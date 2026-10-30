@@ -17,7 +17,7 @@ if (state == "choose" && mode == "cmd" && members[chooser] != noone && instance_
 
 // ---------------------------------------------------------------- the text panel (Deltarune's: black, a 3px dark purple line on top)
 var _show = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win"
-          || state == "intro_say" || state == "protect");
+          || state == "intro_say" || state == "protect" || state == "scripted");
 if (!_show) exit;
 
 var _gw = display_get_gui_width();
@@ -123,7 +123,8 @@ if (state == "fight")
 }
 
 // picking from a list / a target (and the target list while Susie's Rude Buster is on its way to a row)
-var _protect_list = (state == "protect" && protect != undefined && protect.phase != "say");
+var _protect_list = (state == "protect" && protect != undefined && protect.phase != "say")
+                 || (state == "scripted" && script_list);   // (a scripted moment showing the target list)
 if ((state == "choose" && mode != "cmd") || _protect_list)
 {
     switch (_protect_list ? "enemy" : mode)

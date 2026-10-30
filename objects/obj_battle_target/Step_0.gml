@@ -7,7 +7,11 @@ if (hurt_t > 0)
     if (kind == "lancer" && shake_base != undefined)
     {
         body.x = shake_base + ((hurt_t div 2) mod 2 == 0 ? 1 : -1) * hurt_shake * (hurt_t / hurt_len);
-        if (hurt_t <= 0) { body.x = shake_base; shake_base = undefined; }
+        if (hurt_t <= 0)
+        {
+            body.x = shake_base; shake_base = undefined;
+            if (pre_hurt != undefined) { body.sprite_index = pre_hurt.spr; body.image_index = pre_hurt.img; pre_hurt = undefined; }
+        }
     }
 }
 

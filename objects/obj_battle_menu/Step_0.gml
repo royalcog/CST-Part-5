@@ -8,7 +8,7 @@ back_prev  = _back_down;
 
 // the boxes rise while the menu's up, and drop back for the enemies' turn so the battle box has room
 var _menu_up = (state == "choose" || state == "exec_next" || state == "exec_run" || state == "fight" || state == "win"
-             || state == "intro_say" || state == "protect");
+             || state == "intro_say" || state == "protect" || state == "scripted");
 if (instance_exists(obj_UI)) obj_UI.menu_lift_target = _menu_up ? panel_lift : 0;
 panel_y = panel_y_base - (instance_exists(obj_UI) ? round(obj_UI.menu_lift) : 0);
 
@@ -113,6 +113,18 @@ if (buster != undefined)
     }
 }
 
+// a smashed row coming back: its pieces fly back in, then it's there again (and can be picked)
+if (row_rebuild != undefined)
+{
+    row_rebuild.t++;
+    if (row_rebuild.t >= row_rebuild.time)
+    {
+        if (instance_exists(row_rebuild.inst)) row_rebuild.inst.line_broken = false;
+        audio_play_sound(snd_boost, 1, false);
+        row_rebuild = undefined;
+    }
+}
+
 // the smashed row's pieces fall
 for (var i = array_length(row_shards) - 1; i >= 0; i--)
 {
@@ -169,7 +181,10 @@ switch (state)
                 switch (_d.cmds[cmd_i[chooser]])
                 {
                     // pressing the button puts them in its ready straight away (X back out of it and they're idle again)
-                    case "FIGHT":  ready_pose(chooser, "fight"); pending = "fight"; mode = "enemy"; pick_i = 0; snd_ok(); break;
+                    case "FIGHT":
+                        ready_pose(chooser, "fight"); pending = "fight"; mode = "enemy"; pick_i = 0; snd_ok();
+                        if (fight_hook != undefined) fight_hook(chooser);   // (it can start a scripted moment first)
+                    break;
                     case "SPARE":  ready_pose(chooser, "spare"); pending = "spare"; mode = "enemy"; pick_i = 0; snd_ok(); break;
                     case "MAGIC":  ready_pose(chooser, "spell"); list = _d.magic; list_i = 0; mode = "list"; snd_ok(); break;
                     case "ACT":    ready_pose(chooser, "act");   list = _d.magic; list_i = 0; mode = "list"; snd_ok(); break;
@@ -277,6 +292,52 @@ switch (state)
             }
             break;
         }
+    }
+    break;
+	
+    // ---------------------------------------------------------------- a scripted moment (start_script)
+    case "scripted":
+    {
+        var _sc = script;
+        _sc.t++;
+        if (_sc.i >= array_length(_sc.steps))
+        {
+            script = undefined;
+            script_list = false;
+            set_text("");
+            t = 0;
+            _sc.then();
+            break;
+        }
+        var _st = _sc.steps[_sc.i];
+        var _next = false;
+        if (variable_struct_exists(_st, "say"))
+        {
+            if (!_sc.started) { set_text(_st.say.text, { spr: _st.say.spr, img: _st.say.img }); _sc.started = true; t = 0; }
+            else if (t > 2 && text_done() && key_ok()) _next = true;
+        }
+        else if (variable_struct_exists(_st, "talk"))
+        {
+            if (!_sc.started)
+            {
+                set_text("");
+                _sc.chain = instance_create_depth(0, 0, 0, obj_dialogue_chain);
+                _sc.chain.batches = [ _st.talk ];
+                _sc.started = true;
+            }
+            else if (!instance_exists(_sc.chain)) _next = true;
+        }
+        else if (variable_struct_exists(_st, "run"))  { _st.run(); _next = true; }
+        else if (variable_struct_exists(_st, "list")) { script_list = _st.list; _next = true; }
+        else if (variable_struct_exists(_st, "wait"))
+        {
+            if (!_sc.started) { _sc.started = true; _sc.t = 0; }
+            else if (_sc.t >= _st.wait) _next = true;
+        }
+        else if (variable_struct_exists(_st, "wait_until")) _next = _st.wait_until();
+        else _next = true;
+
+        if (_next) { _sc.i++; _sc.started = false; _sc.t = 0; }
     }
     break;
 	

@@ -185,6 +185,17 @@ protect         = undefined;
 protect_hold    = 40;      // frames after the row breaks before they're back to picking
 row_shards      = [];      // the broken row's pieces
 
+// --- a scripted moment in the middle of the battle (start_script): a list of steps, then back to whatever was next.
+//     steps: { say: { spr, img, text } }  a line in the panel with their face (Z to go on)
+//            { talk: [ entries ] }        TALKbox lines (obj_dialogue_chain entries), waits until they're done
+//            { run: function }            runs once
+//            { wait: frames } / { wait_until: function }
+//            { list: true / false }       the panel shows the target list (instead of text) from here on
+script       = undefined;
+script_list  = false;
+fight_hook   = undefined;   // function(_who) the moment someone presses FIGHT: return true if it started a script
+row_rebuild  = undefined;   // a smashed row coming back together
+
 // --- Susie's Rude Buster at something in the UI (the TP bar, a row in the target list): start_buster ---
 buster          = undefined;
 buster_speed    = 14;      // px per frame
@@ -348,6 +359,31 @@ is_attack = function(_pending)
 {
     if (_pending == "fight") return true;
     return is_struct(_pending) && variable_struct_exists(_pending, "effect") && _pending.effect == "rudebuster";
+}
+
+/// run _steps (see `script` above), then _then() (it puts the battle back where it should be)
+start_script = function(_steps, _then)
+{
+    script = { steps: _steps, i: 0, started: false, t: 0, then: _then, chain: noone };
+    script_list = false;
+    state = "scripted";
+    t = 0;
+}
+
+/// a smashed row comes back together (its pieces fly back in), then it can be picked again
+rebuild_row = function(_inst)
+{
+    var _rt = row_target(_inst);
+    var _y0 = panel_y + 17 + _rt.row * line_h;
+    var _pieces = [];
+    repeat (18)
+    {
+        var _tx = _rt.ox + random_range(75, 610), _ty = _y0 + random_range(0, 28);
+        array_push(_pieces, { x0: _tx + random_range(-160, 160), y0: _ty + random_range(-140, -40), tx: _tx, ty: _ty,
+                              w: irandom_range(4, 18), h: irandom_range(3, 10), col: choose(c_white, c_white, col_hp, col_hp_bg, col_mercy_bg) });
+    }
+    row_rebuild = { inst: _inst, t: 0, time: 30, pieces: _pieces };
+    audio_play_sound(snd_power, 1, false);
 }
 
 /// _i picked protect_target to attack: Susie stops them (her lines, then her Rude Buster smashes its row)

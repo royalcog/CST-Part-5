@@ -17,3 +17,21 @@ for (var k = 0; k < array_length(row_shards); k++)
 }
 draw_set_alpha(1);
 draw_set_colour(c_white);
+
+
+// a smashed row coming back together: its pieces flying back into place
+if (row_rebuild != undefined)
+{
+    var _k = row_rebuild.t / row_rebuild.time;
+    var _e = _k * _k * (3 - 2 * _k);
+    for (var k = 0; k < array_length(row_rebuild.pieces); k++)
+    {
+        var _pc = row_rebuild.pieces[k];
+        var _px = lerp(_pc.x0, _pc.tx, _e), _py = lerp(_pc.y0, _pc.ty, _e);
+        draw_set_colour(_pc.col);
+        draw_set_alpha(min(1, _k * 3));
+        draw_rectangle(_px - _pc.w / 2, _py - _pc.h / 2, _px + _pc.w / 2, _py + _pc.h / 2, false);
+    }
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

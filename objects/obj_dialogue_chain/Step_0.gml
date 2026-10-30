@@ -52,6 +52,10 @@ if (dim_phase == 2) // run dialogue
 				var ox  = offx[cid] + (variable_instance_exists(sp, "talk_nudge_x") ? sp.talk_nudge_x : 0);
 				var oy  = offy[cid] + (variable_instance_exists(sp, "talk_nudge_y") ? sp.talk_nudge_y : 0);
 				var fp  = flip[cid];
+				// a line can override where its bubble goes (someone standing somewhere / facing a way they usually don't)
+				if (variable_struct_exists(e, "offx")) ox = e.offx;
+				if (variable_struct_exists(e, "offy")) oy = e.offy;
+				if (variable_struct_exists(e, "flip")) fp = e.flip;
 				var cps = variable_struct_exists(e, "cps") ? e.cps : default_cps;
 				var _keep_anim = !(variable_struct_exists(e, "keep_animating") && !e.keep_animating);
 				var _dim = variable_struct_exists(e, "dim") ? e.dim : -1;
