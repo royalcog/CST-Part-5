@@ -89,10 +89,15 @@ function scr_titan_battle_start()
             start_script([
                 { say: { spr: spr_susie_dialogue, img: 17, text: "* I take it back." } },
                 { list: true },
+                // (a function written inside a { } belongs to that struct, not the menu: so it names the menu outright)
                 { run: function()
                     {
-                        protect_target = noone;   // she won't stop anyone now
-                        with (obj_battle_target) if (kind == "lancer") other.rebuild_row(id);
+                        with (obj_battle_menu)
+                        {
+                            protect_target = noone;   // she won't stop anyone now
+                            var _menu = id;
+                            with (obj_battle_target) if (kind == "lancer") _menu.rebuild_row(id);
+                        }
                         with (obj_lancer) { sprite_index = spr_lancer_battle_hurt; image_index = 0; }   // shocked
                     } },
                 { wait: 50 },
@@ -109,6 +114,7 @@ function scr_titan_battle_start()
             "* Defending seems like a good idea.",
         ];
         facing_enabled = true;
+        auto_mouth     = true;   // everyone's bubbles go in front of their mouths
         default_facing = -1;   // toward King and Lancer to start with
 
         // "This game is OVER!": as she says it she Rude Busters the TP bar, and it breaks
@@ -154,10 +160,10 @@ function scr_titan_round1_talk()
         { speaker: obj_lancer, text: "I am, Susie! I just..." },
         { speaker: obj_susie,  text: "Shut up." },
         { speaker: obj_lancer, text: "..." },
-        { speaker: obj_king,   text: "Do not disrespect my son, Lightner.", offx: _king.offx, offy: _king.offy, flip: _king.flip },
+        { speaker: obj_king,   text: "Do not disrespect my son, Lightner." },
         { speaker: obj_susie,  text: "You gonna try kicking our asses again?" },
         { speaker: obj_susie,  text: "Good luck with that." },
-        { speaker: obj_king,   text: "Who said I need to do anything?", offx: _king.offx, offy: _king.offy, flip: _king.flip },
+        { speaker: obj_king,   text: "Who said I need to do anything?" },
         { speaker: obj_susie,  text: "..." },
         { speaker: obj_susie,  text: "Lancer, you better no", instant_cutoff: true },   // cut off by...
         // ...a spade from King, straight at her, really fast. she guards just in time

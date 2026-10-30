@@ -322,6 +322,7 @@ switch (state)
             {
                 set_text("");
                 _sc.chain = instance_create_depth(0, 0, 0, obj_dialogue_chain);
+                _sc.chain.auto_mouth = auto_mouth;
                 _sc.chain.batches = [ _st.talk ];
                 _sc.started = true;
             }
@@ -557,6 +558,7 @@ switch (state)
         if (_r != undefined && variable_struct_exists(_r, "talk") && array_length(_r.talk) > 0)
         {
             talk_chain = instance_create_depth(0, 0, 0, obj_dialogue_chain);
+            talk_chain.auto_mouth = auto_mouth;
             talk_chain.batches = [ _r.talk ];
             state = "enemy_talk";
         }

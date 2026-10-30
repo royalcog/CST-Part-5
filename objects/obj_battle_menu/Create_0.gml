@@ -194,6 +194,7 @@ row_shards      = [];      // the broken row's pieces
 script       = undefined;
 script_list  = false;
 fight_hook   = undefined;   // function(_who) the moment someone presses FIGHT: return true if it started a script
+auto_mouth   = false;       // TALKbox bubbles go a set distance in front of the speaker's mouth (obj_dialogue_chain)
 row_rebuild  = undefined;   // a smashed row coming back together
 
 // --- Susie's Rude Buster at something in the UI (the TP bar, a row in the target list): start_buster ---

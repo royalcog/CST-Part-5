@@ -1,6 +1,7 @@
 function scr_talkbox_show(_speaker, _text, _wrap_w, _offx, _offy, _fp, _cps, _keep_speaker_animating = true, _dim_alpha = -1, _animate = true, _instant_cutoff = false)
 {
-    var inst = instance_create_layer(0, 0, "UI", obj_talkbox);
+    // on the "UI" layer if the room has one (rm_tower_top doesn't: then at that layer's usual depth). it draws in Draw GUI anyway
+    var inst = layer_exists("UI") ? instance_create_layer(0, 0, "UI", obj_talkbox) : instance_create_depth(0, 0, 100, obj_talkbox);
     with (inst) {
         speaker      = _speaker;
         quote        = _text;

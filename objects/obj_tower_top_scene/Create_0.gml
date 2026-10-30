@@ -557,7 +557,7 @@ spade_hit_sounds = [snd_impact, snd_hurt];
 // --- tuning: getting ready, King's cape + laugh ---
 ready_hold       = 30;            // frames after they ready before his cape comes
 laugh_time       = 120;            // frames he laughs for
-battle_hold      = 0;            // frames after the laugh before the battle starts
+battle_hold      = 20;            // frames after the laugh before the battle starts
 
 // --- tuning: poses (which way each sprite faces as drawn: 1 right, -1 left) ---
 susie_down_spr   = spr_susie_landed;      susie_down_native  = -1;

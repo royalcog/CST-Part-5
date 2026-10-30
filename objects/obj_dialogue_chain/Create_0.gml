@@ -67,6 +67,16 @@ flip[CharID.King] = false; // placeholder — tune to taste
 flip[CharID.Knight] = false; // placeholder — tune to taste
 flip[CharID.Lancer] = true;
 next_delay = 0;
+// --- which way someone's facing comes from their flip above (true: their bubble opens to the right, so they face
+//     right as drawn). if their sprite's mirrored (a negative image_xscale), everything flips the other way ---
+// --- auto_mouth: the bubble's tip goes a set distance in front of the speaker's mouth, worked out from their sprite
+//     (its top and how tall it is) instead of the fixed offx / offy above. whoever makes the chain turns it on ---
+auto_mouth   = false;
+mouth_height = 0.3;   // the mouth: this far down from the top of their sprite (0 = top, 1 = feet)
+mouth_gap    = 12;    // px out in front of their face to the bubble's tip
+// which way each character's (battle) sprites face as drawn: 1 right, -1 left (anyone not listed: right)
+native_face = [];
+native_face[CharID.King] = -1;
 dim_timer = 0;
 dim_phase = 1;
 target_alpha = 0.4;
