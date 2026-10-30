@@ -921,6 +921,7 @@
     {"name":"spr_ralsei_dialogue","order":2,"path":"sprites/spr_ralsei_dialogue/spr_ralsei_dialogue.yy",},
     {"name":"spr_ralsei_down_lookdown","order":10,"path":"sprites/spr_ralsei_down_lookdown/spr_ralsei_down_lookdown.yy",},
     {"name":"spr_ralsei_down_surprised","order":9,"path":"sprites/spr_ralsei_down_surprised/spr_ralsei_down_surprised.yy",},
+    {"name":"spr_ralsei_fall_back_cry","order":38,"path":"sprites/spr_ralsei_fall_back_cry/spr_ralsei_fall_back_cry.yy",},
     {"name":"spr_ralsei_fall_wince","order":28,"path":"sprites/spr_ralsei_fall_wince/spr_ralsei_fall_wince.yy",},
     {"name":"spr_ralsei_happyhands","order":11,"path":"sprites/spr_ralsei_happyhands/spr_ralsei_happyhands.yy",},
     {"name":"spr_ralsei_head_down_sad","order":15,"path":"sprites/spr_ralsei_head_down_sad/spr_ralsei_head_down_sad.yy",},

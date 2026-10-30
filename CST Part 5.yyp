@@ -1119,6 +1119,7 @@
     {"id":{"name":"spr_ralsei_dialogue","path":"sprites/spr_ralsei_dialogue/spr_ralsei_dialogue.yy",},},
     {"id":{"name":"spr_ralsei_down_lookdown","path":"sprites/spr_ralsei_down_lookdown/spr_ralsei_down_lookdown.yy",},},
     {"id":{"name":"spr_ralsei_down_surprised","path":"sprites/spr_ralsei_down_surprised/spr_ralsei_down_surprised.yy",},},
+    {"id":{"name":"spr_ralsei_fall_back_cry","path":"sprites/spr_ralsei_fall_back_cry/spr_ralsei_fall_back_cry.yy",},},
     {"id":{"name":"spr_ralsei_fall_wince","path":"sprites/spr_ralsei_fall_wince/spr_ralsei_fall_wince.yy",},},
     {"id":{"name":"spr_ralsei_happyhands","path":"sprites/spr_ralsei_happyhands/spr_ralsei_happyhands.yy",},},
     {"id":{"name":"spr_ralsei_head_down_sad","path":"sprites/spr_ralsei_head_down_sad/spr_ralsei_head_down_sad.yy",},},
