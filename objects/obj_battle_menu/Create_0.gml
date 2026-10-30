@@ -157,6 +157,20 @@ face_x      = 10;          // the face's left edge / top, from the panel (GUI px
 face_y      = 10;
 face_scale  = 2;
 
+voice_delay = 2;           // like the textbox: a blip every few frames while letters are typing (snd_delay)
+voice_count = 0;
+
+/// whose voice goes with a face sprite (the same sounds scr_text gives each character)
+face_voice = function(_spr)
+{
+    if (_spr == spr_susie_dialogue)  return snd_susie;
+    if (_spr == spr_ralsei_dialogue) return snd_ralsei;
+    if (_spr == spr_lancer_dialogue) return snd_lancer;
+    if (_spr == spr_king_dialogue)   return snd_king;
+    if (_spr == spr_queen_dialogue)  return snd_queen;
+    return noone;
+}
+
 // --- a line (or a few) said in the panel before the first turn: { spr, img, text, on_start (optional function) } ---
 intro_lines = [];
 intro_wait  = 100;         // frames after the battle starts before the first line (the UI sliding in, then a second)
@@ -222,6 +236,7 @@ layout_text = function(_s)
 set_text = function(_s, _face = undefined)
 {
     text_face = _face;
+    voice_count = voice_delay;   // the first letter blips straight away
     var _wrap = text_wrap;
     if (_face != undefined) text_wrap -= say_indent;   // less room next to the face
     text = _s; text_shown = 0; text_pause = 0; text_lines = layout_text(_s);

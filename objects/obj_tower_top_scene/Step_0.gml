@@ -33,8 +33,12 @@ for (var i = array_length(slides) - 1; i >= 0; i--)
     _sl.t++;
     var _k = clamp(_sl.t / _sl.frames, 0, 1);
     var _e = 1 - power(1 - _k, 2);   // eases out
-    _sl.o.x = _sl.x0 + _sl.dx * _e;
-    _sl.o.y = _sl.y0 + _sl.dy * _e - sin(_k * pi) * _sl.hop;
+    // moved by how much further it's gone since last frame (so a pose change partway through doesn't get undone)
+    var _nx = _sl.dx * _e, _ny = _sl.dy * _e - sin(_k * pi) * _sl.hop;
+    _sl.o.x += _nx - _sl.px;
+    _sl.o.y += _ny - _sl.py;
+    _sl.px = _nx;
+    _sl.py = _ny;
     if (_k >= 1) array_delete(slides, i, 1);
 }
 

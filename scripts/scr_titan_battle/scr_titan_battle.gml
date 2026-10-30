@@ -75,9 +75,9 @@ function scr_titan_battle_start()
         //   { talk: [ { speaker: obj_king, text: "..." } ], attack: scr_start_... }
         rounds = [];
         flavor = [
-            "* The Titan looms behind you.",
+            "* The Castle Top is covered in darkness.",
             "* King's spades glint in the dark.",
-            "* Lancer won't look at you.",
+            "* Lancer seems to be in a heavy self-internal struggle.",
             "* Ralsei is still thinking of a plan.",
             "* Defending seems like a good idea.",
         ];
@@ -99,5 +99,13 @@ function scr_titan_battle_start()
             { spr: spr_susie_dialogue, img: 34, text: "* ...yet." },
         ];
         on_win = undefined;
+
+        // as the UI comes in, everyone drops out of their ready poses into their battle idles (facing King + Lancer)
+        for (var i = 0; i < 3; i++)
+        {
+            if (defs[i] == undefined) continue;
+            scr_bm_idle(defs[i]);
+            face_member(i, default_facing);
+        }
     }
 }

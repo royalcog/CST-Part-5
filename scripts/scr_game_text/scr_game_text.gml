@@ -208,7 +208,6 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "susie", 16);
 				scr_call_on_page(function() { with (obj_tower_top_scene) { pose_dir(obj_susie, susie_shock_spr, susie_shock_native, -1); pose_dir(obj_ralsei, ralsei_shock_spr, ralsei_shock_native, -1); } }, 1, global.page_number - 1);
 			scr_text("* ...", "ralsei", 32);
-				scr_call_on_page(function() { with (obj_tower_top_scene) pose_dir(obj_ralsei, ralsei_shock_spr, ralsei_shock_native, -1); }, 1, global.page_number - 1);
 			scr_text("* Why Are You Like Thi-", "queen", 21);
 				scr_text_cutoff(string_length("* Why Are You Like Thi-"));   // the textbox shuts the moment the last letter's out
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_first(); }, 0);

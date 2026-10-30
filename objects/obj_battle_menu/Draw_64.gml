@@ -203,16 +203,6 @@ if ((state == "choose" && mode != "cmd") || _protect_list)
     }
     draw_set_colour(c_white);
     matrix_set(matrix_world, matrix_build_identity());
-
-    for (var k = 0; k < array_length(row_shards); k++)
-    {
-        var _s = row_shards[k];
-        draw_set_colour(_s.col);
-        draw_set_alpha(_s.a);
-        draw_rectangle(_s.x - _s.w / 2, _s.y - _s.h / 2, _s.x + _s.w / 2, _s.y + _s.h / 2, false);
-    }
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
     exit;
 }
 

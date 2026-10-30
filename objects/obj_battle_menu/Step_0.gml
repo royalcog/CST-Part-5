@@ -28,6 +28,29 @@ else if (text_shown < string_length(text))
         var _nx = string_char_at(text, _n + 1);
         if ((_c == "." || _c == "?" || _c == "!") && (_nx == " " || _nx == "" || _nx == "\n")) text_pause = text_pause_time;
         else if (_c == ",") text_pause = text_pause_time / 2;
+
+    // someone talking in the panel: their voice blips while letters type out, the same way the textbox does it
+    // (every few frames, never on spaces, the "*", or punctuation)
+    if (text_face != undefined)
+    {
+        var _vc = string_char_at(text, max(1, floor(text_shown)));
+        var _voice = face_voice(text_face.spr);
+        if (_voice != noone && _vc != " " && _vc != "*" && _vc != "." && _vc != "?" && _vc != "!" && _vc != "," && _vc != "\n")
+        {
+            if (voice_count < voice_delay) voice_count++;
+            else
+            {
+                voice_count = 0;
+                if (_voice == snd_queen)
+                {
+                    audio_stop_sound(snd_queen);
+                    var _q = audio_play_sound(snd_queen, 8, false);
+                    audio_sound_pitch(_q, 0.9 + random(0.15));
+                }
+                else audio_play_sound(_voice, 8, false);
+            }
+        }
+    }
     }
 }
 
@@ -280,7 +303,6 @@ switch (state)
     }
     break;
 
-    // ---------------------------------------------------------------- Susie stops someone attacking protect_target
     // ---------------------------------------------------------------- Susie stops someone attacking protect_target
     case "protect":
     {

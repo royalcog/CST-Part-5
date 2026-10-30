@@ -609,7 +609,7 @@ slide = function(_o, _dx, _dy, _frames, _hop)
     if (_i == noone) return;
     // (one at a time: a new shove on the same thing replaces the old one)
     for (var i = array_length(slides) - 1; i >= 0; i--) if (slides[i].o == _i) array_delete(slides, i, 1);
-    array_push(slides, { o: _i, x0: _i.x, y0: _i.y, dx: _dx, dy: _dy, frames: max(1, _frames), hop: _hop, t: 0 });
+    array_push(slides, { o: _i, dx: _dx, dy: _dy, frames: max(1, _frames), hop: _hop, t: 0, px: 0, py: 0 });
 }
 
 /// a spade hits _o: down (in their knocked-down pose, facing left), shoved by _dx
@@ -620,7 +620,7 @@ spade_hit = function(_o, _dx, _frames, _hop)
     if (_o == obj_susie)  pose_dir(obj_susie,  susie_down_spr,  susie_down_native,  -1);
     if (_o == obj_ralsei) pose_dir(obj_ralsei, ralsei_down_spr, ralsei_down_native, -1);
     with (_o) { image_speed = 0; image_index = 0; anim_loop = true; }
-    slide(_o, _dx, 0, _frames, _hop);
+    if (_dx != 0) slide(_o, _dx, 0, _frames, _hop);   // (no shove: leave any shove that's already going alone)
 }
 
 /// the Titan's wings are open: a beat, then self_10
