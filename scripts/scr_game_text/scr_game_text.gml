@@ -199,14 +199,14 @@ function scr_game_text(_text_id)
 			scr_text("* Are you guys ready?", "susie", 30);
 			scr_text("* ...Let's hope so.", "ralsei", 34);
 			scr_text("* Lancer Should Be Obtaining Help Soon In Theory", "queen", 0);
-			scr_text("* I'm back!|* And I brought backup!", "lancer", 1);   // (he's off the left of the screen)
+			scr_text("* I'm back!|* And I brought backup!", "lancer", 1, noone, false, true);   // (off the left of the screen: no face, still his colour + voice)
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ambush_turn(); }, 0);
 		break;
 
 		case "self_11":
 			global.cutscene_lock = true;   // spades from behind the moment Queen's cut off
 			scr_text("* ...", "susie", 16);
-				scr_call_on_page(function() { with (obj_tower_top_scene) pose_dir(obj_susie, susie_shock_spr, susie_shock_native, -1); }, 1, global.page_number - 1);
+				scr_call_on_page(function() { with (obj_tower_top_scene) { pose_dir(obj_susie, susie_shock_spr, susie_shock_native, -1); pose_dir(obj_ralsei, ralsei_shock_spr, ralsei_shock_native, -1); } }, 1, global.page_number - 1);
 			scr_text("* ...", "ralsei", 32);
 				scr_call_on_page(function() { with (obj_tower_top_scene) pose_dir(obj_ralsei, ralsei_shock_spr, ralsei_shock_native, -1); }, 1, global.page_number - 1);
 			scr_text("* Why Are You Like Thi-", "queen", 21);
@@ -222,13 +222,14 @@ function scr_game_text(_text_id)
 			scr_text("* He told me things would get better...", "lancer", 10);
 			scr_text("* I...", "lancer", 11);
 			scr_text("* I'm so sorry, Susie...", "lancer", 10);
+				scr_call_on_page(function() { with (obj_lancer) image_index = 1; }, 1, global.page_number - 1);   // his head drops
 			scr_text("* Now, now, my son.", "king", 1);
 			scr_text("* You have done well.|* Do not apologize to these... traitors.", "king", 5);
 			scr_text("* How The Hell Did You Survive My Acid Pie Attack", "queen", 2);
 			scr_text("* Lancer here brought me some healing items to get me back to my full power.", "king", 8);
 			scr_text("* ...", "susie", 31);
 			scr_text("* ...", "lancer", 11);
-			scr_text("* Now, since the Knight has left us for more important reasons...", "king", 3);
+			scr_text("* Now, since the Knight has left us for more important ventures...", "king", 3);
 			scr_text("* I will take their place.", "king", 0);
 			scr_text("* You already lost this fight, asshole.", "susie", 34);
 				scr_call_on_page(function() { with (obj_tower_top_scene) susie_challenge(); }, 1, global.page_number - 1);

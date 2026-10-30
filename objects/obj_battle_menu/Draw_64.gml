@@ -204,15 +204,6 @@ if ((state == "choose" && mode != "cmd") || _protect_list)
     draw_set_colour(c_white);
     matrix_set(matrix_world, matrix_build_identity());
 
-    // Susie's Rude Buster on its way to the row, and the row's pieces (screen px: they already include the row's shift)
-    if (protect != undefined && protect.proj != undefined)
-    {
-        var _pr = protect.proj;
-        var _ps = spr_rudebuster_projectile;
-        for (var k = 0; k < array_length(_pr.trail); k++)
-            draw_sprite_ext(_ps, floor(_pr.frame) mod sprite_get_number(_ps), _pr.trail[k].x, _pr.trail[k].y, 2, 2, _pr.dir, c_white, _pr.trail[k].a * (k + 1) / array_length(_pr.trail));
-        draw_sprite_ext(_ps, floor(_pr.frame) mod sprite_get_number(_ps), _pr.x, _pr.y, 2, 2, _pr.dir, c_white, 1);
-    }
     for (var k = 0; k < array_length(row_shards); k++)
     {
         var _s = row_shards[k];

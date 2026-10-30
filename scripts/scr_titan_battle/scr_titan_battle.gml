@@ -5,7 +5,7 @@
 //  - picking Lancer to attack: Susie stops it ("We are NOT attacking him." "...yet.") and Rude Busters his row away
 
 // --- tuning ---
-global.titan_battle_song = sng_kingofchaos;   // swap for the fight's own song
+global.titan_battle_song = sng_chaosguardian;
 
 /// a battle enemy standing in for _body (obj_battle_target). _cfg's fields go straight onto it
 function scr_battle_target_make(_body, _cfg)
@@ -84,9 +84,10 @@ function scr_titan_battle_start()
         facing_enabled = true;
         default_facing = -1;   // toward King and Lancer at the start of each turn
 
-        // "This game is OVER!": the TP bar breaks as she says it
+        // "This game is OVER!": as she says it she Rude Busters the TP bar, and it breaks
         intro_lines = [
-            { spr: spr_susie_dialogue, img: 17, text: "* This game is OVER!", on_start: scr_tp_break },
+            { spr: spr_susie_dialogue, img: 17, text: "* This game is OVER!",
+              on_start: function() { with (obj_battle_menu) start_buster(tp_bar_target(), scr_tp_break); } },
         ];
         state = "intro_say";
         t = 0;

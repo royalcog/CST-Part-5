@@ -523,22 +523,25 @@ fight_cam_dx     = 160;           // then for the fight it ends up this far back
 fight_pan_time   = 100;
 
 // --- tuning: where King + Lancer stand (screen px, their feet) ---
-king_start       = { x: 120, y: 250 };   // when the camera pans over to them
-lancer_start     = { x: 225, y: 262 };
-king_fight       = { x: 120, y: 245 };   // where they walk up to for the fight (clear of the UI boxes)
-lancer_fight     = { x: 230, y: 268 };
+king_start       = { x: 85,  y: 250 };   // when the camera pans over to them
+lancer_start     = { x: 180, y: 262 };
+king_fight       = { x: 90,  y: 245 };   // where they walk up to for the fight (clear of the UI boxes, back from the party)
+lancer_fight     = { x: 185, y: 268 };
 king_walk        = 2;
-// --- tuning: where the party lands after the second hit (screen px, their feet; Queen centred between the other two) ---
-susie_land       = { x: 415, y: 262 };
-ralsei_land      = { x: 500, y: 262 };
-queen_land_y     = 210;
+// --- tuning: where the party lands after the second hit (screen px, their feet): one column, in the middle between
+//     King and the Titan, Queen at the back, then Susie, then Ralsei at the front (still clear of the UI boxes) ---
+party_land_x     = 430;
+queen_land_y     = 150;
+susie_land_y     = 210;
+ralsei_land_y    = 270;
 land_time        = 22;            // frames they're shoved over
 land_hop         = 18;            // px
 
 // --- tuning: the spades ---
 spade_scale      = 1.5;
 spade_spin       = 25;            // degrees per frame
-spade_speed      = 14;            // px per frame (from behind / the front)
+spade_speed      = 14;            // px per frame (from the front)
+spade_back_speed = 32;            // px per frame (the first wave, from behind: the Titan's side)
 spade_fall_speed = 12;            // px per frame (from above)
 spade_delay      = 12;            // frames after the cut-off before the first wave flies in
 shield_build_every = 1;           // Queen's shield builds this fast here (frames per piece; her DEFEND's is 3)
@@ -554,16 +557,16 @@ spade_hit_sounds = [snd_impact, snd_hurt];
 // --- tuning: getting ready, King's cape + laugh ---
 ready_hold       = 30;            // frames after they ready before his cape comes
 laugh_time       = 90;            // frames he laughs for
-battle_hold      = 20;            // frames after the laugh before the battle starts
+battle_hold      = 90;            // frames after the laugh before the battle starts
 
 // --- tuning: poses (which way each sprite faces as drawn: 1 right, -1 left) ---
 susie_down_spr   = spr_susie_landed;      susie_down_native  = -1;
 ralsei_down_spr  = spr_ralsei_fall_wince; ralsei_down_native = 1;
-susie_shock_spr  = spr_susie_shocked;     susie_shock_native = -1;
+susie_shock_spr  = spr_susie_shocked;     susie_shock_native = 1;
 ralsei_shock_spr = spr_ralsei_shocked;    ralsei_shock_native = 1;
 king_walk_r      = spr_king_walk_right;
-lancer_sad_r     = spr_lancer_right_sad;
-lancer_walk_r    = spr_lancer_right;
+lancer_stand     = spr_lancer_battle;     // standing (frame 0; frame 1 when he apologises to Susie)
+lancer_walk_r    = spr_lancer_right_sad;  // walking up
 
 // --- state ---
 spades = [];
@@ -650,7 +653,7 @@ ambush_first = function()
     // King + Lancer are already standing over there (off the left of the screen until the camera pans)
     var _cam_after = cam_x - ambush_pan_dist;
     king   = place(obj_king,   king_walk_r,  _cam_after + king_start.x,   king_start.y);
-    lancer = place(obj_lancer, lancer_sad_r, _cam_after + lancer_start.x, lancer_start.y);
+    lancer = place(obj_lancer, lancer_stand, _cam_after + lancer_start.x, lancer_start.y);
 
     // her shield, quick, on her right (behind her: she's facing left)
     with (obj_queen_shield) instance_destroy();
@@ -658,20 +661,20 @@ ambush_first = function()
 
     var _sx = cam_x + vw + 40;   // in from the right edge (the Titan's side)
     var _s = body_mid(obj_susie), _r = body_mid(obj_ralsei);
-    add_spade(_sx, _s.y, _s.x, _s.y, spade_speed, spade_delay,     function() { spade_hit(obj_susie,  knock_dx, knock_time, knock_hop); });
-    add_spade(_sx, _r.y, _r.x, _r.y, spade_speed, spade_delay + 4, function() { spade_hit(obj_ralsei, knock_dx, knock_time, knock_hop); });
+    add_spade(_sx, _s.y, _s.x, _s.y, spade_back_speed, spade_delay,     function() { spade_hit(obj_susie,  knock_dx, knock_time, knock_hop); });
+    add_spade(_sx, _r.y, _r.x, _r.y, spade_back_speed, spade_delay + 4, function() { spade_hit(obj_ralsei, knock_dx, knock_time, knock_hop); });
     // Queen's hits her shield
     var _q  = body_mid(obj_queen);
     var _sh = instance_find(obj_queen_shield, 0);
     var _qx = (_sh != noone) ? _sh.x + sprite_get_width(spr_queen_shield) * _sh.scale / 2 : _q.x;
-    add_spade(_sx, _q.y, _qx, _q.y, spade_speed, spade_delay + 2, function()
+    add_spade(_sx, _q.y, _qx, _q.y, spade_back_speed, spade_delay + 2, function()
     {
         audio_play_sound(snd_impact, 1, false);
         with (obj_queen_shield) flash = 1;
     });
 
     // then the camera pans over to them
-    var _wait = ceil((vw + 40) / spade_speed) + spade_delay + 4 + ambush_hold;
+    var _wait = ceil((vw + 40) / spade_back_speed) + spade_delay + 4 + ambush_hold;
     scr_call_after_frames(function()
     {
         pan_cam(cam_x - ambush_pan_dist, ambush_pan_time);
@@ -706,10 +709,10 @@ ambush_second = function()
     // where they'll end up (the camera's about to move: these are from where it'll be)
     var _cam_fight = cam_x + fight_cam_dx;
     var _sb = scr_get_body(instance_find(obj_susie, 0)), _rb = scr_get_body(instance_find(obj_ralsei, 0));
-    var _sdx = _cam_fight + susie_land.x  - _sb.x, _sdy = susie_land.y  - _sb.y;
-    var _rdx = _cam_fight + ralsei_land.x - _rb.x, _rdy = ralsei_land.y - _rb.y;
+    var _sdx = _cam_fight + party_land_x - _sb.x, _sdy = susie_land_y  - _sb.y;
+    var _rdx = _cam_fight + party_land_x - _rb.x, _rdy = ralsei_land_y - _rb.y;
     var _qf  = scr_get_feet(instance_find(obj_queen, 0));
-    var _qdx = _cam_fight + (susie_land.x + ralsei_land.x) / 2 - _qf.x, _qdy = queen_land_y - _qf.y;
+    var _qdx = _cam_fight + party_land_x - _qf.x, _qdy = queen_land_y - _qf.y;
     land = { sdx: _sdx, sdy: _sdy, rdx: _rdx, rdy: _rdy, qdx: _qdx, qdy: _qdy };
 
     // from above
@@ -752,7 +755,8 @@ approach = function()
         arrived++;
         if (arrived < 2) return;
         face(obj_king, king_walk_r);
-        face(obj_lancer, lancer_sad_r);
+        face(obj_lancer, lancer_stand);
+        with (obj_lancer) image_index = 1;   // still hanging his head (since "I'm so sorry, Susie...")
         scr_queen_shield_takedown();
         scr_call_after_frames(function()
         {
@@ -794,7 +798,12 @@ king_cape = function()
         {
             pose_flip(obj_king, spr_king_battle_idle, -2);
             with (obj_king) image_speed = 1;
-            scr_call_after_frames(function() { state = "titan_battle"; scr_titan_battle_start(); }, battle_hold);
+            scr_call_after_frames(function()
+            {
+                state = "titan_battle";
+                with (obj_lancer) image_index = 0;   // back to his first frame for the fight
+                scr_titan_battle_start();
+            }, battle_hold);
         }, laugh_time);
     };
     audio_play_sound(snd_wing, 1, false);

@@ -159,16 +159,20 @@ face_scale  = 2;
 
 // --- a line (or a few) said in the panel before the first turn: { spr, img, text, on_start (optional function) } ---
 intro_lines = [];
-intro_wait  = 45;          // frames after the battle starts before the first line (the UI sliding in)
+intro_wait  = 100;         // frames after the battle starts before the first line (the UI sliding in, then a second)
 
 // --- "we're not attacking him": choosing protect_target for an attack makes Susie say protect_lines, then Rude Buster
 //     its row in the target list. that row's broken from then on (it can't be picked) ---
 protect_target  = noone;
 protect_lines   = [];      // { spr, img, text }
 protect         = undefined;
-protect_proj_speed = 14;
 protect_hold    = 40;      // frames after the row breaks before they're back to picking
 row_shards      = [];      // the broken row's pieces
+
+// --- Susie's Rude Buster at something in the UI (the TP bar, a row in the target list): start_buster ---
+buster          = undefined;
+buster_speed    = 14;      // px per frame
+buster_fire     = 7;       // the frame of spr_susie_rudebuster it leaves her swing on (obj_rude_buster's)
 proj_anim_speed = 10 / 60;
 
 // ---------------------------------------------------------------- helpers
@@ -263,18 +267,63 @@ pick_step = function(_e, _i, _dir)
     return _i;
 }
 
-/// _i turns to face _dir (-1 left, 1 right), mirrored around the middle of their battle idle, so they stay put
+/// _i turns to face _dir (-1 left, 1 right): just flipped where they stand
 face_member = function(_i, _dir)
 {
     var _d = defs[_i];
     if (_d == undefined || !instance_exists(_d.obj) || _dir == 0) return;
-    with (_d.obj)
+    with (_d.obj) image_xscale = abs(image_xscale) * _dir;
+}
+
+/// Susie Rude Busters something on the screen (GUI px, { x, y }): she swings, it flies there, _on_hit() runs when it lands,
+/// and she goes back to however she was standing once her swing's done. buster_busy() is true until all of that's over
+start_buster = function(_target, _on_hit)
+{
+    buster = { phase: "swing", t: 0, tx: _target.x, ty: _target.y, on_hit: _on_hit, saved: undefined, proj: undefined };
+    if (instance_exists(obj_susie))
     {
-        if (sign(image_xscale) == _dir) exit;
-        var _mid = (sprite_get_bbox_left(_d.idle) + sprite_get_bbox_right(_d.idle) + 1) / 2 - sprite_get_xoffset(_d.idle);
-        x += 2 * _mid * image_xscale;
-        image_xscale = abs(image_xscale) * _dir;
+        var _b = buster;
+        with (obj_susie)
+        {
+            _b.saved = { spr: sprite_index, img: image_index, spd: image_speed, loop: anim_loop };
+            sprite_index = spr_susie_rudebuster; last_sprite = sprite_index;
+            image_index = 0; image_speed = 1; anim_loop = false;
+        }
     }
+}
+buster_busy = function() { return buster != undefined; }
+
+/// the middle of the TP bar (GUI px)
+tp_bar_target = function()
+{
+    if (!instance_exists(obj_tp_bar)) return { x: 50, y: 140 };
+    return { x: obj_tp_bar.bar_x, y: obj_tp_bar.bar_y };
+}
+
+/// the middle of _inst's row in the target list (GUI px; the panel's shifted to sit under the boxes)
+row_target = function(_inst)
+{
+    var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0])) : 0;
+    var _e  = enemies();
+    var _ri = 0;
+    for (var i = 0; i < array_length(_e); i++) if (_e[i] == _inst) _ri = i;
+    return { x: _ox + 230, y: panel_y + 17 + _ri * line_h + 14, row: _ri, ox: _ox };
+}
+
+/// _inst's row in the target list smashes (it can't be picked after this)
+smash_row = function(_inst, _rt)
+{
+    _inst.line_broken = true;
+    var _y0 = panel_y + 17 + _rt.row * line_h;
+    repeat (18)
+    {
+        array_push(row_shards, { x: _rt.ox + random_range(75, 610), y: _y0 + random_range(0, 28),
+            w: irandom_range(4, 18), h: irandom_range(3, 10), col: choose(c_white, c_white, col_hp, col_hp_bg, col_mercy_bg),
+            vx: random_range(-4, 4), vy: random_range(-6, -1), rot: random(360), vr: random_range(-12, 12), a: 1 });
+    }
+    audio_play_sound(snd_glassbreak, 1, false);
+    audio_play_sound(snd_impact, 1, false);
+    scr_camera_shake(6, 14);
 }
 
 /// is this an attack (FIGHT, or a spell that hurts)? (used for protect_target)
@@ -287,7 +336,7 @@ is_attack = function(_pending)
 /// _i picked protect_target to attack: Susie stops them (her lines, then her Rude Buster smashes its row)
 start_protect = function()
 {
-    protect = { phase: "say", i: 0, t: 0, proj: undefined, saved: undefined, back_mode: mode };
+    protect = { phase: "say", i: 0, t: 0 };
     set_text(protect_lines[0].text, { spr: protect_lines[0].spr, img: protect_lines[0].img });
     state = "protect";
     t = 0;

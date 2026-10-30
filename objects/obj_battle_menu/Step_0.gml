@@ -39,6 +39,57 @@ if (mode == "enemy" && (state == "choose"))
     if (pick_i < array_length(_e)) _e[pick_i].targeted = true;
 }
 
+// Susie's Rude Buster at something in the UI: her swing, then it flies, then she goes back to how she was
+if (buster != undefined)
+{
+    var _bu = buster;
+    _bu.t++;
+    switch (_bu.phase)
+    {
+        case "swing":
+            if (!instance_exists(obj_susie) || floor(obj_susie.image_index) >= buster_fire || _bu.t >= 90)
+            {
+                var _cx = camera_get_view_x(view_camera[0]), _cy = camera_get_view_y(view_camera[0]);
+                var _sx = instance_exists(obj_susie) ? obj_susie.x + 38 * obj_susie.image_xscale - _cx : 100;
+                var _sy = instance_exists(obj_susie) ? obj_susie.y - 41 * obj_susie.image_yscale - _cy : 200;
+                _bu.proj = { x: _sx, y: _sy, dir: point_direction(_sx, _sy, _bu.tx, _bu.ty), frame: 0, trail: [] };
+                audio_play_sound(snd_boost, 1, false);
+                _bu.phase = "fly";
+            }
+        break;
+
+        case "fly":
+        {
+            var _pr = _bu.proj;
+            array_push(_pr.trail, { x: _pr.x, y: _pr.y, a: 0.6 });
+            if (array_length(_pr.trail) > 6) array_delete(_pr.trail, 0, 1);
+            _pr.frame += proj_anim_speed;
+            if (point_distance(_pr.x, _pr.y, _bu.tx, _bu.ty) <= buster_speed)
+            {
+                _bu.proj = undefined;
+                _bu.phase = "back";
+                if (_bu.on_hit != undefined) _bu.on_hit();
+            }
+            else
+            {
+                _pr.x += lengthdir_x(buster_speed, _pr.dir);
+                _pr.y += lengthdir_y(buster_speed, _pr.dir);
+            }
+        }
+        break;
+
+        case "back":   // her swing finishes (it freezes on its last frame), then she's back how she was
+            if (!instance_exists(obj_susie) || obj_susie.image_speed == 0 || _bu.t >= 180)
+            {
+                var _sv = _bu.saved;
+                if (_sv != undefined && instance_exists(obj_susie))
+                    with (obj_susie) { sprite_index = _sv.spr; last_sprite = _sv.spr; image_index = _sv.img; image_speed = _sv.spd; anim_loop = _sv.loop; }
+                buster = undefined;   // done (checked once, before she's put back: putting her back can't undo it)
+            }
+        break;
+    }
+}
+
 // the smashed row's pieces fall
 for (var i = array_length(row_shards) - 1; i >= 0; i--)
 {
@@ -220,7 +271,7 @@ switch (state)
         {
             if (t >= intro_wait) { intro_i = 0; _show_line(0); t = 0; }
         }
-        else if (t > 2 && text_done() && key_ok())
+        else if (t > 2 && text_done() && !buster_busy() && key_ok())
         {
             intro_i++;
             if (intro_i < array_length(intro_lines)) { _show_line(intro_i); t = 0; }
@@ -230,13 +281,14 @@ switch (state)
     break;
 
     // ---------------------------------------------------------------- Susie stops someone attacking protect_target
+    // ---------------------------------------------------------------- Susie stops someone attacking protect_target
     case "protect":
     {
         var _p = protect;
         _p.t++;
         switch (_p.phase)
         {
-            case "say":   // her lines (Z through them)
+            case "say":   // her lines (Z through them), then her Rude Buster at its row
                 if (t > 2 && text_done() && key_ok())
                 {
                     _p.i++;
@@ -247,86 +299,17 @@ switch (state)
                     }
                     else
                     {
-                        // her Rude Buster swing (her ready/idle comes back once it's done)
                         set_text("");
-                        if (instance_exists(obj_susie))
-                        {
-                            with (obj_susie)
-                            {
-                                _p.saved = { spr: sprite_index, img: image_index, spd: image_speed, loop: anim_loop };
-                                sprite_index = spr_susie_rudebuster; last_sprite = sprite_index;
-                                image_index = 0; image_speed = 1; anim_loop = false;
-                            }
-                        }
-                        _p.phase = "swing";
+                        var _rt = row_target(protect_target);
+                        start_buster(_rt, method({ menu: id, tg: protect_target, rt: _rt }, function() { menu.smash_row(tg, rt); }));
+                        _p.phase = "buster";
                         _p.t = 0;
                     }
                 }
             break;
 
-            case "swing":   // it leaves her swing on frame 7 (obj_rude_buster's), headed for the row
-                if (!instance_exists(obj_susie) || floor(obj_susie.image_index) >= 7 || _p.t >= 90)
-                {
-                    var _cx = camera_get_view_x(view_camera[0]), _cy = camera_get_view_y(view_camera[0]);
-                    var _sx = instance_exists(obj_susie) ? obj_susie.x + 38 * obj_susie.image_xscale - _cx : 100;
-                    var _sy = instance_exists(obj_susie) ? obj_susie.y - 41 * obj_susie.image_yscale - _cy : 200;
-                    // the row: same spot Draw GUI puts it (the panel's shifted to the boxes' row)
-                    var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - _cx) : 0;
-                    var _e  = enemies();
-                    var _ri = 0;
-                    for (var i = 0; i < array_length(_e); i++) if (_e[i] == protect_target) _ri = i;
-                    var _tx = _ox + 230, _ty = panel_y + 17 + _ri * line_h + 14;
-                    _p.proj = { x: _sx, y: _sy, tx: _tx, ty: _ty, dir: point_direction(_sx, _sy, _tx, _ty), frame: 0, trail: [], row: _ri, ox: _ox };
-                    audio_play_sound(snd_boost, 1, false);
-                    _p.phase = "fly";
-                    _p.t = 0;
-                }
-            break;
-
-            case "fly":
-            {
-                var _pr = _p.proj;
-                array_push(_pr.trail, { x: _pr.x, y: _pr.y, a: 0.6 });
-                if (array_length(_pr.trail) > 6) array_delete(_pr.trail, 0, 1);
-                _pr.frame += proj_anim_speed;
-                var _d = point_distance(_pr.x, _pr.y, _pr.tx, _pr.ty);
-                if (_d <= protect_proj_speed)
-                {
-                    // it smashes the row
-                    _pr.x = _pr.tx; _pr.y = _pr.ty;
-                    protect_target.line_broken = true;
-                    var _y0 = panel_y + 17 + _pr.row * line_h;
-                    repeat (18)
-                    {
-                        array_push(row_shards, { x: _pr.ox + random_range(75, 610), y: _y0 + random_range(0, 28),
-                            w: irandom_range(4, 18), h: irandom_range(3, 10), col: choose(c_white, c_white, col_hp, col_hp_bg, col_mercy_bg),
-                            vx: random_range(-4, 4), vy: random_range(-6, -1), rot: random(360), vr: random_range(-12, 12), a: 1 });
-                    }
-                    audio_play_sound(snd_glassbreak, 1, false);
-                    audio_play_sound(snd_impact, 1, false);
-                    scr_camera_shake(6, 14);
-                    _p.proj = undefined;
-                    _p.phase = "after";
-                    _p.t = 0;
-                }
-                else
-                {
-                    _pr.x += lengthdir_x(protect_proj_speed, _pr.dir);
-                    _pr.y += lengthdir_y(protect_proj_speed, _pr.dir);
-                }
-            }
-            break;
-
-            case "after":   // a beat, Susie back to how she was, then back to picking a target
-            {
-                var _ready = !instance_exists(obj_susie) || obj_susie.image_speed == 0;
-                if (_ready && _p.saved != undefined)
-                {
-                    var _sv = _p.saved;
-                    with (obj_susie) { sprite_index = _sv.spr; last_sprite = _sv.spr; image_index = _sv.img; image_speed = _sv.spd; anim_loop = _sv.loop; }
-                    _p.saved = undefined;
-                }
-                if (_ready && _p.t >= protect_hold)
+            case "buster":   // until it's landed and she's back how she was, then a beat, then back to picking
+                if (!buster_busy() && _p.t >= protect_hold)
                 {
                     protect = undefined;
                     state = "choose";
@@ -334,7 +317,6 @@ switch (state)
                     pick_i = pick_step(enemies(), 0, 1);
                     t = 0;
                 }
-            }
             break;
         }
     }
