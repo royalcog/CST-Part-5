@@ -25,7 +25,9 @@ open_spade_off   = 30;     // ...appearing this far outside the box...
 open_spade_glide = 80;     // ...gliding in from this much further out...
 open_spade_glide_time = 20;
 open_spade_wait  = 20;     // ...and waiting there this long before it comes in
-lancer_away      = { x: 1000, y: 300 };   // Lancer backs off here when she snaps (room px: off the screen once the camera's moved)
+lancer_away      = { x: 1000, y: 300 };   // Lancer backs off here (shocked) when she breaks the box (room px: off the screen once
+                                          // the camera's moved)
+lancer_back_speed = 3;     // px per frame, straight there
 shake_ramp       = 90;     // frames she shakes, harder and harder...
 shake_max        = 3;      // ...up to this many px
 // --- 2. at King ---
@@ -93,14 +95,14 @@ fire_scale       = 2;
 parry_spade_speed= 20;
 parry_before     = 120;    // px right of King's feet Lancer's spade meets it (thrown from off the right of the screen)
 spin_hand        = { x: 93, y: 8 };      // the middle of the chain's whirl in spr_king_battle_spin (source px)
-spin_radius      = 85;     // px she swings out from it
-spin_accel       = 0.25;   // degrees per frame per frame...
-spin_max         = 16;     // ...up to this many degrees a frame
+spin_radius      = 85;     // px she swings out from it...
+spin_pull_time   = 40;     // ...reeled in to that over this many frames (eased)
+spin_max         = 13;     // degrees a frame at full speed...
+spin_ramp        = 70;     // ...built up to over this many frames (eased in)
 spin_turns       = 2;      // full turns before he lets go (at the top, so she flies off to the left)
-throw_vx         = -15;
-throw_vy         = -2;
+spin_trail       = 6;      // afterimages behind her while she's swung round and flying
+throw_max        = 16;     // px per frame at most when he lets go (she keeps the speed and direction she had)
 throw_gravity    = 0.3;
-throw_spin       = 12;     // degrees a frame she tumbles
 // --- 6. after ---
 ralsei_run_speed = 6;
 ralsei_stop_x    = 300;    // his feet (room px), just short of the edge
@@ -255,16 +257,9 @@ wait_frames = function(_n) { add(undefined, undefined, _n); }
 add(function() { opening = true; open_t = 0; }, undefined, snap_wait);
 add(function()
 {
-    // her eyes go dark (facing King), and she starts to shake. Lancer backs away
+    // her eyes go dark (facing King), and she starts to shake
     susie_dark(-1);
     shake = { on: true, t: 0, base: obj_susie.x };
-    scene.pose_flip(obj_lancer, spr_lancer_right_sad, 2);
-    scr_walk_feet_to(obj_lancer, spr_lancer_right_sad, spr_lancer_right_sad, spr_lancer_right_sad, spr_lancer_right_sad,
-        lancer_away.x, lancer_away.y, 2, function()
-        {
-            pose(obj_lancer, spr_lancer_battle, 1, -1);   // (watching, facing left. his frame goes by his HP)
-            with (obj_lancer) image_speed = 0;
-        });
 }, function() { return shake.t >= shake_ramp; });
 add(function()
 {
@@ -273,7 +268,14 @@ add(function()
     obj_susie.x = shake.base;
     bust = buster_at(undefined, undefined, true);   // at the box
 }, function() { return !instance_exists(obj_battlebox); });
-add(function() { with (obj_soul) instance_destroy(); }, function() { return susie_swing_done(); }, 10);
+add(function()
+{
+    with (obj_soul) instance_destroy();
+    // Lancer's shocked, and backs off (straight there, still shocked)
+    pose(obj_lancer, spr_lancer_battle_hurt, 1, 1);
+    with (obj_lancer) { image_speed = 0; image_index = 0; }
+    walk_to(obj_lancer, lancer_away.x, lancer_away.y, lancer_back_speed);
+}, function() { return susie_swing_done(); }, 10);
 // ---- 2. "What the..." (on "the", she Rude Busters him)
 add(function()
 {
@@ -354,6 +356,7 @@ add(function()
 {
     // she hits the ground by the edge. he turns to face her
     tumble = false;
+	movers  = [];                               // people walking straight somewhere: { o, tx, ty, spd, done }
     obj_susie.image_angle = 0;
     audio_play_sound(snd_impact, 1, false);
     scr_camera_shake(4, 10);
@@ -365,8 +368,10 @@ add(function()
 }, undefined, land_hold);
 add(function()
 {
-    // back up, squared up to him
-    susie_dark(1);
+    // back up, squared up to him (her body kept where it is: spr_susie_landed's origin is its top-left corner, so a
+    // straight swap would jump her up)
+    pose(obj_susie, spr_susie_battle_idle_dark, 1, 1);
+    with (obj_susie) { image_speed = 1; anim_loop = true; }
 }, undefined, 30);
 
 // ---- 3. King's chain attack
@@ -457,7 +462,10 @@ add(function()
 add(function()
 {
     // his fireshock, at King, from offscreen. Lancer knocks it away with a spade right before it hits
-    var _r = mid(obj_ralsei);
+    // (at his mouth's height)
+    var _r = instance_find(obj_ralsei, 0);
+    var _tipx = cam() + vw - 16;
+    say([ { speaker: obj_ralsei, text: "SUSIE!", offx: _tipx - _r.x, flip: false } ]);
     var _k = mid(obj_king);
     var _sx = max(_r.x, cam() + vw + 30);
     var _d  = point_direction(_sx, _r.y, _k.x, _k.y);
@@ -470,8 +478,9 @@ add(function()
     king_play(spr_king_battle_spin, 0.15, true);
     var _p = king_spin_pos();
     var _sm = ssoul_pos();
-    spin = { phase: "swing", ang: point_direction(_p.x, _p.y, _sm.x, _sm.y), w: 0, total: 0, r: point_distance(_p.x, _p.y, _sm.x, _sm.y),
-             vx: 0, vy: 0, last_whoosh: 0 };
+    var _r0 = point_distance(_p.x, _p.y, _sm.x, _sm.y);
+    spin = { phase: "swing", t: 0, ang: point_direction(_p.x, _p.y, _sm.x, _sm.y), w: 0, total: 0, r0: _r0, r: _r0,
+             vx: 0, vy: 0, last_whoosh: 0, trail: [] };
     grab.snd = noone;
     pose(obj_susie, spr_susie_hurt, 1, 1);
     with (obj_susie) { image_speed = 0; image_index = 0; }
@@ -508,7 +517,7 @@ add(function()
     var _rf = feet(obj_ralsei);
     arrived = 0;
     scr_walk_feet_to(obj_lancer, spr_lancer_left_sad, spr_lancer_left_sad, spr_lancer_left_sad, spr_lancer_left_sad,
-        _rf.x + lancer_gap, _rf.y - 2, 2, function() { arrived = 1; });
+        _rf.x + lancer_gap, feet(obj_lancer).y, 2, function() { arrived = 1; });   // (straight over to him: no going up or down)
 }, function() { return arrived == 1; }, 10);
 add(function()
 {
@@ -539,6 +548,16 @@ add(function() { create_textbox("self_18"); }, function() { return !instance_exi
 add(function() { instance_destroy(); });
 
 // ---------------------------------------------------------------- the pieces' own functions
+
+/// _o walks straight (diagonally if need be) to have its feet on (_tx, _ty), _spd px a frame, keeping its pose
+walk_to = function(_o, _tx, _ty, _spd)
+{
+    var _i = instance_find(_o, 0);
+    if (_i == noone) return;
+    for (var i = array_length(movers) - 1; i >= 0; i--) if (movers[i].o == _i) array_delete(movers, i, 1);
+    array_push(movers, { o: _i, tx: _tx, ty: _ty, spd: _spd });
+}
+
 /// where Susie's SOUL is (the middle of her body)
 ssoul_pos = function()
 {

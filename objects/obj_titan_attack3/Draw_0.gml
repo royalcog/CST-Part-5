@@ -42,6 +42,17 @@ if (grab != undefined && instance_exists(obj_king) && instance_exists(obj_susie)
     }
 }
 
+// ---- afterimages behind Susie while she's swung round and thrown
+if (spin != undefined && spin.phase != "gone")
+{
+    var _n = array_length(spin.trail);
+    for (var i = 1; i < _n; i++)   // (0 is where she is now)
+    {
+        var _t = spin.trail[i];
+        draw_sprite_ext(_t.spr, _t.img, _t.x, _t.y, _t.xs, _t.ys, _t.ang, c_white, 0.35 * (1 - i / _n));
+    }
+}
+
 // ---- Susie's SOUL, once he's got hold of it
 if (ssoul != undefined && instance_exists(obj_susie) && obj_susie.visible)
 {

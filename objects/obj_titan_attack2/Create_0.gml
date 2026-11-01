@@ -5,13 +5,14 @@ event_inherited();
 // made by scr_start_titan_attack2 (scr_titan_battle)
 
 dash_start = 999999;   // (no dashing fish this time)
+spawn_gap  = 52;       // the small copies, a bit slower than attack 3's (40)
 
 // --- tuning: the bombs ---
 bomb_start     = 90;    // frames into the attack before the first one
-bomb_gap       = 70;    // then one every this many frames...
-bomb_pair      = 0.25;  // ...and sometimes two at once (one from each side)
+bomb_gap       = 95;    // then one every this many frames...
+bomb_pair      = 0.1;   // ...and now and then two at once (one from each side)
 bomb_stop      = 170;   // no new ones in the last this-many frames (so they burst before the box closes)
-bomb_fuse      = 60;    // frames on the ground before it bursts
+bomb_fuse      = 75;    // frames on the ground before it bursts
 bomb_toss_time = 45;    // frames from the side of the screen into the box
 bomb_arc       = 60;    // how high it arcs on the way
 bomb_erupt     = 12;    // frames it takes to pop out to full size at the edge of the screen

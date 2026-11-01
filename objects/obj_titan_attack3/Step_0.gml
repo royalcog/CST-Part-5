@@ -347,19 +347,31 @@ if (fire != undefined)
 }
 
 // ---------------------------------------------------------------- swung round on the chain, then thrown
+// ---------------------------------------------------------------- swung round on the chain, then thrown
 if (spin != undefined && instance_exists(obj_susie))
 {
     var _sp = spin;
+    // afterimages
+    if (_sp.phase != "gone")
+    {
+        array_insert(_sp.trail, 0, { x: obj_susie.x, y: obj_susie.y, ang: obj_susie.image_angle, spr: obj_susie.sprite_index,
+                                     img: obj_susie.image_index, xs: obj_susie.image_xscale, ys: obj_susie.image_yscale });
+        if (array_length(_sp.trail) > spin_trail) array_resize(_sp.trail, spin_trail);
+    }
     switch (_sp.phase)
     {
         case "swing":
         {
+            _sp.t++;
             var _p = king_spin_pos();
             var _prev = _sp.ang;
-            _sp.w = min(spin_max, _sp.w + spin_accel);
+            // speeds up smoothly, reeled in smoothly
+            var _ramp = min(1, _sp.t / spin_ramp);
+            _sp.w = spin_max * _ramp * _ramp * (3 - 2 * _ramp);
             _sp.ang += _sp.w;
             _sp.total += _sp.w;
-            _sp.r = lerp(_sp.r, spin_radius, 0.15);
+            var _pull = min(1, _sp.t / spin_pull_time);
+            _sp.r = lerp(_sp.r0, spin_radius, _pull * _pull * (3 - 2 * _pull));
             if (floor(_sp.total / 360) > _sp.last_whoosh) { _sp.last_whoosh = floor(_sp.total / 360); audio_play_sound(snd_heavyswing, 1, false); }
             // her SOUL on the end of the chain, her head toward him
             obj_susie.image_angle = _sp.ang + 90;
@@ -367,13 +379,14 @@ if (spin != undefined && instance_exists(obj_susie))
             var _now = ssoul_pos();
             obj_susie.x += _sx - _now.x;
             obj_susie.y += _sy - _now.y;
-            // let go at the top (going round anticlockwise, she flies off to the left)
+            // let go at the top (going round anticlockwise, she flies off to the left), with the speed she had
             var _a0 = ((_prev mod 360) + 360) mod 360, _a1 = ((_sp.ang mod 360) + 360) mod 360;
             if (_sp.total >= 360 * spin_turns && _a0 < 90 && _a1 >= 90)
             {
+                var _v = min(throw_max, degtorad(_sp.w) * _sp.r);
                 _sp.phase = "fly";
-                _sp.vx = throw_vx;
-                _sp.vy = throw_vy;
+                _sp.vx = lengthdir_x(_v, _sp.ang + 90);
+                _sp.vy = lengthdir_y(_v, _sp.ang + 90);
                 grab = undefined;
                 audio_play_sound(snd_ultraswing, 1, false);
                 cam_follow = true;
@@ -386,7 +399,7 @@ if (spin != undefined && instance_exists(obj_susie))
             _sp.vy += throw_gravity;
             obj_susie.x += _sp.vx;
             obj_susie.y += _sp.vy;
-            obj_susie.image_angle += throw_spin;
+            obj_susie.image_angle += _sp.w;   // (still turning as fast as she was)
             if (obj_susie.y > camera_get_view_y(view_camera[0]) + 480 + 120 || obj_susie.x < -120)
             {
                 _sp.phase = "gone";
@@ -402,6 +415,18 @@ if (cam_follow && instance_exists(obj_susie) && instance_exists(scene))
 {
     var _tx = clamp(obj_susie.x - vw * 0.35, 0, cam());
     if (_tx < cam()) scene.set_cam(lerp(cam(), _tx, 0.25));
+}
+
+// ---------------------------------------------------------------- people walking straight somewhere
+for (var i = array_length(movers) - 1; i >= 0; i--)
+{
+    var _mv = movers[i];
+    if (!instance_exists(_mv.o)) { array_delete(movers, i, 1); continue; }
+    var _f  = scr_get_feet(_mv.o);
+    var _dx = _mv.tx - _f.x, _dy = _mv.ty - _f.y;
+    var _d  = point_distance(0, 0, _dx, _dy);
+    if (_d <= _mv.spd) { _mv.o.x += _dx; _mv.o.y += _dy; array_delete(movers, i, 1); }
+    else { _mv.o.x += _dx / _d * _mv.spd; _mv.o.y += _dy / _d * _mv.spd; }
 }
 
 // ---------------------------------------------------------------- Ralsei running to the edge, slowing right at the end

@@ -62,6 +62,7 @@ if (dim_phase == 2) // run dialogue
 				// which way they're facing: their usual bubble direction (flip), the other way if their sprite's mirrored
 				var _mirrored = (sp.image_xscale < 0);
 				var _face = (fp ? 1 : -1) * (_mirrored ? -1 : 1);
+				var _head = 0;   // the middle of their head, from their x (the bubble goes on the other side of it if it won't fit)
 				if (auto_mouth)
 				{
 					// a set distance in front of their mouth (their sprite's top and how tall it is, the side they face)
@@ -73,6 +74,7 @@ if (dim_phase == 2) // run dialogue
 					var _cx  = (_xa + _xb) / 2, _hw = abs(_xb - _xa) / 2;
 					var _nudge = (cid < array_length(mouth_nudge) && is_real(mouth_nudge[cid])) ? mouth_nudge[cid] : 0;
 					ox = _cx + _face * (_hw * mouth_reach + mouth_gap + _nudge) - sp.x;
+						_head = _cx - sp.x;
 					var _lift = (cid < array_length(mouth_lift) && is_real(mouth_lift[cid])) ? mouth_lift[cid] : 0;
 					oy = _top + _h * mouth_height - _lift - sp.y;
 				}
@@ -92,6 +94,18 @@ if (dim_phase == 2) // run dialogue
 				curr_box = scr_talkbox_show(sp, txt, ww, ox, oy, fp, cps, _keep_anim, _dim, _animate, _instant);
 				// (the talkbox always nudges its tip 20px left and 40px up, for the old fixed offsets: not wanted here)
 				if (auto_mouth) { curr_box.triangle_xoff = 0; curr_box.triangle_yoff = 0; }
+					// it'd go off the side of the screen: it goes on the other side of their head instead
+				if (!variable_struct_exists(e, "offx") && instance_exists(curr_box))
+				{
+					with (curr_box)
+					{
+						var _sc  = display_get_gui_width() / camera_get_view_width(view_camera[0]);
+						var _tip = (speaker.x - camera_get_view_x(view_camera[0])) * _sc + mouth_off_x + triangle_xoff;
+						var _wid = _text_w_full + pad_x * 3 + pad_x_mini + 9;   // (the whole bubble, its rounded corners too)
+						var _off = flip_talkbox ? (_tip + _wid > display_get_gui_width() - screen_margin) : (_tip - _wid < screen_margin);
+						if (_off) { mouth_off_x = 2 * _head * _sc - mouth_off_x; flip_talkbox = !flip_talkbox; }
+					}
+				}
 				if (variable_struct_exists(e, "snd") && e.snd != noone)
 				{
 				    audio_play_sound(e.snd, 1, false);

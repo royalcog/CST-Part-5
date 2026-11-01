@@ -797,11 +797,8 @@ battle_spade_at_susie = function()
     {
         audio_play_sound(snd_impact, 1, false);
         scr_camera_shake(4, 10);
-        scr_call_after_frames(function()
-        {
-            with (obj_battle_menu) scr_bm_idle(defs[0]);
-            battle_spade_done = true;
-        }, battle_guard_hold);
+        // (she stays guarding: everyone goes back to their idle at the start of the next turn)
+        scr_call_after_frames(function() { battle_spade_done = true; }, battle_guard_hold);
     });
     battle_guard_spade = spades[array_length(spades) - 1];
 }
