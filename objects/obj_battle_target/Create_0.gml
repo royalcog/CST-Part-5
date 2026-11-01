@@ -35,9 +35,15 @@ line_broken     = false;  // its row in the target list got smashed: it can't be
 hurt_t     = 0;           // frames left of its hurt reaction
 hurt_len   = 24;
 hurt_shake = 4;           // px (Lancer: he shakes in his hurt sprite)
-shake_base = undefined;
 hurt_sprite = spr_lancer_battle_hurt;   // (Lancer's)
 pre_hurt    = undefined;
+
+// --- Lancer wears down as he's hurt (his Card Castle fight with Susie in Chapter 1): spr_lancer_battle's 3 frames go from
+//     cocky to hanging his head, and once he's low he can't stop trembling ---
+lancer_frame_at  = [0.66, 0.33];  // above the first (fraction of his max HP): frame 0, above the second: frame 1, else 2
+lancer_tremble_at  = 0.33;        // below this he trembles...
+lancer_tremble_max = 2;           // ...up to this many px, more the lower he gets
+lancer_home = undefined;          // where he stands (the shakes go either side of it)
 
 is_tired = function() { return can_spare && !gone && hp <= max_hp * tired_at; }
 is_alive = function() { return !gone; }
@@ -72,7 +78,6 @@ take_hit = function(_amount, _col)
         case "lancer":
             if (instance_exists(body))
             {
-                if (shake_base == undefined) shake_base = body.x;
                 if (pre_hurt == undefined) pre_hurt = { spr: body.sprite_index, img: body.image_index };
                 body.sprite_index = hurt_sprite;
                 body.image_index  = 0;

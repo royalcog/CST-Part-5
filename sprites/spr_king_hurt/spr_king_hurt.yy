@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":9,
   "parent":{
-    "name":"King",
-    "path":"folders/Sprites/Characters/King.yy",
+    "name":"Battle",
+    "path":"folders/Sprites/Characters/King/Battle.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

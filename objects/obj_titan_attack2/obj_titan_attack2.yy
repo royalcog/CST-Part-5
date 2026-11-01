@@ -13,8 +13,8 @@
     "path":"folders/Battle System/Objects/Attacks/Titan/Objects/Attack 2.yy",
   },
   "parentObjectId":{
-    "name":"obj_titanspawn_attack1",
-    "path":"objects/obj_titanspawn_attack1/obj_titanspawn_attack1.yy",
+    "name":"obj_titanspawn_attack3",
+    "path":"objects/obj_titanspawn_attack3/obj_titanspawn_attack3.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,

@@ -114,6 +114,7 @@ function scr_titan_battle_start()
             "* Defending seems like a good idea.",
         ];
         facing_enabled = true;
+        susie_rescue   = true;   // anyone below 20% HP: Susie heals everyone to full
         auto_mouth     = true;   // everyone's bubbles go in front of their mouths
         default_facing = -1;   // toward King and Lancer to start with
 

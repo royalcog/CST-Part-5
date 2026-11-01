@@ -62,6 +62,9 @@ if (mode == "enemy" && (state == "choose"))
     if (pick_i < array_length(_e)) _e[pick_i].targeted = true;
 }
 
+// Susie's rescue heal (when anyone's low)
+rescue_update();
+
 // Susie's Rude Buster at something in the UI: her swing, then it flies, then she goes back to how she was
 if (buster != undefined)
 {

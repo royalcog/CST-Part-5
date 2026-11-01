@@ -203,6 +203,15 @@ buster_speed    = 14;      // px per frame
 buster_fire     = 7;       // the frame of spr_susie_rudebuster it leaves her swing on (obj_rude_buster's)
 proj_anim_speed = 10 / 60;
 
+// --- Susie's rescue (the Titan fight turns it on): the moment anyone drops below rescue_at of their max HP, she casts
+//     her heal and 3 orbs loop out of her hand and around to every party member, healing them all to full ---
+susie_rescue    = false;
+rescue_at       = 0.2;     // below this much of their max HP
+rescue_frame    = 14;      // the frame of spr_susie_heal the orbs leave her hand on
+rescue_hand     = { x: 2.5, y: 35.5 };   // where her hand is in spr_susie_heal (source px; it faces left as drawn)
+rescue_hold     = 20;      // frames after the last orb lands before she goes back to how she was
+rescue          = undefined;
+
 // ---------------------------------------------------------------- helpers
 text_wrap  = 580;   // px the battle text wraps at (Deltarune's)
 text_lines = [];    // the laid-out text: { x, y, from, len } per line (from = where it starts in text)
@@ -304,6 +313,89 @@ face_member = function(_i, _dir)
     var _d = defs[_i];
     if (_d == undefined || !instance_exists(_d.obj) || _dir == 0) return;
     with (_d.obj) image_xscale = abs(image_xscale) * _dir;
+}
+
+/// Susie's rescue: called every frame. starts when someone's low (and she's up and free), then runs her heal pose, the
+/// orbs, and puts her back how she was
+rescue_update = function()
+{
+    if (!susie_rescue) return;
+    if (rescue == undefined)
+    {
+        if (buster != undefined || !instance_exists(obj_susie)) return;
+        if (!(state == "enemy_attack" || state == "enemy_talk" || state == "enemy_turn" || state == "turn_start")) return;
+        if (!instance_exists(members[0]) || members[0].hp <= 0) return;   // (she has to be up)
+        var _low = false;
+        for (var i = 0; i < 3; i++) if (instance_exists(members[i]) && members[i].hp < members[i].max_hp * rescue_at) _low = true;
+        if (!_low) return;
+
+        // into her heal pose, facing the way she was (it faces left as drawn), her body where it was
+        rescue = { phase: "cast", t: 0, saved: undefined, snd: -1 };
+        var _rs = rescue;
+        with (obj_susie)
+        {
+            _rs.saved = { spr: sprite_index, img: image_index, spd: image_speed, loop: anim_loop, x: x, y: y, xs: image_xscale };
+            var _face = sign(image_xscale);
+            var _cx = x + ((sprite_get_bbox_left(sprite_index) + sprite_get_bbox_right(sprite_index) + 1) / 2 - sprite_get_xoffset(sprite_index)) * image_xscale;
+            var _by = y + (sprite_get_bbox_bottom(sprite_index) + 1 - sprite_get_yoffset(sprite_index)) * image_yscale;
+            var _s  = spr_susie_heal;
+            image_xscale = -_face * abs(image_xscale);
+            x = _cx - ((sprite_get_bbox_left(_s) + sprite_get_bbox_right(_s) + 1) / 2 - sprite_get_xoffset(_s)) * image_xscale;
+            y = _by - (sprite_get_bbox_bottom(_s) + 1 - sprite_get_yoffset(_s)) * image_yscale;
+            sprite_index = _s; last_sprite = _s;
+            image_index = 0; image_speed = 1; anim_loop = false;
+        }
+        _rs.snd = scr_audio_fade_in(snd_charge, 400, 0.8, true);
+        return;
+    }
+
+    if (!instance_exists(obj_susie)) { rescue = undefined; return; }
+    var _r = rescue;
+    _r.t++;
+    switch (_r.phase)
+    {
+        case "cast":
+            if (instance_exists(obj_susie) && obj_susie.sprite_index == spr_susie_heal && floor(obj_susie.image_index) < rescue_frame && _r.t < 120) break;
+            // out of her hand: one orb for each of them, looping out and around to whoever it's for
+            var _hx = obj_susie.x + (rescue_hand.x - sprite_get_xoffset(spr_susie_heal)) * obj_susie.image_xscale;
+            var _hy = obj_susie.y + (rescue_hand.y - sprite_get_yoffset(spr_susie_heal)) * obj_susie.image_yscale;
+            var _fwd = (obj_susie.image_xscale < 0) ? 0 : 180;   // the way she's facing (her heal faces left as drawn)
+            for (var i = 0; i < 3; i++)
+            {
+                var _box = members[i];
+                if (!instance_exists(_box) || _box.body == noone || !instance_exists(_box.body)) continue;
+                var _ti = instance_find(_box.body, 0);
+                var _ty = (_ti.bbox_top + _ti.bbox_bottom) / 2;
+                // out ahead of her first: up-and-forward for someone above her, down-and-forward for below, straight
+                // ahead for herself (it loops back round to her)
+                var _tilt = (_ti.id == obj_susie.id) ? 0 : ((_ty < _hy) ? 70 : -70);
+                if (_fwd == 180) _tilt = -_tilt;
+                with (instance_create_depth(_hx, _hy, obj_susie.depth - 10, obj_susie_heal_orb))
+                {
+                    box    = _box;
+                    target = _ti;
+                    dir    = _fwd + _tilt;
+                }
+            }
+            audio_sound_gain(_r.snd, 0, 300);
+            _r.phase = "fly"; _r.t = 0;
+        break;
+
+        case "fly":
+            if (instance_exists(obj_susie_heal_orb)) { _r.t = 0; break; }
+            if (_r.t < rescue_hold) break;
+            audio_stop_sound(_r.snd);
+            // back how she was (unless something else has taken over her pose since)
+            var _sv = _r.saved;
+            with (obj_susie) if (sprite_index == spr_susie_heal)
+            {
+                sprite_index = _sv.spr; last_sprite = _sv.spr;
+                image_index = _sv.img; image_speed = _sv.spd; anim_loop = _sv.loop;
+                x = _sv.x; y = _sv.y; image_xscale = _sv.xs;
+            }
+            rescue = undefined;
+        break;
+    }
 }
 
 /// Susie Rude Busters something on the screen (GUI px, { x, y }): she swings, it flies there, _on_hit() runs when it lands,
