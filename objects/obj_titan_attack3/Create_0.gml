@@ -239,7 +239,8 @@ bust    = noone;
 opening = false;                            // King's attack has started (before she snaps)
 open_t  = 0;
 next_side = choose(-1, 1);
-tumble  = false;                            // Susie tumbling through the air// the Rude Buster that's flying
+tumble  = false;                            // Susie tumbling through the air
+movers  = [];                               // people walking straight somewhere: { o, tx, ty, spd, done }
 
 // ---------------------------------------------------------------- the script: steps run one after another
 steps   = [];
@@ -356,7 +357,6 @@ add(function()
 {
     // she hits the ground by the edge. he turns to face her
     tumble = false;
-	movers  = [];                               // people walking straight somewhere: { o, tx, ty, spd, done }
     obj_susie.image_angle = 0;
     audio_play_sound(snd_impact, 1, false);
     scr_camera_shake(4, 10);
@@ -453,19 +453,15 @@ add(function()
 }, function() { return talk_done(); });
 add(function()
 {
-    // Ralsei, from offscreen (right): his bubble sits at the right edge of the screen, pointing off it
+    // Ralsei, from offscreen (right): his bubble sits at the right edge of the screen, pointing off it (at his mouth's height)
     var _r = instance_find(obj_ralsei, 0);
     var _tipx = cam() + vw - 16;
-    var _tipy = 120;
-    say([ { speaker: obj_ralsei, text: "SUSIE!", offx: _tipx - _r.x, offy: _tipy - _r.y, flip: false } ]);
+    say([ { speaker: obj_ralsei, text: "SUSIE!", offx: _tipx - _r.x, flip: false } ]);
 }, function() { return talk_done(); });
 add(function()
 {
     // his fireshock, at King, from offscreen. Lancer knocks it away with a spade right before it hits
-    // (at his mouth's height)
-    var _r = instance_find(obj_ralsei, 0);
-    var _tipx = cam() + vw - 16;
-    say([ { speaker: obj_ralsei, text: "SUSIE!", offx: _tipx - _r.x, flip: false } ]);
+    var _r = mid(obj_ralsei);
     var _k = mid(obj_king);
     var _sx = max(_r.x, cam() + vw + 30);
     var _d  = point_direction(_sx, _r.y, _k.x, _k.y);
