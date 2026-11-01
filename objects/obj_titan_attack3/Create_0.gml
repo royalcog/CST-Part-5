@@ -43,11 +43,12 @@ burst_push       = 4;      // px each one shoves her back
 fight_cam_x      = 60;     // the camera pans here as she runs at him, for the rest of the fight (room px; the tower's
                            // edge is at x 240). Lancer's off the right of it
 cam_pan_time     = 60;
-strike_gap       = 70;     // she jumps at him and hits him from this far right of his feet...
-strike_time      = 20;
-strike_hop       = 50;
-stagger          = 12;     // ...he reels for this many frames, then knocks her flying over himself
-swing_speed      = 0.5;    // (his chain-throw pose, quick, as the swing)
+strike_gap       = 70;     // she jumps at him, aiming to land this far right of his feet...
+strike_time      = 26;
+strike_hop       = 85;     // (px high)
+flick_lead       = 5;      // ...but this many frames before she gets there he flicks a spade into her...
+flick_speed      = 26;     // ...this fast...
+swing_speed      = 0.5;    // ...(his chain-throw pose, quick, as the flick), and it knocks her flying over him
 fling_time       = 44;
 fling_hop        = 150;
 fling_spin       = 14;     // degrees a frame she tumbles
@@ -240,6 +241,8 @@ opening = false;                            // King's attack has started (before
 open_t  = 0;
 next_side = choose(-1, 1);
 tumble  = false;                            // Susie tumbling through the air
+flung   = false;                            // King's spade has knocked her out of her jump
+jump_to = { x: 0, y: 0 };                   // where her jump was going to landv
 movers  = [];                               // people walking straight somewhere: { o, tx, ty, spd, done }
 
 // ---------------------------------------------------------------- the script: steps run one after another
@@ -300,7 +303,7 @@ add(function()
 {
     // she runs at him (overworld run: the battle has no running sprite)
     shake.on = false;
-    scene.pose_flip(obj_susie, spr_susie_walk_left, 2);   // (faces left as drawn)
+    scene.pose_flip(obj_susie, spr_susie_walk_left_neutral, 2);   // (faces left as drawn)
     with (obj_susie) { image_speed = 2; anim_loop = true; }
     var _kf = feet(obj_king);
     runner = { tx: _kf.x + susie_stop_gap, ty: susie_stop_y };
@@ -329,31 +332,30 @@ add(function()
     with (obj_susie) { image_speed = 0; image_index = 0; }
     audio_play_sound(snd_heavyswing, 1, false);
     var _sf = feet(obj_susie), _kf = feet(obj_king);
-    scene.slide(obj_susie, _kf.x + strike_gap - _sf.x, _kf.y - _sf.y, strike_time, strike_hop);
-}, undefined, strike_time + 1);
+    jump_to = { x: _kf.x + strike_gap, y: _kf.y };
+    scene.slide(obj_susie, jump_to.x - _sf.x, jump_to.y - _sf.y, strike_time, strike_hop);
+}, undefined, strike_time - flick_lead);
 add(function()
 {
-    // ...and hits him (he reels)
-    audio_play_sound(snd_slash, 1, false);
-    audio_play_sound(snd_impact, 1, false);
-    scr_camera_shake(5, 10);
-    var _kt = king_target();
-    if (instance_exists(_kt)) _kt.take_hit(buster_damage(), susie_col);
-}, undefined, stagger);
-add(function()
-{
-    // he swings back and knocks her flying, right over himself to the other side of the tower
-    with (obj_king) hurt_timer = 0;   // (cut his hurt flash short: he's swinging)
+    // ...but right before she gets there, he flicks a spade into her (at where she's about to be)
+    flung = false;
     king_play(spr_king_battle_toss, swing_speed, false);
     audio_play_sound(snd_criticalswing, 1, false);
-    audio_play_sound(snd_impact, 1, false);
-    scr_camera_shake(7, 14);
-    pose(obj_susie, spr_susie_hurt, 1, -1);
-    with (obj_susie) { image_speed = 0; image_index = 0; }
-    var _sf = feet(obj_susie);
-    scene.slide(obj_susie, susie_land.x - _sf.x, susie_land.y - _sf.y, fling_time, fling_hop);
-    tumble = true;
-}, undefined, fling_time + 2);
+    var _k  = mid(obj_king), _m = mid(obj_susie), _f = feet(obj_susie);
+    scene.add_spade(_k.x, _k.y, _m.x + (jump_to.x - _f.x), _m.y + (jump_to.y - _f.y), flick_speed, 0, function()
+    {
+        // it knocks her flying, right over him to the other side of the tower
+        flung = true;
+        audio_play_sound(snd_impact, 1, false);
+        audio_play_sound(snd_hurt, 1, false);
+        scr_camera_shake(7, 14);
+        pose(obj_susie, spr_susie_hurt, 1, -1);
+        with (obj_susie) { image_speed = 0; image_index = 0; }
+        var _sf = feet(obj_susie);
+        scene.slide(obj_susie, susie_land.x - _sf.x, susie_land.y - _sf.y, fling_time, fling_hop);   // (replaces her jump)
+        tumble = true;
+    });
+}, function() { return flung; }, fling_time + 2);
 add(function()
 {
     // she hits the ground by the edge. he turns to face her
@@ -524,7 +526,13 @@ add(function()
 add(function() { create_textbox("self_16"); }, function() { return !instance_exists(obj_textbox); }, talk_gap);   // Lancer: "..."
 add(function()
 {
-    // King walks up behind them
+    // King walks up behind them. his cape tears off his back and flies away (his overworld sprites don't have it)
+    var _cape = instance_create_depth(obj_king.x + 46, obj_king.y + 37, obj_king.depth - 1, obj_king_cape);   // (his back, facing left)
+    _cape.mode = "leave";
+    _cape.dark = false;
+    _cape.leave_dir = 20;   // up and away, behind him
+    _cape.image_speed = 0.25;
+    _cape.depth = obj_king.depth - 1;
     scene.pose_flip(obj_king, spr_king_walk_left, 2);
     var _lf = feet(obj_lancer);
     arrived = 0;

@@ -37,6 +37,7 @@ function scr_titan_battle_start()
     obj_UI.target_x   += _shift;
     obj_UI.onscreen_x += _shift;
     obj_UI.panel_full_width = true;
+    obj_UI.follow_cam = true;   // (the camera pans in turn 3: the boxes stay put on the screen)
     obj_UI.depth = -10002;
     with (obj_battle_ui_box) depth = -10003;
 

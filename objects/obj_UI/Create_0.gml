@@ -28,3 +28,10 @@ hide_drop   = 200;   // how far down it slides when hidden
 
 menu_lift        = 0;   // obj_battle_menu raises the boxes while its menu is up
 menu_lift_target = 0;
+
+
+// the panel + party boxes are drawn from room coordinates, so when the camera pans they'd slide off the screen.
+// follow_cam = true: they're moved along with the camera instead (Step), so they stay put on the screen. (off by default:
+// the platformer's obj_plat_controller already does this itself)
+follow_cam = false;
+ui_cam_x = instance_exists(obj_camera_controller) ? obj_camera_controller.cam_x : camera_get_view_x(view_camera[0]);
