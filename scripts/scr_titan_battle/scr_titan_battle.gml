@@ -75,8 +75,7 @@ function scr_titan_battle_start()
         rounds = [
             { talk: scr_titan_round1_talk(), attack: scr_start_titan_attack1 },
             { talk: scr_titan_round2_talk(), attack: scr_start_titan_attack2 },
-            // TODO: the next turns. for now it's attack 2 again (no talk)
-            { talk: [], attack: scr_start_titan_attack2 },
+            { talk: scr_titan_round3_talk(), attack: scr_start_titan_attack3 },   // (ends the battle)
         ];
         rounds_loop_from = 2;
 
@@ -160,6 +159,13 @@ function scr_start_titan_attack2()
     return instance_create_depth(0, 0, _d, obj_titan_attack2);
 }
 
+/// attack 3: Susie snaps. it's a whole scene, and it ends the battle (obj_titan_attack3)
+function scr_start_titan_attack3()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack3);
+}
+
 /// the enemy turn before attack 1 (TALKbox lines). King faces right in this fight, so his bubbles go on his right
 function scr_titan_round1_talk()
 {
@@ -197,5 +203,25 @@ function scr_titan_round2_talk()
         { speaker: obj_queen,  text: "And The Idiocy Of You And Your \"Team\"", to: obj_king },
         { speaker: obj_lancer, text: "Girldad...?", to: obj_queen },
         { speaker: obj_queen,  text: "...", to: obj_lancer },
+    ];
+}
+
+/// the enemy turn before attack 3 (TALKbox lines)
+function scr_titan_round3_talk()
+{
+    return [
+        { speaker: obj_lancer, text: "Dad, do we really have to", instant_cutoff: true, to: obj_king },   // cut off by...
+        { speaker: obj_king,   text: "Yes. We do.", to: obj_lancer },
+        { speaker: obj_king,   text: "Please don't make this harder on us as it is with self-doubt.", to: obj_lancer },
+        { speaker: obj_susie,  text: "Lancer, he doesn't even care about you! Why are you still siding with him???", to: obj_lancer },
+        { speaker: obj_king,   text: "He has come to realize the importance of what the Roaring would mean for us.", to: obj_susie },
+        { speaker: obj_queen,  text: "Why Are You Talking For Him", to: obj_king },
+        { speaker: obj_king,   text: "Isn't that what you think, Lancer?", to: obj_lancer },
+        { speaker: obj_lancer, text: "...", to: obj_king },
+        { speaker: obj_king,   text: "...", to: obj_lancer },
+        { speaker: obj_king,   text: "Lancer.", to: obj_lancer },
+        { speaker: obj_lancer, text: "Yes, Dad.", to: obj_king },
+        { speaker: obj_king,   text: "Good.", to: obj_lancer },
+        { speaker: obj_susie,  text: "...", to: obj_king },
     ];
 }

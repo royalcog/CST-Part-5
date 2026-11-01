@@ -249,6 +249,44 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "susie", 31);
 				scr_custom_call_after_textbox_delayed(function() { with (obj_tower_top_scene) ready_up(); }, 0);
 		break;
+		
+
+		// ---- after the Titan fight's third turn: King's thrown Susie off the tower (obj_titan_attack3 opens each of these)
+		case "self_14":
+			global.cutscene_lock = true;
+			scr_text("* N-No...", "ralsei", 57);
+				scr_text_shake(1, string_length("* N-No..."));
+		break;
+
+		case "self_15":
+			global.cutscene_lock = true;
+			scr_text("* S-Susie...", "ralsei", 58);
+				scr_text_shake(1, string_length("* S-Susie..."));
+			scr_text("* I... I could've...", "ralsei", 28);
+		break;
+
+		case "self_16":
+			global.cutscene_lock = true;
+			scr_text("* ...", "lancer", 10);
+		break;
+
+		case "self_17":
+			global.cutscene_lock = true;
+			scr_text("* You see?", "king", 1);
+			scr_text("* Lightners are nothing but a waste of time.", "king", 5);
+			scr_text("* Now.", "king", 3);
+			scr_text("* To deal with the other traitor.", "king", 0);
+				scr_call_on_page(function() { with (obj_tower_top_scene) pose_flip(obj_king, spr_king_walk_right, 2); }, 1, global.page_number - 1);   // he turns round
+		break;
+
+		case "self_18":
+			global.cutscene_lock = true;
+			scr_text("* What The Actual Crap Is Wrong With You", "queen", 19);
+			scr_text("* You Literally Just Threw A Child Off A Building", "queen", 2);
+			scr_text("* Guess You Were Lying About Not Throwing Your Son Off Too", "queen", 20);
+			scr_text("* ...", "lancer", 11);
+			scr_text("* ...", "king", 12);
+		break;
 /*
 
 */
