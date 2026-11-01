@@ -154,7 +154,7 @@ if (throwing && instance_exists(obj_susie))
 {
     throw_t++;
     obj_susie.image_index = min(5, obj_susie.image_index + throw_anim_speed);
-    if (throw_t >= axe_start && throw_t < axe_time && (throw_t - axe_start) mod axe_every == 0) throw_axe();
+    if (throw_t >= axe_start && throw_t < axe_time - axe_last_gap && (throw_t - axe_start) mod axe_every == 0) throw_axe();
     if (throw_t >= axe_time) throwing = false;
 }
 for (var i = array_length(axes) - 1; i >= 0; i--)
@@ -165,8 +165,9 @@ for (var i = array_length(axes) - 1; i >= 0; i--)
     _a.y  += _a.vy;
     _a.spin_t++;
     if (_a.spin_t >= 6) { _a.spin_t = 0; _a.ang -= 45; }
+    if (axes_fading) { _a.a -= 0.1; if (_a.a <= 0) { array_delete(axes, i, 1); continue; } }
     // King's SOUL
-    if (ksoul != undefined && !_a.hit && ksoul.inv <= 0 && point_distance(_a.x, _a.y, ksoul.x, ksoul.y) <= axe_hit_r)
+    if (ksoul != undefined && !axes_fading && !_a.hit && ksoul.inv <= 0 && point_distance(_a.x, _a.y, ksoul.x, ksoul.y) <= axe_hit_r)
     {
         _a.hit = true;
         ksoul.inv = ksoul_inv;

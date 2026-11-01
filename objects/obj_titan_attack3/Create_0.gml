@@ -54,7 +54,8 @@ wave_spade_dmg   = 50;
 // --- 4. Susie's axes at King's SOUL (Deltarune's obj_susieenemy attack 85 + obj_axebullet, mirrored: she's on the left) ---
 axe_start        = 30;     // frames after her box is up before the first
 axe_every        = 54;     // frames between axes (DR 27)
-axe_time         = 360;    // frames she keeps throwing (DR's turn: 180)
+axe_time         = 360;    // frames her turn lasts (DR's: 180). whatever's still flying then fades out...
+axe_last_gap     = 60;     // ...and she stops throwing this many frames before the end
 axe_speed_min    = 3.8;    // px per frame out at the start (DR 7.6-9.1)...
 axe_speed_rand   = 0.75;
 axe_vy_max       = 1;      // ...up or down by up to this (DR +-2)
@@ -207,6 +208,7 @@ wave   = undefined;                         // King's chain attack
 axes   = [];                                // Susie's axes
 ksoul  = undefined;                         // King's SOUL in her box
 throwing = false;                           // Susie's still throwing axes
+axes_fading = false;                        // her turn's over: the axes still out fade away
 throw_t  = 0;
 grab   = undefined;                         // King's chain reaching out to Susie's SOUL
 ssoul  = undefined;                         // Susie's SOUL (once he's got it): { scale }
@@ -356,11 +358,12 @@ add(function()
     with (obj_susie) { sprite_index = spr_susie_enemy_attack; last_sprite = sprite_index; image_index = 5; image_speed = 0; image_xscale = -2; }
     throwing = true;
     throw_t  = 0;
-}, function() { return !throwing && array_length(axes) == 0; }, 20);
+}, function() { return !throwing; });
 add(function()
 {
+    axes_fading = true;
     if (instance_exists(obj_battlebox)) obj_battlebox.state = "closing";
-}, function() { return !instance_exists(obj_battlebox); });
+}, function() { return !instance_exists(obj_battlebox) && array_length(axes) == 0; }, 10);
 add(function()
 {
     ksoul = undefined;
@@ -522,7 +525,7 @@ throw_axe = function()
     var _s = instance_find(obj_susie, 0);
     var _c = scr_box_center();
     array_push(axes, { x: _s.x + 40, y: _c.y, vx: axe_speed_min + random(axe_speed_rand), vy: random_range(-axe_vy_max, axe_vy_max),
-                       ang: 0, spin_t: 0, hit: false, seen: (random(1) < ksoul_dodge) });
+                       ang: 0, spin_t: 0, hit: false, seen: (random(1) < ksoul_dodge), a: 1 });
     audio_play_sound(snd_attack, 1, false);
     with (obj_susie) image_index = 0;
 }
@@ -539,5 +542,6 @@ end_battle_ui = function()
     with (obj_battle_ui_box) instance_destroy();
     with (obj_UI) instance_destroy();
     with (obj_tp_bar) instance_destroy();
+    scr_queen_shield_break();   // (if she DEFENDed this turn, it'd never have broken: the turn never ended)
     global.cutscene_lock = true;
 }

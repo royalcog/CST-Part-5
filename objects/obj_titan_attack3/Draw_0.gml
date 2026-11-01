@@ -61,7 +61,7 @@ if (ksoul != undefined && ksoul.a > 0 && (ksoul.inv <= 0 || (ksoul.inv div 3) mo
 for (var i = 0; i < array_length(axes); i++)
 {
     var _a = axes[i];
-    draw_sprite_ext(spr_axe_bullet, 0, _a.x, _a.y, -axe_scale, axe_scale, _a.ang, c_white, 1);
+    draw_sprite_ext(spr_axe_bullet, 0, _a.x, _a.y, -axe_scale, axe_scale, _a.ang, c_white, _a.a);
 }
 
 // ---- Ralsei's fireshock (it points right as drawn: it's flying left)

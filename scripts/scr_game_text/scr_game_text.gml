@@ -283,7 +283,7 @@ function scr_game_text(_text_id)
 			global.cutscene_lock = true;
 			scr_text("* What The Actual Crap Is Wrong With You", "queen", 19);
 			scr_text("* You Literally Just Threw A Child Off A Building", "queen", 2);
-			scr_text("* Guess You Were Lying About Not Throwing Your Son Off Too", "queen", 20);
+			scr_text("* Guess You Were Lying About Not Wanting To Throw Your Son Off Too", "queen", 20);
 			scr_text("* ...", "lancer", 11);
 			scr_text("* ...", "king", 12);
 		break;
