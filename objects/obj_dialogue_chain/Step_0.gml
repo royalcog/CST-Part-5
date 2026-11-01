@@ -94,14 +94,16 @@ if (dim_phase == 2) // run dialogue
 				curr_box = scr_talkbox_show(sp, txt, ww, ox, oy, fp, cps, _keep_anim, _dim, _animate, _instant);
 				// (the talkbox always nudges its tip 20px left and 40px up, for the old fixed offsets: not wanted here)
 				if (auto_mouth) { curr_box.triangle_xoff = 0; curr_box.triangle_yoff = 0; }
-					// it'd go off the side of the screen: it goes on the other side of their head instead
+				// it could go off the side of the screen: it goes on the other side of their head instead. checked with the widest a
+				// bubble can be (its wrap width), not just this line's text, so every line they say from where they're standing,
+				// facing that way, goes on the same side
 				if (!variable_struct_exists(e, "offx") && instance_exists(curr_box))
 				{
 					with (curr_box)
 					{
 						var _sc  = display_get_gui_width() / camera_get_view_width(view_camera[0]);
 						var _tip = (speaker.x - camera_get_view_x(view_camera[0])) * _sc + mouth_off_x + triangle_xoff;
-						var _wid = _text_w_full + pad_x * 3 + pad_x_mini + 9;   // (the whole bubble, its rounded corners too)
+						var _wid = max(_text_w_full, wrap_w) + pad_x * 3 + pad_x_mini + 9;   // (the whole bubble, its rounded corners too)
 						var _off = flip_talkbox ? (_tip + _wid > display_get_gui_width() - screen_margin) : (_tip - _wid < screen_margin);
 						if (_off) { mouth_off_x = 2 * _head * _sc - mouth_off_x; flip_talkbox = !flip_talkbox; }
 					}

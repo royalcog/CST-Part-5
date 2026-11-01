@@ -272,8 +272,9 @@ add(function()
 add(function()
 {
     with (obj_soul) instance_destroy();
-    // Lancer's shocked, and backs off (straight there, still shocked)
-    pose(obj_lancer, spr_lancer_battle_hurt, 1, 1);
+    // Lancer's shocked (facing his dad), and backs off (straight there, still shocked)
+    var _kd = sign(feet(obj_king).x - feet(obj_lancer).x);
+    pose(obj_lancer, spr_lancer_battle_hurt, 1, (_kd == 0) ? -1 : _kd);
     with (obj_lancer) { image_speed = 0; image_index = 0; }
     walk_to(obj_lancer, lancer_away.x, lancer_away.y, lancer_back_speed);
 }, function() { return susie_swing_done(); }, 10);
