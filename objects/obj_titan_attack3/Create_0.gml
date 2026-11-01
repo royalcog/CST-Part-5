@@ -17,27 +17,40 @@
 
 // ---------------------------------------------------------------- tuning
 // --- 1. Susie snaps ---
-snap_wait        = 90;     // frames after the box is up before her eyes go dark
+snap_wait        = 150;    // frames after the box is up before her eyes go dark (King's spades have started by then)
+open_spade_start = 20;     // King's attack starting: a spade every so often, alternating sides (like attack 1's)...
+open_spade_every = 40;
+open_spade_speed = 4;
+open_spade_off   = 30;     // ...appearing this far outside the box...
+open_spade_glide = 80;     // ...gliding in from this much further out...
+open_spade_glide_time = 20;
+open_spade_wait  = 20;     // ...and waiting there this long before it comes in
+lancer_away      = { x: 1000, y: 300 };   // Lancer backs off here when she snaps (room px: off the screen once the camera's moved)
 shake_ramp       = 90;     // frames she shakes, harder and harder...
 shake_max        = 3;      // ...up to this many px
 // --- 2. at King ---
 king_knock_dx    = -60;    // px King's knocked back by her second Rude Buster
 king_knock_time  = 18;
 susie_run_speed  = 7;      // px per frame
-susie_stop_gap   = 120;    // she stops this far right of King's feet
-susie_stop_y     = 205;    // ...at this height (just behind Lancer, so she doesn't run into him)
+susie_stop_gap   = 110;    // she stops this far right of King's feet
+susie_stop_y     = 205;    // ...at this height
 burst_count      = 7;      // spades in King's burst at her
 burst_gap        = 6;      // frames between them
 burst_speed      = 16;
-burst_push       = 6;      // px each one shoves her back
-jump_time        = 48;     // frames her jump takes
-jump_hop         = 110;    // px high
-fight_cam_x      = 100;    // where the camera ends up for the rest of the fight (room px; the tower's edge is at x 240)
+burst_push       = 4;      // px each one shoves her back
+fight_cam_x      = 60;     // the camera pans here as she runs at him, for the rest of the fight (room px; the tower's
+                           // edge is at x 240). Lancer's off the right of it
 cam_pan_time     = 60;
+strike_gap       = 70;     // she jumps at him and hits him from this far right of his feet...
+strike_time      = 20;
+strike_hop       = 50;
+stagger          = 12;     // ...he reels for this many frames, then knocks her flying over himself
+swing_speed      = 0.5;    // (his chain-throw pose, quick, as the swing)
+fling_time       = 44;
+fling_hop        = 150;
+fling_spin       = 14;     // degrees a frame she tumbles
 susie_land       = { x: 290, y: 230 };   // her feet once she's landed (room px): by the edge
-king_dodge_x     = 750;    // King's feet after he gets out of her way (room px)
-king_dodge_time  = 30;
-king_dodge_hop   = 30;
+land_hold        = 30;     // frames she's down before she's back up
 // --- 3. the chain (Deltarune's obj_chainking / obj_wavechain, type 1: 30fps numbers doubled) ---
 king_toss_speed  = 0.25;   // frames of spr_king_battle_toss a frame (DR's image_speed 0.5)
 king_hold_speed  = 1 / 6;  // spr_king_battle_toss_idle (DR 0.334)
@@ -47,14 +60,17 @@ chain_piece_gap  = 2;      // a link every this many frames (10px apart, like De
 chain_lock_shake = 16;     // px the box shakes when the chain locks onto it (down by 1 a frame)
 wave_height      = 80;     // px King bobs up and down (Deltarune's)
 wave_slow        = 20;     // sin(siner / this): DR's 10 at 30fps
-wave_break_at    = 330;    // ~3/4 of the way in: Susie breaks the box
-wave_spade_every = 36;     // a spade from the left every this many frames (DR 18)
-wave_spade_speed = 2;      // px per frame (DR's hspeed 4)
+wave_break_at    = 520;    // ~3/4 of the way in: Susie breaks the box
+wave_spade_every = 20;     // a spade from the left every this many frames (faster than DR's 18 at 30fps)
+wave_spade_speed = 3;      // px per frame (DR's hspeed 4 is 2)
+rail_every       = 12;     // the two rails of spades along the top and bottom of the box: one on each this often...
+rail_speed       = 3;      // ...this fast (the top one going right, the bottom one left: a solid wall each)...
+rail_off         = 70;     // ...this far up and down from the box's middle (they move with it)
 wave_spade_dmg   = 50;
 // --- 4. Susie's axes at King's SOUL (Deltarune's obj_susieenemy attack 85 + obj_axebullet, mirrored: she's on the left) ---
 axe_start        = 30;     // frames after her box is up before the first
 axe_every        = 54;     // frames between axes (DR 27)
-axe_time         = 360;    // frames her turn lasts (DR's: 180). whatever's still flying then fades out...
+axe_time         = 540;    // frames her turn lasts. whatever's still flying then fades out...
 axe_last_gap     = 60;     // ...and she stops throwing this many frames before the end
 axe_speed_min    = 3.8;    // px per frame out at the start (DR 7.6-9.1)...
 axe_speed_rand   = 0.75;
@@ -75,7 +91,7 @@ grab_speed       = 4;      // px per frame the chain reaches out to her
 fire_speed       = 5;      // px per frame, Ralsei's fireshock
 fire_scale       = 2;
 parry_spade_speed= 20;
-parry_ahead      = 50;     // px right of Lancer's feet his spade meets it (he's between Ralsei and King)
+parry_before     = 120;    // px right of King's feet Lancer's spade meets it (thrown from off the right of the screen)
 spin_hand        = { x: 93, y: 8 };      // the middle of the chain's whirl in spr_king_battle_spin (source px)
 spin_radius      = 85;     // px she swings out from it
 spin_accel       = 0.25;   // degrees per frame per frame...
@@ -217,7 +233,11 @@ spin   = undefined;                         // her swinging round on the chain, 
 ral    = undefined;                         // Ralsei running to the edge
 cam_follow = false;                         // the camera follows Susie as she's thrown
 arrived = 0;                                // (walkers done)
-bust    = noone;                            // the Rude Buster that's flying
+bust    = noone;
+opening = false;                            // King's attack has started (before she snaps)
+open_t  = 0;
+next_side = choose(-1, 1);
+tumble  = false;                            // Susie tumbling through the air// the Rude Buster that's flying
 
 // ---------------------------------------------------------------- the script: steps run one after another
 steps   = [];
@@ -231,22 +251,29 @@ add = function(_run, _until = undefined, _wait = 0)
 }
 wait_frames = function(_n) { add(undefined, undefined, _n); }
 
-// ---- 1. Susie snaps
-wait_frames(snap_wait);
+// ---- 1. King's attack starts... then Susie snaps
+add(function() { opening = true; open_t = 0; }, undefined, snap_wait);
 add(function()
 {
-    // her eyes go dark (facing King), and she starts to shake
+    // her eyes go dark (facing King), and she starts to shake. Lancer backs away
     susie_dark(-1);
     shake = { on: true, t: 0, base: obj_susie.x };
+    scene.pose_flip(obj_lancer, spr_lancer_right_sad, 2);
+    scr_walk_feet_to(obj_lancer, spr_lancer_right_sad, spr_lancer_right_sad, spr_lancer_right_sad, spr_lancer_right_sad,
+        lancer_away.x, lancer_away.y, 2, function()
+        {
+            pose(obj_lancer, spr_lancer_battle, 1, -1);   // (watching, facing left. his frame goes by his HP)
+            with (obj_lancer) image_speed = 0;
+        });
 }, function() { return shake.t >= shake_ramp; });
 add(function()
 {
     shake.on = false;
+    opening = false;
     obj_susie.x = shake.base;
     bust = buster_at(undefined, undefined, true);   // at the box
 }, function() { return !instance_exists(obj_battlebox); });
 add(function() { with (obj_soul) instance_destroy(); }, function() { return susie_swing_done(); }, 10);
-
 // ---- 2. "What the..." (on "the", she Rude Busters him)
 add(function()
 {
@@ -273,7 +300,8 @@ add(function()
     with (obj_susie) { image_speed = 2; anim_loop = true; }
     var _kf = feet(obj_king);
     runner = { tx: _kf.x + susie_stop_gap, ty: susie_stop_y };
-}, function() { return runner == undefined; });
+    scene.pan_cam(fight_cam_x, cam_pan_time);
+}, function() { return runner == undefined && !scene.cam_pan.on; });
 add(function()
 {
     // guards against a burst of his spades: each one shoves her back a little
@@ -292,27 +320,53 @@ add(function()
 }, function() { return array_length(scene.spades) == 0; }, 20);
 add(function()
 {
-    // she jumps at him, he gets out of the way. she lands on the left by the edge, him on the right. the camera follows
+    // she jumps at him...
     pose(obj_susie, spr_susie_clash_jump, 1, -1);
     with (obj_susie) { image_speed = 0; image_index = 0; }
     audio_play_sound(snd_heavyswing, 1, false);
-    var _sf = feet(obj_susie);
-    scene.slide(obj_susie, susie_land.x - _sf.x, susie_land.y - _sf.y, jump_time, jump_hop);
-    scene.pan_cam(fight_cam_x, cam_pan_time);
-    scr_call_after_frames(function()
-    {
-        var _kf = feet(obj_king);
-        scene.slide(obj_king, king_dodge_x - _kf.x, 0, king_dodge_time, king_dodge_hop);
-    }, 8);
-}, undefined, max(jump_time, cam_pan_time) + 4);
+    var _sf = feet(obj_susie), _kf = feet(obj_king);
+    scene.slide(obj_susie, _kf.x + strike_gap - _sf.x, _kf.y - _sf.y, strike_time, strike_hop);
+}, undefined, strike_time + 1);
 add(function()
 {
-    // squared up: her facing right at him, him facing left at her
+    // ...and hits him (he reels)
+    audio_play_sound(snd_slash, 1, false);
     audio_play_sound(snd_impact, 1, false);
-    scr_camera_shake(3, 8);
-    susie_dark(1);
+    scr_camera_shake(5, 10);
+    var _kt = king_target();
+    if (instance_exists(_kt)) _kt.take_hit(buster_damage(), susie_col);
+}, undefined, stagger);
+add(function()
+{
+    // he swings back and knocks her flying, right over himself to the other side of the tower
+    with (obj_king) hurt_timer = 0;   // (cut his hurt flash short: he's swinging)
+    king_play(spr_king_battle_toss, swing_speed, false);
+    audio_play_sound(snd_criticalswing, 1, false);
+    audio_play_sound(snd_impact, 1, false);
+    scr_camera_shake(7, 14);
+    pose(obj_susie, spr_susie_hurt, 1, -1);
+    with (obj_susie) { image_speed = 0; image_index = 0; }
+    var _sf = feet(obj_susie);
+    scene.slide(obj_susie, susie_land.x - _sf.x, susie_land.y - _sf.y, fling_time, fling_hop);
+    tumble = true;
+}, undefined, fling_time + 2);
+add(function()
+{
+    // she hits the ground by the edge. he turns to face her
+    tumble = false;
+    obj_susie.image_angle = 0;
+    audio_play_sound(snd_impact, 1, false);
+    scr_camera_shake(4, 10);
+    pose(obj_susie, spr_susie_landed, -1, 1);
+    with (obj_susie) { image_speed = 0; image_index = 0; }
+    king_stop(spr_king_battle_idle);
     scene.pose_flip(obj_king, spr_king_battle_idle, 2);
     with (obj_king) image_speed = 1;
+}, undefined, land_hold);
+add(function()
+{
+    // back up, squared up to him
+    susie_dark(1);
 }, undefined, 30);
 
 // ---- 3. King's chain attack
@@ -330,7 +384,8 @@ add(function()
     var _c = scr_box_center();
     wave = { phase: "extend", t: 0, hx: _h.x, hy: _h.y, dir: sign(_c.x - _h.x), pieces: [], hist: [], siner: 0,
              king_y: obj_king.y, box_x: _c.x, box_y: _c.y, shake: chain_lock_shake, btimer: 99, fade: 1,
-             snd_extend: audio_play_sound(snd_chain_extend, 5, true), snd_wave: noone, off_x: 0, off_y: 0 };
+             snd_extend: audio_play_sound(snd_chain_extend, 5, true), snd_wave: noone, off_x: 0, off_y: 0,
+             rails: [], rtimer: 99 };
 }, function() { return wave != undefined && wave.t >= wave_break_at; });
 add(function()
 {

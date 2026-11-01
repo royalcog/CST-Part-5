@@ -39,11 +39,13 @@ hurt_sprite = spr_lancer_battle_hurt;   // (Lancer's)
 pre_hurt    = undefined;
 
 // --- Lancer wears down as he's hurt (his Card Castle fight with Susie in Chapter 1): spr_lancer_battle's 3 frames go from
-//     cocky to hanging his head, and once he's low he can't stop trembling ---
-lancer_frame_at  = [0.66, 0.33];  // above the first (fraction of his max HP): frame 0, above the second: frame 1, else 2
-lancer_tremble_at  = 0.33;        // below this he trembles...
-lancer_tremble_max = 2;           // ...up to this many px, more the lower he gets
-lancer_home = undefined;          // where he stands (the shakes go either side of it)
+//     cocky to hanging his head, and once he's low he trembles (1px side to side, like Deltarune's enemy shake). the shakes
+//     only move where he's drawn (obj_lancer's shake_x), not him, so his TALKbox doesn't shake with him ---
+lancer_frame_at    = [0.66, 0.33];  // above the first (fraction of his max HP): frame 0, above the second: frame 1, else 2
+lancer_tremble_at  = 0.33;          // below this he trembles...
+lancer_tremble_px  = 1;             // ...this many px...
+lancer_tremble_every = 4;           // ...flipping sides every this many frames
+tremble_t = 0;
 
 is_tired = function() { return can_spare && !gone && hp <= max_hp * tired_at; }
 is_alive = function() { return !gone; }

@@ -17,6 +17,37 @@ if (step_i < array_length(steps))
     }
 }
 
+// ---------------------------------------------------------------- King's attack starting (before she snaps): spades from
+// alternating sides, each gliding in to just outside the box, waiting a moment, then coming across (like attack 1's)
+if (opening && box_up())
+{
+    open_t++;
+    if (open_t >= open_spade_start && (open_t - open_spade_start) mod open_spade_every == 0)
+    {
+        var _in   = scr_get_box_interior();
+        var _side = next_side;
+        next_side = -next_side;
+        var _lx = (_side < 0) ? _in.x1 - open_spade_off : _in.x2 + open_spade_off;
+        var _ly = random_range(_in.y1 + 10, _in.y2 - 10);
+        var _sx = _lx + _side * open_spade_glide;
+        var _s  = instance_create_depth(_sx, _ly, obj_battlebox.depth - 1, obj_spadebullet);
+        _s.lx = _sx; _s.ly = _ly;
+        _s.dir = -_side;
+        _s.move_speed = open_spade_speed;
+        _s.damage = wave_spade_dmg;
+        _s.image_xscale = _s.dir; _s.image_yscale = 1;
+        _s.travel_out = open_spade_off;
+        _s.approach_to = _lx;
+        _s.approach_frames = open_spade_glide_time;
+        _s.wait_frames = open_spade_wait;
+        _s.show_outside = true;
+        audio_play_sound(snd_swing, 1, false, 0.5);
+    }
+}
+
+// Susie tumbling as she's knocked flying
+if (tumble && instance_exists(obj_susie)) obj_susie.image_angle += fling_spin;
+
 // ---------------------------------------------------------------- Susie shaking in place, harder and harder
 if (shake.on && instance_exists(obj_susie))
 {
@@ -108,6 +139,27 @@ if (wave != undefined)
                 _s.image_xscale = 1; _s.image_yscale = 1;
                 _s.travel_out = 40;
             }
+
+            // the rails: a solid line of spades along the top of the box going right, and along the bottom going left
+            _w.rtimer++;
+            if (_w.rtimer >= rail_every && instance_exists(obj_battlebox))
+            {
+                _w.rtimer = 0;
+                var _in = scr_get_box_interior();
+                var _cy = (_in.y1 + _in.y2) / 2;
+                for (var _r = -1; _r <= 1; _r += 2)
+                {
+                    var _rx = (_r < 0) ? _in.x1 - 20 : _in.x2 + 20;
+                    var _rs = instance_create_depth(_rx, _cy + _r * rail_off, obj_battlebox.depth - 1, obj_spadebullet);
+                    _rs.lx = _rx; _rs.ly = _cy + _r * rail_off;
+                    _rs.dir = -_r;   // (the top one from the left going right, the bottom one from the right going left)
+                    _rs.move_speed = rail_speed;
+                    _rs.damage = wave_spade_dmg;
+                    _rs.image_xscale = _rs.dir; _rs.image_yscale = 1;
+                    _rs.travel_out = 20;
+                    array_push(_w.rails, _rs);
+                }
+            }
         }
         break;
 
@@ -145,6 +197,13 @@ if (wave != undefined)
             obj_battlebox.y = obj_battlebox.box_base_y + (obj_battlebox.raw_height - obj_battlebox.raw_height * obj_battlebox.image_yscale) / 2;
             var _moved = scr_box_center().y - _old;
             with (obj_soul) y += _moved;   // (carried along with it)
+            // the rails move with the box too
+            for (var i = array_length(_w.rails) - 1; i >= 0; i--)
+            {
+                var _rr = _w.rails[i];
+                if (!instance_exists(_rr)) { array_delete(_w.rails, i, 1); continue; }
+                _rr.ly += _moved;
+            }
         }
     }
 }
@@ -263,7 +322,7 @@ if (fire != undefined)
     if (!_fi.parried)
     {
         // Lancer throws the moment his spade would get there just in time
-        var _kx = (instance_exists(obj_lancer) ? feet(obj_lancer).x : feet(obj_king).x) + parry_ahead;
+        var _kx = feet(obj_king).x + parry_before;
         if (!_fi.hit && instance_exists(obj_lancer))
         {
             var _left = (_fi.x - _kx) / max(0.001, -_fi.vx);   // frames till it's there

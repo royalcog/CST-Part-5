@@ -2,5 +2,5 @@
 if (!targeted || kind == "titan" || !instance_exists(body)) exit;
 var _a = 0.35 + 0.25 * sin(current_time / 120);
 gpu_set_fog(true, c_white, 0, 0);
-with (body) draw_sprite_ext(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, c_white, _a);
+with (body) draw_sprite_ext(sprite_index, image_index, x + (variable_instance_exists(id, "shake_x") ? shake_x : 0), y, image_xscale, image_yscale, image_angle, c_white, _a);
 gpu_set_fog(false, c_white, 0, 0);

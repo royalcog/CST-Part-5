@@ -1,0 +1,2 @@
+// drawn shaken to the side when he's hurt / trembling (shake_x), without him actually moving
+draw_sprite_ext(sprite_index, image_index, x + shake_x, y, image_xscale, image_yscale, image_angle, image_blend, image_alpha);
