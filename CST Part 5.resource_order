@@ -929,6 +929,7 @@
     {"name":"spr_ralsei_attack_ready","order":18,"path":"sprites/spr_ralsei_attack_ready/spr_ralsei_attack_ready.yy",},
     {"name":"spr_ralsei_attack_serious","order":40,"path":"sprites/spr_ralsei_attack_serious/spr_ralsei_attack_serious.yy",},
     {"name":"spr_ralsei_attack","order":19,"path":"sprites/spr_ralsei_attack/spr_ralsei_attack.yy",},
+    {"name":"spr_ralsei_battle_idle_mad","order":44,"path":"sprites/spr_ralsei_battle_idle_mad/spr_ralsei_battle_idle_mad.yy",},
     {"name":"spr_ralsei_battle_idle","order":4,"path":"sprites/spr_ralsei_battle_idle/spr_ralsei_battle_idle.yy",},
     {"name":"spr_ralsei_battle_intro_serious","order":42,"path":"sprites/spr_ralsei_battle_intro_serious/spr_ralsei_battle_intro_serious.yy",},
     {"name":"spr_ralsei_battle_intro","order":1,"path":"sprites/spr_ralsei_battle_intro/spr_ralsei_battle_intro.yy",},
