@@ -66,13 +66,13 @@ if (barrage != undefined && !barrage.done)
     {
         var _n = barrage.fired;
         var _chance = (_n < always_block) ? 1 : lerp(1, block_min, (_n - always_block) / max(1, shot_count - 1 - always_block));
-        fire_shot(barrage.spd, random(1) < _chance, false);
+        throw_fire(barrage.spd, random(1) < _chance, false, barrage.gap);
         barrage.fired++;
         barrage.spd  = min(shot_speed_max, barrage.spd * shot_speed_mult);
         barrage.gap  = max(shot_gap_min, barrage.gap * shot_gap_mult);
         barrage.next = barrage.t + barrage.gap;
     }
-    if (barrage.fired >= shot_count && array_length(shots) == 0 && array_length(kspades) == 0) barrage.done = true;
+    if (barrage.fired >= shot_count && barrage.pending == 0 && array_length(shots) == 0 && array_length(kspades) == 0) barrage.done = true;
 }
 
 for (var i = array_length(shots) - 1; i >= 0; i--)

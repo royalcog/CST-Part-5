@@ -263,6 +263,7 @@ function scr_game_text(_text_id)
 			scr_text("* S-Susie...", "ralsei", 58);
 				scr_text_shake(1, string_length("* S-Susie..."));
 			scr_text("* I... I could've...", "ralsei", 28);
+				scr_text_shake(1, string_length("* I... I could've..."));
 		break;
 
 		case "self_16":

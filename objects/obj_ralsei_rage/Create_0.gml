@@ -80,8 +80,9 @@ king_sit_sprite = spr_king_kneel_sad;   // swap in a sitting sprite if you make 
 king_sit_xs     = 2;       // 2 = the sprite's own way, -2 = flipped
 king_sit_shake  = 1;       // px he shakes, sitting there
 // --- 3. the last fireball + Queen's shield ---
-spell_speed    = 0.35;     // frames of spr_ralsei_spell a frame
-spell_frame    = 6;        // the frame it leaves his hand
+throw_sprite   = spr_plat_ralsei_fireball;   // his fireball throw, for every fireball (faces right as drawn)
+throw_frame    = 3;        // the frame the fireball leaves his hand
+throw_speed    = 0.25;     // frames of it a frame (sped up to fit when the throws get quick)
 last_speed     = 6;
 shield_scale   = 1;
 shield_gap     = 14;       // px between King's front and the shield
@@ -122,6 +123,7 @@ king_shake = { on: false, base: 0, amt: 0 };
 music      = noone;
 arrived    = 0;
 last_hit   = false;
+throw_queue = [];          // fireballs waiting to leave his hand: { spd, blocked, shielded }
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -201,6 +203,25 @@ fire_shot = function(_spd, _blocked, _shielded)
     array_push(shots, { x: _h.x, y: _h.y, dir: point_direction(_h.x, _h.y, _k.x, _k.y), spd: _spd, f: 0,
                         blocked: _blocked, flicked: false, shielded: _shielded });
     audio_play_sound(snd_firespell, 1, false, 0.7);
+}
+/// Ralsei throws a fireball: his throw plays, and it leaves his hand on throw_frame. _gap: frames until his next
+/// throw (the animation speeds up to fit inside it)
+throw_fire = function(_spd, _blocked, _shielded, _gap = 999)
+{
+    array_push(throw_queue, { spd: _spd, blocked: _blocked, shielded: _shielded });
+    if (barrage != undefined) barrage.pending++;
+    pose(obj_ralsei, throw_sprite, 2);
+    var _last = sprite_get_number(throw_sprite) - 1;
+    var _as   = max(throw_speed, (_last + 1) / max(1, _gap - 1));
+    play(obj_ralsei, 0, _last, _as, throw_frame, function()
+    {
+        if (array_length(throw_queue) == 0) return;
+        var _q = throw_queue[0];
+        array_delete(throw_queue, 0, 1);
+        fire_shot(_q.spd, _q.blocked, _q.shielded);
+        if (_q.shielded) shield_put();
+        if (barrage != undefined) barrage.pending--;
+    });
 }
 
 // --- King ---
@@ -287,23 +308,24 @@ add(function() { create_textbox("self_19"); }, function() { return !instance_exi
 // ---- 2. the flashback
 add(function()
 {
+    // the screen goes black (in silence)
     fb.target = 1;
+    if (variable_global_exists("music")) audio_stop_sound(global.music);
+}, function() { return fb.a >= 1; }, fb_black_hold);
+add(function()
+{
+    // (under the black) King squares up to Ralsei in his battle idle, then they glow in, with the song
+    scene.pose_flip(obj_king, spr_king_battle_idle, 2);   // his battle sprites face left as drawn
+    king_idle();
+    fb.starget = 1;
     if (fb_song != noone)
     {
-        if (variable_global_exists("music")) audio_stop_sound(global.music);
         music = audio_play_sound(fb_song, 2, true, 0);   // (silent, then fades in)
         audio_sound_gain(music, 1, fb_song_in);
         global.music = music;
         global.song  = { sound: fb_song, beats: 9999 };
         global.song_start = current_time;
     }
-}, function() { return fb.a >= 1; }, fb_black_hold);
-add(function()
-{
-    // (under the black) King squares up to Ralsei in his battle idle, then they fade in
-    scene.pose_flip(obj_king, spr_king_battle_idle, 2);   // his battle sprites face left as drawn
-    king_idle();
-    fb.starget = 1;
 }, function() { return fb.sa >= 1; }, fb_hold);
 add(function() { create_textbox("self_20"); }, function() { return !instance_exists(obj_textbox); }, 20);
 add(function()
@@ -324,7 +346,7 @@ add(function()
 add(function()
 {
     if (music != noone) { audio_stop_sound(music); music = noone; }   // (faded out by now)
-    barrage = { t: 0, next: 0, fired: 0, spd: shot_speed, gap: shot_gap, done: false };
+    barrage = { t: 0, next: 0, fired: 0, pending: 0, spd: shot_speed, gap: shot_gap, done: false };
 }, function() { return barrage.done; }, pause1);
 add(function()
 {
@@ -361,12 +383,7 @@ add(function() { create_textbox("self_21"); }, function() { return !instance_exi
 add(function()
 {
     if (music != noone) { audio_stop_sound(music); music = noone; }
-    pose(obj_ralsei, spr_ralsei_spell, 2);
-    play(obj_ralsei, 0, sprite_get_number(spr_ralsei_spell) - 1, spell_speed, spell_frame, function()
-    {
-        fire_shot(last_speed, false, true);
-        shield_put();
-    });
+    throw_fire(last_speed, false, true);   // (Queen's shield goes up the moment it leaves his hand)
 }, function() { return last_hit; }, 20);
 add(function()
 {
