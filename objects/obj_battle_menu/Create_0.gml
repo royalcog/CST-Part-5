@@ -86,6 +86,7 @@ fight_tp_div_dark = 26;
 // --- tuning: the enemies' turn ---
 rounds              = [];  // { talk: [ { speaker, text }, ... ], attack: function that starts a box attack and returns it }, cycles
 rounds_loop_from    = 0;   // once they've all played, it loops back to this one (so a first round can play only once)
+end_after_turn      = -1;  // >= 0: the battle ends once that enemy turn's over (no win screen; on_win still runs)
 
 /// this turn's round (or undefined)
 cur_round = function()

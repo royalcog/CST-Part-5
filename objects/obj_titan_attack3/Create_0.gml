@@ -125,6 +125,7 @@ vw    = camera_get_view_width(view_camera[0]);
 depth = -5100;   // the chain, the axes and King's SOUL go over the box (-5000)
 
 cam   = function() { return instance_exists(scene) ? scene.cam_x : camera_get_view_x(view_camera[0]); }
+global.titan_battle_cam_x = cam();   // where the camera sits for the battle (the second one goes back here)
 feet  = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
 mid   = function(_o) { return scene.body_mid(_o); }
 king_target = function()
@@ -550,7 +551,11 @@ add(function()
     scene.pan_cam(queen_cam_x, queen_pan_time);
 }, function() { return arrived == 1 && !scene.cam_pan.on; }, 20);
 add(function() { create_textbox("self_18"); }, function() { return !instance_exists(obj_textbox); });
-add(function() { instance_destroy(); });
+add(function()
+{
+    instance_create_depth(0, 0, -9000, obj_ralsei_rage);   // Ralsei's turn: it takes it from here
+    instance_destroy();
+});
 
 // ---------------------------------------------------------------- the pieces' own functions
 
@@ -612,6 +617,11 @@ throw_axe = function()
 /// the battle UI goes (the battle's over: Susie's gone)
 end_battle_ui = function()
 {
+    // remember everyone's HP (the second battle carries on from it, and the inferno takes King down to 1)
+    global.titan_fight_hp = {};
+    with (obj_battle_target) global.titan_fight_hp[$ kind] = hp;
+    global.post_battle_hp = {};
+    with (obj_battle_ui_box) global.post_battle_hp[$ char_name] = { hp: hp, max_hp: max_hp };
     with (obj_dialogue_chain) instance_destroy();
     with (obj_talkbox) instance_destroy();
     with (obj_soul) instance_destroy();

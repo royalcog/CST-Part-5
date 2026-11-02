@@ -627,7 +627,11 @@ switch (state)
     case "turn_end":
         // Queen used her shield this round: it breaks now (like her Chapter 2 shields)
         if (t == 1) scr_queen_shield_break();
-        if (t >= 10 && !instance_exists(obj_queen_shield)) { turn++; state = "turn_start"; t = 0; }
+        if (t >= 10 && !instance_exists(obj_queen_shield))
+        {
+            if (end_after_turn >= 0 && turn >= end_after_turn) { end_battle(); break; }
+            turn++; state = "turn_start"; t = 0;
+        }
     break;
 
     // ---------------------------------------------------------------- won

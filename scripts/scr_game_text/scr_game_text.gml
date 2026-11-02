@@ -287,6 +287,69 @@ function scr_game_text(_text_id)
 			scr_text("* ...", "lancer", 11);
 			scr_text("* ...", "king", 12);
 		break;
+		
+		// ---- Ralsei's up (obj_ralsei_rage opens self_19 to self_23)
+		case "self_19":
+			global.cutscene_lock = true;
+			scr_text("* You...", "ralsei", 27);
+			scr_text("* You deserve to be...", "ralsei", 48);
+			scr_text("* Killed? Executed? Barred from your kingdom?", "king", 4);
+				scr_call_on_page(function() { with (obj_ralsei_rage) scene.pose_flip(obj_king, spr_king_walk_left, 2); }, 1, global.page_number - 1);   // back round to Ralsei
+			scr_text("* Do your worst, Prince.", "king", 5);
+			scr_text("* Nothing you do will bring her back.", "king", 9);
+			scr_text("* I...", "ralsei", 54);
+			scr_text("* ...", "ralsei", 55);
+		break;
+
+		// the flashback: no portrait, just his colour + voice
+		case "self_20":
+			global.cutscene_lock = true;
+			scr_text("* Do you understand what you're doing?", "ralsei", 0, noone, false, true);
+			scr_text("* Do you know the possible consequences?", "ralsei", 0, noone, false, true);
+			scr_text("* All of this... for what?", "ralsei", 0, noone, false, true);
+			scr_text("* If...", "ralsei", 0, noone, false, true);
+			scr_text("* If you're not going to follow what's written...", "ralsei", 0, noone, false, true);
+			scr_text("* ...", "ralsei", 0, noone, false, true);
+			scr_text("* Then you deserve punishment worse than death.", "ralsei", 0, noone, false, true);
+			scr_text("* We've already broken the TP barrier...", "ralsei", 0, noone, false, true);
+			scr_text("* So I can just... do this...", "ralsei", 0, noone, false, true);
+			scr_text("* You...", "ralsei", 0, noone, false, true);
+			scr_text("* ...", "ralsei", 0, noone, false, true);
+		break;
+
+		case "self_21":
+			global.cutscene_lock = true;
+			scr_text("* D...", "lancer", 11);
+			scr_text("* Dad...?", "lancer", 12);
+			scr_text("* ...", "king", 12);
+			scr_text("* I knew you had it in you, you traito-", "king", 10);
+				scr_text_cutoff(string_length("* I knew you had it in you, you traito-"));   // Ralsei's fireball cuts him off
+		break;
+
+		case "self_22":
+			global.cutscene_lock = true;
+			scr_text("* Not Yet", "queen", 2);
+			scr_text("* We Still Have Some Work To Do", "queen", 2);
+			scr_text("* If You Still Want Any Respect", "queen", 2);
+			scr_text("* Watch Him", "queen", 2);
+			scr_text("* If He Moves, Tell Us", "queen", 2);
+			scr_text("* ...", "lancer", 10);
+			scr_text("* Okay.", "lancer", 11);
+				scr_call_on_page(function() { with (obj_ralsei_rage) pose(obj_lancer, spr_lancer_battle, 2); }, 1, global.page_number - 1);
+			scr_text("* He...", "ralsei", 48);
+				scr_call_on_page(function() { with (obj_ralsei_rage) { pose(obj_ralsei, spr_ralsei_right_angry_stomp, 2); obj_ralsei.image_index = sprite_get_number(spr_ralsei_right_angry_stomp) - 1; } }, 1, global.page_number - 1);
+			scr_text("* He needs to pay for...", "ralsei", 27);
+			scr_text("* Susie...", "ralsei", 28);
+			scr_text("* Let's Finish What We Came Up Here To Do", "queen", 2);
+			scr_text("* Then We Will Do What Needs To Be Done", "queen", 19);
+			scr_text("* ...", "ralsei", 36);
+		break;
+
+		case "self_23":
+			global.cutscene_lock = true;
+			scr_text("* Let's end this.", "ralsei", 48);
+			scr_text("* ...for Susie.", "ralsei", 54);
+		break;
 /*
 
 */

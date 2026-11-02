@@ -226,3 +226,103 @@ function scr_titan_round3_talk()
         { speaker: obj_susie,  text: "...", to: obj_king },
     ];
 }
+
+global.titan_battle2_song = sng_chaosguardian;
+
+/// the second Titan battle (Susie's gone): Ralsei & Queen against the Titan, Ralsei in his serious sprites.
+/// one enemy turn (attack 4), then it ends and obj_ralsei_rage.after_battle() takes over
+function scr_titan_battle2_start()
+{
+    with (obj_UI) instance_destroy();
+    instance_create_depth(0, 0, -100, obj_UI);
+
+    // their HP from where the last battle left off
+    var _rhp = 210, _qhp = 1510;
+    if (variable_global_exists("post_battle_hp"))
+    {
+        var _p = global.post_battle_hp;
+        if (variable_struct_exists(_p, "Ralsei")) _rhp = max(1, _p.Ralsei.hp);
+        if (variable_struct_exists(_p, "Queen"))  _qhp = max(1, _p.Queen.hp);
+    }
+    scr_party_init_trio(1, _rhp, _qhp);
+    var _ralsei_box = noone;
+    with (obj_battle_ui_box)
+    {
+        if (char_name == "Susie") instance_destroy();
+        else if (char_name == "Ralsei") { body_idle_sprite = spr_ralsei_battle_idle_mad; _ralsei_box = id; }
+    }
+    obj_UI.active_box = _ralsei_box;
+
+    // centre the two boxes (Ralsei's middle slot + Queen's) on the screen
+    var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;
+    var _left   = obj_UI.target_x + 236 + obj_UI.boxes_x_correction;
+    var _right  = obj_UI.target_x + 460 + obj_UI.boxes_x_correction + sprite_get_width(spr_queenbox_empty) * (52 / 47);
+    var _shift  = _cam_cx - (_left + _right) / 2;
+    obj_UI.target_x   += _shift;
+    obj_UI.onscreen_x += _shift;
+    obj_UI.panel_full_width = true;
+    obj_UI.follow_cam = true;
+    obj_UI.depth = -10002;
+    with (obj_battle_ui_box) depth = -10003;
+
+    // the TP bar's still broken (everything's free), so no bar
+    scr_tp_init();
+    global.tp.broken = true;
+
+    if (variable_global_exists("music")) audio_stop_sound(global.music);
+    global.song  = { sound: global.titan_battle2_song, beats: 9999 };
+    global.music = audio_play_sound(global.titan_battle2_song, 2, true, 1);
+    global.song_start = current_time;
+
+    // just the Titan this time
+    with (obj_battle_target) instance_destroy();
+    var _titan = scr_battle_target_make(obj_titan_reveal, {
+        kind: "titan", enemy_name: "Titan", side: 1, home_y: 0,
+        max_hp: 6000, at: 40, df: 0, rudebuster_mult: 0.5,
+        check_text: "* TITAN - AT 40 DF 800\n* The fear of dark, which appears in many forms."
+    });
+    if (_titan != noone && variable_global_exists("titan_fight_hp") && variable_struct_exists(global.titan_fight_hp, "titan"))
+        _titan.hp = max(1, global.titan_fight_hp.titan);
+
+    with (obj_battle_menu) instance_destroy();
+    with (instance_create_depth(0, 0, -10050, obj_battle_menu))
+    {
+        // no Susie
+        defs[0]    = undefined;
+        members[0] = noone;
+        // Ralsei's serious sprites for this one
+        defs[1].idle        = spr_ralsei_battle_idle_mad;
+        defs[1].ready_fight = spr_ralsei_attack_ready_serious;
+        defs[1].attack      = spr_ralsei_attack_serious;
+        defs[1].defend      = spr_ralsei_defend_serious;
+
+        rounds = [ { talk: [], attack: scr_start_titan_attack4 } ];
+        rounds_loop_from = 0;
+        end_after_turn   = 0;   // over once attack 4's done
+        flavor = [
+            "* The Titan looms over the Castle Top.",
+            "* Ralsei's eyes burn.",
+            "* Queen keeps one eye on King.",
+        ];
+        facing_enabled = true;
+        default_facing = 1;      // at the Titan
+        susie_rescue   = false;
+        auto_mouth     = true;
+        protect_target = noone;
+        on_win = function() { with (obj_ralsei_rage) after_battle(); };
+
+        for (var i = 0; i < 3; i++)
+        {
+            if (defs[i] == undefined) continue;
+            scr_bm_idle(defs[i]);
+            face_member(i, default_facing);
+        }
+    }
+}
+
+/// attack 4: the Ch4 Titan's hands, turning the box as they go (obj_titan_attack4)
+function scr_start_titan_attack4()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack4);
+}
