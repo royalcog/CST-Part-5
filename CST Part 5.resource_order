@@ -600,6 +600,7 @@
     {"name":"sng_flashback","order":5,"path":"sounds/sng_flashback/sng_flashback.yy",},
     {"name":"sng_friends","order":6,"path":"sounds/sng_friends/sng_friends.yy",},
     {"name":"sng_friendship","order":7,"path":"sounds/sng_friendship/sng_friendship.yy",},
+    {"name":"sng_inmemoriam","order":9,"path":"sounds/sng_inmemoriam/sng_inmemoriam.yy",},
     {"name":"sng_kingofchaos","order":2,"path":"sounds/sng_kingofchaos/sng_kingofchaos.yy",},
     {"name":"sng_knightappear","order":8,"path":"sounds/sng_knightappear/sng_knightappear.yy",},
     {"name":"sng_LCP","order":4,"path":"sounds/sng_LCP/sng_LCP.yy",},

@@ -33,7 +33,7 @@ draw_set_valign(fa_top);
 
 // Deltarune measures everything in the panel from its action-box row, which spans its whole 640px screen.
 // ours is centred on a wider screen, so everything below is shifted to the row's left edge (reset at every exit)
-var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0])) : 0;
+var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0]) + panel_ox) : 0;
 matrix_set(matrix_world, matrix_build(_ox, 0, 0, 0, 0, 0, 1, 1, 1));
 
 // Deltarune's UI starts 37px above the panel's top line (_o). GameMaker draws this font 4px higher than Kristal does, hence the +4s

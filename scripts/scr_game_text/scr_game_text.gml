@@ -330,9 +330,12 @@ function scr_game_text(_text_id)
 			global.cutscene_lock = true;
 			scr_text("* Not Yet", "queen", 2);
 			scr_text("* We Still Have Some Work To Do", "queen", 2);
+			scr_text("* ...", "queen", 2);
+			scr_text("* Lancer", "queen", 2);
 			scr_text("* If You Still Want Any Respect", "queen", 2);
 			scr_text("* Watch Him", "queen", 2);
 			scr_text("* If He Moves, Tell Us", "queen", 2);
+				scr_obj_sprite_on_page(obj_lancer, spr_lancer_battle, 1);
 			scr_text("* ...", "lancer", 10);
 			scr_text("* Okay.", "lancer", 11);
 				scr_call_on_page(function() { with (obj_ralsei_rage) pose(obj_lancer, spr_lancer_battle, 2); }, 1, global.page_number - 1);

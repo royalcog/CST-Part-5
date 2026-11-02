@@ -21,6 +21,7 @@ light_down      = 0.0022;  // ...draining when it isn't (DR's middle phases)
 weak_bonus      = 52;
 wibbly_cooldown = 20;      // DR 10: frames between a finger's 3 bullets
 hand_kill_r     = 60;      // a bullet this close to the other hand is gone
+soul_hit_r      = 5;       // px: the SOUL's hitbox for this attack, a circle in its middle (Deltarune's is tiny)
 break_run_sound = noone;   // Deltarune's sound 261 (the rising run when a finger breaks)
 finger_sprite   = spr_titan_battle_finger;
 weak_sprite     = spr_titan_battle_finger_weakspot;
@@ -66,16 +67,23 @@ tween = function(_name, _from, _to, _dur, _type = 0, _mode = "in", _delay = 0)
     array_push(tweens, { name: _name, from: _from, to: _to, dur: max(1, _dur), type: _type, mode: _mode, delay: _delay, t: 0 });
 }
 
-/// does a piece (drawn with _mask at this pose) touch the SOUL? (borrows this instance's own mask for a moment)
+/// does a piece (drawn with _mask at this pose) touch the SOUL's hitbox? (borrows this instance's own mask and
+/// position for a moment, then puts its position back)
 touches = function(_mask, _img, _x, _y, _xs, _ys, _ang)
 {
     if (!instance_exists(obj_soul)) return false;
+    var _ox = x, _oy = y;
+    x = _x;
+    y = _y;
     mask_index   = _mask;
     image_index  = _img;
     image_xscale = _xs;
     image_yscale = _ys;
     image_angle  = _ang;
-    return place_meeting(_x, _y, obj_soul);
+    var _hit = collision_circle(obj_soul.x, obj_soul.y, soul_hit_r, id, true, false) != noone;
+    x = _ox;
+    y = _oy;
+    return _hit;
 }
 
 /// a hand: 0 = Deltarune's hand_1 (yscale -2), 1 = hand_2. its fingers sit at (side, forward) from it

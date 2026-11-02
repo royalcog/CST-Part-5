@@ -87,6 +87,7 @@ fight_tp_div_dark = 26;
 rounds              = [];  // { talk: [ { speaker, text }, ... ], attack: function that starts a box attack and returns it }, cycles
 rounds_loop_from    = 0;   // once they've all played, it loops back to this one (so a first round can play only once)
 end_after_turn      = -1;  // >= 0: the battle ends once that enemy turn's over (no win screen; on_win still runs)
+panel_ox            = 0;   // px the panel's text/lists move right (the 2-box battle's boxes start further left)
 
 /// this turn's round (or undefined)
 cur_round = function()
@@ -427,7 +428,7 @@ tp_bar_target = function()
 /// the middle of _inst's row in the target list (GUI px; the panel's shifted to sit under the boxes)
 row_target = function(_inst)
 {
-    var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0])) : 0;
+    var _ox = instance_exists(obj_UI) ? round(obj_UI.x - 1 + obj_UI.boxes_x_correction - camera_get_view_x(view_camera[0]) + panel_ox) : 0;
     var _e  = enemies();
     var _ri = 0;
     for (var i = 0; i < array_length(_e); i++) if (_e[i] == _inst) _ri = i;

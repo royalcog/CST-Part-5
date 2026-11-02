@@ -255,9 +255,13 @@ function scr_titan_battle2_start()
 
     // centre the two boxes (Ralsei's middle slot + Queen's) on the screen
     var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;
+    var _qw     = sprite_get_width(spr_queenbox_empty) * (52 / 47);
     var _left   = obj_UI.target_x + 236 + obj_UI.boxes_x_correction;
-    var _right  = obj_UI.target_x + 460 + obj_UI.boxes_x_correction + sprite_get_width(spr_queenbox_empty) * (52 / 47);
+    var _right  = obj_UI.target_x + 460 + obj_UI.boxes_x_correction + _qw;
     var _shift  = _cam_cx - (_left + _right) / 2;
+    // (where the 3-box battle put them: the panel's text stays there)
+    var _shift3 = _cam_cx - ((obj_UI.target_x - 1 + obj_UI.boxes_x_correction) + _right) / 2;
+    var _panel_ox = _shift3 - _shift;
     obj_UI.target_x   += _shift;
     obj_UI.onscreen_x += _shift;
     obj_UI.panel_full_width = true;
@@ -299,6 +303,7 @@ function scr_titan_battle2_start()
         rounds = [ { talk: [], attack: scr_start_titan_attack4 } ];
         rounds_loop_from = 0;
         end_after_turn   = 0;   // over once attack 4's done
+        panel_ox = _panel_ox;
         flavor = [
             "* The Titan looms over the Castle Top.",
             "* Ralsei's eyes burn.",

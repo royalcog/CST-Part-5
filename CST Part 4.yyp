@@ -753,6 +753,7 @@
     {"id":{"name":"sng_flashback","path":"sounds/sng_flashback/sng_flashback.yy",},},
     {"id":{"name":"sng_friends","path":"sounds/sng_friends/sng_friends.yy",},},
     {"id":{"name":"sng_friendship","path":"sounds/sng_friendship/sng_friendship.yy",},},
+    {"id":{"name":"sng_inmemoriam","path":"sounds/sng_inmemoriam/sng_inmemoriam.yy",},},
     {"id":{"name":"sng_kingofchaos","path":"sounds/sng_kingofchaos/sng_kingofchaos.yy",},},
     {"id":{"name":"sng_knightappear","path":"sounds/sng_knightappear/sng_knightappear.yy",},},
     {"id":{"name":"sng_LCP","path":"sounds/sng_LCP/sng_LCP.yy",},},

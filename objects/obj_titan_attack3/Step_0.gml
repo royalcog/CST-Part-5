@@ -307,7 +307,6 @@ if (grab != undefined && instance_exists(obj_king) && instance_exists(obj_susie)
         scr_camera_shake(6, 16);
         pose(obj_susie, spr_susie_shocked, 1, 1);
         with (obj_susie) { image_speed = 0; image_index = 0; }
-        ssoul = { scale: 0 };
     }
 }
 if (ssoul != undefined) ssoul.scale = min(1, ssoul.scale + 0.1);
