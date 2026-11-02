@@ -19,7 +19,11 @@ stomp_sound    = snd_impact;
 stomp_gain     = 0.5;
 talk_gap       = 30;       // frames between a textbox closing and the next thing
 // --- 2. the flashback ---
-fb_song        = noone;    // a song for the flashback (sng_flashback?), noone: silence
+fb_song        = sng_inmemoriam;   // fades in over the black, fades out as the wheel of fire comes out
+fb_song_in     = 3000;     // ms it takes to fade in
+fb_song_out    = 2000;     // ms it takes to fade out (from when the wheel starts)
+fb_black_hold  = 180;      // frames of black before Ralsei & King glow in (the song coming in)
+fb_end_black   = 180;      // frames of black after they've faded out, before the scene fades back in
 fb_black_time  = 30;       // frames the screen takes to go black...
 fb_sil_time    = 30;       // ...then the silhouettes fade in over this many
 fb_hold        = 40;       // frames of them before the lines start
@@ -287,12 +291,13 @@ add(function()
     if (fb_song != noone)
     {
         if (variable_global_exists("music")) audio_stop_sound(global.music);
-        music = audio_play_sound(fb_song, 2, true);
+        music = audio_play_sound(fb_song, 2, true, 0);   // (silent, then fades in)
+        audio_sound_gain(music, 1, fb_song_in);
         global.music = music;
         global.song  = { sound: fb_song, beats: 9999 };
         global.song_start = current_time;
     }
-}, function() { return fb.a >= 1; });
+}, function() { return fb.a >= 1; }, fb_black_hold);
 add(function()
 {
     // (under the black) King squares up to Ralsei in his battle idle, then they fade in
@@ -303,11 +308,12 @@ add(function()
 add(function() { create_textbox("self_20"); }, function() { return !instance_exists(obj_textbox); }, 20);
 add(function()
 {
-    // the wheel of fire
+    // the wheel of fire (the song fades out as it comes)
     pose(obj_ralsei, spr_ralsei_spellready, 2);
     with (obj_ralsei) { image_speed = 0.15; anim_loop = true; }
     wheel = { k: 0, ek: 0, rot: 0, embrace: false, gone: false };
     audio_play_sound(wheel_sound, 1, false);
+    if (music != noone) audio_sound_gain(music, 0, fb_song_out);
 }, function() { return wheel.k >= 1; }, wheel_hold);
 add(function()
 {
@@ -317,6 +323,7 @@ add(function()
 }, function() { return wheel.gone; }, embrace_hold);
 add(function()
 {
+    if (music != noone) { audio_stop_sound(music); music = noone; }   // (faded out by now)
     barrage = { t: 0, next: 0, fired: 0, spd: shot_speed, gap: shot_gap, done: false };
 }, function() { return barrage.done; }, pause1);
 add(function()
@@ -333,8 +340,7 @@ add(function()
 add(function()
 {
     fb.starget = 0;
-    if (music != noone) audio_sound_gain(music, 0, fb_out_time / 60 * 2000);
-}, function() { return fb.sa <= 0; });
+}, function() { return fb.sa <= 0; }, fb_end_black);
 add(function()
 {
     // (under the black) King sitting, shaking. Ralsei already back to angry. Lancer shocked, facing his dad
