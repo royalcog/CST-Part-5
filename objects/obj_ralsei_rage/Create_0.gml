@@ -97,6 +97,30 @@ battle_pan_time = 120;
 party_walk      = 3;
 draw_speed      = 0.25;    // frames of spr_ralsei_battle_intro_serious a frame
 ready_hold      = 30;
+// --- 5. after the battle: 999 isn't enough ---
+fight_song      = global.titan_battle2_song;   // keeps playing through it (noone: silence), fades at the low point
+fight_song_out  = 3000;    // ms it fades out over at the low point
+boost_speed     = 0.25;    // frames of spr_ralsei_spell a frame (the stat boost)
+boost_frame     = 6;
+hit_speed       = 0.3;     // frames of spr_ralsei_attack a frame (the first 999)
+hit_frame       = 4;       // the frame it lands
+heal_delay      = 30;      // frames after a hit the Titan heals it back
+heal_col        = make_color_rgb(150, 90, 255);   // its "+999"
+titan_aim       = { x: 330, y: 190 };   // its chest, from its top-left (where the numbers come out)
+push_speed      = 0.45;    // his attacks when he pushes harder: this fast to start...
+push_speed_mult = 1.25;    // ...each one faster...
+push_gap        = 40;      // ...with this many frames between...
+push_gap_min    = 12;      // ...shrinking to this
+push_end_wait   = 40;      // frames after the last one before the next thing
+strike_dark     = 0.55;    // the screen darkens this much as the Titan winds up...
+strike_windup   = 70;      // ...for this many frames
+knock_dx        = 70;      // px he's knocked back (left)
+queen_guard_dx  = 80;      // Queen stands this far right of Ralsei's feet
+pressure_hits   = 3;       // the Titan hammers her shield this many times...
+pressure_gap    = 50;      // ...this many frames apart...
+pressure_dmg    = 100;     // ...cracking it (it has 400: it holds)...
+pressure_push   = 14;      // ...each one shoving her back this far
+low_hold        = 120;     // frames at the low point before the Freedom Gang part
 
 // ---------------------------------------------------------------- refs + state
 scene = instance_find(obj_tower_top_scene, 0);
@@ -124,6 +148,12 @@ music      = noone;
 arrived    = 0;
 last_hit   = false;
 throw_queue = [];          // fireballs waiting to leave his hand: { spd, blocked, shielded }
+push        = undefined;   // Ralsei pushing harder: { left, t, spd, gap }
+pressure    = undefined;   // the Titan hammering Queen's shield: { left, t }
+rage_tint   = 0;           // the red glow over him while he pushes
+rage_target = 0;
+titan_glow  = 0;           // the dark glow on the Titan when it heals
+blasts      = [];          // animated explosions: { spr, x, y, f, fspd, s }
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -269,15 +299,178 @@ shield_put = function()
 shield_face = function() { return shield.x + sprite_get_width(spr_queen_shield) * shield_scale * 0.4; }
 
 /// the battle's over (obj_battle_menu.on_win)
+/// the battle's over (obj_battle_menu.on_win): out of his serious sprites, then the rest of the scene
 after_battle = function()
 {
-    pose(obj_ralsei, scene.ralsei_right, 2);   // out of his serious sprites
+    swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
     with (obj_queen) image_speed = 0;
-    global.dialogue_self = 23;                 // (so Z doesn't reopen an old line)
-    global.cutscene_lock = false;
-    // the next cutscene goes here
+    global.cutscene_lock = true;
+    if (fight_song != noone)
+    {
+        music = audio_play_sound(fight_song, 2, true);
+        global.music = music;
+        global.song  = { sound: fight_song, beats: 9999 };
+        global.song_start = current_time;
+    }
+    part_two();
 }
 
+// ---------------------------------------------------------------- after the battle: helpers
+/// a straight sprite swap (Ralsei's battle sprites are all lined up by their origins)
+swap = function(_o, _spr, _spd)
+{
+    for (var k = array_length(anims) - 1; k >= 0; k--) if (anims[k].o == instance_find(_o, 0)) array_delete(anims, k, 1);
+    with (_o) { sprite_index = _spr; image_index = 0; image_speed = _spd; anim_loop = true; if (variable_instance_exists(id, "last_sprite")) last_sprite = _spr; }
+}
+battle_cam = function() { return variable_global_exists("titan_battle_cam_x") ? global.titan_battle_cam_x : scene.cam_battle_x; }
+titan = function() { return instance_find(obj_titan_reveal, 0); }
+/// a number (or word) off the Titan's chest
+titan_popup = function(_txt, _col)
+{
+    var _t = titan();
+    if (_t == noone) return;
+    var _p = scr_trigger_damage_popup(_t, _txt, _col, _col, titan_aim.x + irandom_range(-14, 14), titan_aim.y + irandom_range(-10, 10), noone);
+    if (_p != noone) _p.depth = -9100;
+}
+titan_hit = function(_amt)
+{
+    var _t = titan();
+    if (_t != noone) _t.hurt_red = 1;
+    audio_play_sound(snd_damagetaken, 1, false);
+    scr_camera_shake(2, 6);
+    titan_popup(_amt, dmg_col);
+}
+titan_heal = function(_amt)
+{
+    audio_play_sound(snd_heal, 1, false, 1, 0, 0.6);
+    titan_glow = 1;
+    titan_popup("+" + string(_amt), heal_col);
+}
+/// a word over someone's head
+head_popup = function(_o, _txt, _col, _snd)
+{
+    var _i = instance_find(_o, 0);
+    var _top = (sprite_get_bbox_top(_i.sprite_index) - sprite_get_yoffset(_i.sprite_index)) * _i.image_yscale - 6;
+    var _p = scr_trigger_damage_popup(_i, _txt, _col, _col, 0, _top, _snd);
+    if (_p != noone) _p.depth = -9100;
+}
+/// Ralsei turns all his stats to 999
+stat_boost = function()
+{
+    swap(obj_ralsei, spr_ralsei_spell, 0);
+    play(obj_ralsei, 0, sprite_get_number(spr_ralsei_spell) - 1, boost_speed, boost_frame, function()
+    {
+        audio_play_sound(snd_power, 1, false);
+        audio_play_sound(snd_heal, 1, false);
+        var _r = instance_find(obj_ralsei, 0);
+        var _f = instance_create_depth(0, 0, _r.depth - 1, obj_heal_flash);
+        _f.target      = obj_ralsei;
+        _f.duration    = 40;
+        _f.flash_color = c_yellow;
+        head_popup(obj_ralsei, "999", c_yellow, noone);
+    });
+}
+/// Ralsei hits the Titan for 999... and it heals it straight back
+ralsei_hit = function(_spd)
+{
+    swap(obj_ralsei, spr_ralsei_attack, 0);
+    play(obj_ralsei, 0, sprite_get_number(spr_ralsei_attack) - 1, _spd, hit_frame, function()
+    {
+        audio_play_sound(snd_attack, 1, false);
+        titan_hit(999);
+        scr_call_after_frames(function() { titan_heal(999); }, heal_delay);
+    });
+}
+/// he keeps hitting it, faster and faster: _n hits
+push_start = function(_n, _spd)
+{
+    rage_target = 1;
+    push = { left: _n, t: push_gap, spd: _spd, gap: push_gap };
+}
+add_blast = function(_spr, _x, _y, _fspd, _s)
+{
+    array_push(blasts, { spr: _spr, x: _x, y: _y, f: 0, fspd: _fspd, s: _s, ang: irandom(360) });
+}
+/// the Titan strikes Ralsei down
+titan_strike = function()
+{
+    var _m = mid(obj_ralsei);
+    add_blast(spr_titan_shockwave_bullet_explosion, _m.x, _m.y, 0.25, 1);
+    add_blast(spr_finisher_explosion, _m.x, _m.y, 0.3, 0.6);
+    audio_play_sound(snd_explosion, 1, false);
+    audio_play_sound(snd_hurt, 1, false);
+    scr_camera_shake(10, 30);
+    fb.flash = 1;
+    fb.target = 0;
+    rage_target = 0;
+    push = undefined;
+    swap(obj_ralsei, spr_ralsei_defeat, 0);
+    scene.slide(obj_ralsei, -knock_dx, 0, 24, 30);
+    head_popup(obj_ralsei, "DOWN", c_red, noone);
+}
+
+/// the steps after the battle (added onto the end of the script, so it carries on from here)
+part_two = function()
+{
+    add(undefined, undefined, 40);
+    add(function() { create_textbox("self_24"); }, function() { return !instance_exists(obj_textbox); }, 20);
+    add(function() { stat_boost(); }, function() { return anim_done(obj_ralsei); }, 30);
+    add(function()
+    {
+        swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
+        create_textbox("self_25");
+    }, function() { return !instance_exists(obj_textbox); }, 30);
+
+    // 999... and it heals right back
+    add(function() { ralsei_hit(hit_speed); }, function() { return anim_done(obj_ralsei); });
+    add(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }, undefined, heal_delay + 50);
+    add(function() { create_textbox("self_26"); }, function() { return !instance_exists(obj_textbox); }, 20);
+
+    // over to King + Lancer, and back
+    add(function() { scene.pan_cam(cam_rage_x, cam_pan_time); }, function() { return !scene.cam_pan.on; }, 20);
+    add(function() { create_textbox("self_27"); }, function() { return !instance_exists(obj_textbox); }, 30);
+    add(function() { scene.pan_cam(battle_cam(), cam_pan_time); }, function() { return !scene.cam_pan.on; }, 20);
+
+    // he pushes harder
+    add(function() { push_start(2, push_speed); }, function() { return push == undefined; });
+    add(function() { create_textbox("self_28"); }, function() { return !instance_exists(obj_textbox); }, 10);
+    add(function() { push_start(3, push_speed * push_speed_mult * push_speed_mult); }, function() { return push == undefined; });
+
+    // the Titan strikes back
+    add(function()
+    {
+        fb.target = strike_dark;
+        audio_play_sound(snd_titan_petrify_blast, 1, false);
+    }, undefined, strike_windup);
+    add(function() { titan_strike(); }, undefined, 60);
+
+    // Queen gets in front of him, shield up
+    add(function()
+    {
+        arrived = 0;
+        var _rf = feet(obj_ralsei);
+        scr_walk_feet_to(obj_queen, spr_queen_walk_left_unhappy, spr_queen_walk_right_unhappy, spr_queen_walk_up, spr_queen_walk_down_unhappy,
+            _rf.x + queen_guard_dx, _rf.y, queen_walk * 2, function() { arrived = 1; });
+    }, function() { return arrived == 1; });
+    add(function()
+    {
+        pose(obj_queen, spr_queen_walk_right_unhappy, 2);
+        with (obj_queen_shield) instance_destroy();
+        with (instance_create_depth(0, 0, 0, obj_queen_shield)) { section_every = 1; side = 1; side_k = 1; follow_queen(); }
+    }, function() { return instance_exists(obj_queen_shield) && obj_queen_shield.state == "up"; }, 20);
+    add(function() { pressure = { left: pressure_hits, t: 0 }; }, function() { return pressure == undefined; }, 30);
+
+    // the low point
+    add(function()
+    {
+        if (music != noone) audio_sound_gain(music, 0, fight_song_out);
+    }, undefined, low_hold);
+    add(function()
+    {
+        if (music != noone) { audio_stop_sound(music); music = noone; }
+        // ---- the Freedom Gang comes in here
+    });
+}
 // ---------------------------------------------------------------- the script: steps run one after another
 steps   = [];
 step_i  = 0;

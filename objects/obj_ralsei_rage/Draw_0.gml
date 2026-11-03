@@ -91,6 +91,31 @@ if (shield != undefined)
     }
 }
 
+// ---------------------------------------------------------------- after the battle
+// the red glow pulsing over Ralsei while he pushes
+if (rage_tint > 0)
+{
+    gpu_set_blendmode(bm_add);
+    sil(obj_ralsei, col_ralsei_red, rage_tint * (0.25 + 0.15 * sin(t * 0.3)));
+    gpu_set_blendmode(bm_normal);
+}
+// the Titan's dark glow as it heals
+if (titan_glow > 0 && instance_exists(obj_titan_reveal))
+{
+    var _tx = obj_titan_reveal.x + titan_aim.x, _ty = obj_titan_reveal.y + titan_aim.y;
+    gpu_set_blendmode(bm_add);
+    draw_set_alpha(titan_glow);
+    draw_circle_colour(_tx, _ty, 140, heal_col, c_black, false);
+    draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
+}
+// explosions
+for (var i = 0; i < array_length(blasts); i++)
+{
+    var _b = blasts[i];
+    draw_sprite_ext(_b.spr, floor(_b.f), _b.x, _b.y, _b.s, _b.s, _b.ang, c_white, 1);
+}
+
 // ---------------------------------------------------------------- the inferno's flash
 if (fb.flash > 0)
 {

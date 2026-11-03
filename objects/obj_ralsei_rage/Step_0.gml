@@ -176,3 +176,65 @@ if (shield != undefined)
     shield.bob  += shield_bob_speed;
     shield.flash = max(0, shield.flash - 0.15);
 }
+
+// ---------------------------------------------------------------- after the battle
+// stay drawn just in front of everyone (the shield over King, the red glow on Ralsei)
+if (fb.sa <= 0 && shield != undefined)
+{
+    var _d = 0;
+    with (obj_king)   _d = min(_d, depth);
+    with (obj_lancer) _d = min(_d, depth);
+    with (obj_ralsei) _d = min(_d, depth);
+    with (obj_queen)  _d = min(_d, depth);
+    depth = _d - 1;
+}
+rage_tint  = approach(rage_tint, rage_target, 0.03);
+titan_glow = max(0, titan_glow - 0.02);
+
+// Ralsei pushing harder: hit after hit, each faster
+if (push != undefined && anim_done(obj_ralsei))
+{
+    push.t++;
+    if (push.t == 1) swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
+    if (push.left <= 0)
+    {
+        if (push.t >= push_end_wait) push = undefined;
+    }
+    else if (push.t >= push.gap)
+    {
+        ralsei_hit(push.spd);
+        push.left--;
+        push.t   = 0;
+        push.spd = push.spd * push_speed_mult;
+        push.gap = max(push_gap_min, push.gap * 0.7);
+    }
+}
+
+// the Titan hammering Queen's shield
+if (pressure != undefined)
+{
+    pressure.t++;
+    if (pressure.left > 0 && pressure.t >= pressure_gap)
+    {
+        pressure.t = 0;
+        pressure.left--;
+        with (obj_queen_shield)
+        {
+            var _cx = x + sprite_get_width(spr_queen_shield) * scale / 2;
+            var _cy = y - sprite_get_height(spr_queen_shield) * scale / 2;
+            other.add_blast(spr_titan_shockwave_bullet_explosion, _cx, _cy, 0.3, 0.6);
+            hit(other.pressure_dmg);
+        }
+        audio_play_sound(snd_impact, 1, false);
+        scr_camera_shake(5, 12);
+        scene.slide(obj_queen, -pressure_push, 0, 10, 0);
+    }
+    if (pressure.left <= 0 && pressure.t >= pressure_gap) pressure = undefined;
+}
+
+// explosions
+for (var i = array_length(blasts) - 1; i >= 0; i--)
+{
+    blasts[i].f += blasts[i].fspd;
+    if (blasts[i].f >= sprite_get_number(blasts[i].spr)) array_delete(blasts, i, 1);
+}
