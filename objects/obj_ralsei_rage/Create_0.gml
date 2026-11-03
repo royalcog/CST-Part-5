@@ -106,7 +106,7 @@ hit_frame       = 4;       // the frame it lands
 heal_delay      = 30;      // frames after a hit the Titan heals it back
 heal_col        = make_color_rgb(150, 90, 255);   // its "+999"
 titan_aim       = { x: 330, y: 190 };   // its chest, from its top-left (where the numbers come out)
-titan_face      = { x: 330, y: 120 };   // its face (its lasers come from here, and Pink's bomb hits it)
+titan_face      = { x: 344, y: 286 };   // the star on its face, from its top-left (its lasers come out of it, and Pink's bomb hits it)
 push_speed      = 0.45;    // his attacks when he pushes harder: this fast to start...
 push_speed_mult = 1.25;    // ...each one faster...
 push_gap        = 40;      // ...with this many frames between...
@@ -114,6 +114,7 @@ push_gap_min    = 12;      // ...shrinking to this
 push_end_wait   = 40;      // frames after the last one before the next thing
 // the standoff: his fire beam against its laser
 beam_frame       = 6;      // the frame of spr_ralsei_spell he holds while he fires
+beam_hand        = { x: 14, y: -36 };   // his raised hand in that frame, in spr_ralsei_spell's px from its origin
 beam_grow        = 25;     // frames each beam takes to reach the middle
 beam_laser_delay = 10;     // frames after his starts that the Titan answers
 clash_time       = 240;    // frames they push against each other...
@@ -121,6 +122,8 @@ clash_k0         = 0.5;    // ...where they meet (0 = his hand, 1 = its face) to
 clash_k1         = 0.25;   // ...slowly pushed back toward him
 clash_wobble     = 0.03;
 tired_time       = 70;     // frames his beam takes to sputter out (and its laser with it)
+spent_shake      = 1;      // px Ralsei shakes, holding his defend after the standoff...
+spent_shake_gap  = 3;      // ...every this many frames
 fire_beam_w      = 14;     // px wide (his)
 laser_w         = 12;      // px wide (its)
 laser_col_glow  = make_colour_rgb(90, 40, 200);
@@ -175,8 +178,8 @@ hug_speed       = 0.15;    // the hug plays once and holds
 // everyone fans out for the 6-person battle (screen px from the battle's camera: their feet). front row (the ones who
 // take hits) nearer the Titan, back row behind; staggered so nobody's on top of anybody, all on the floor and above the boxes
 fan_spots = {
-    queen:   { x: 470, y: 132 }, ralsei: { x: 385, y: 188 }, susie:   { x: 470, y: 250 },
-    jevil:   { x: 185, y: 128 }, pink:   { x: 265, y: 192 }, spamton: { x: 150, y: 250 },
+    queen:   { x: 470, y: 140 }, ralsei: { x: 480, y: 192 }, susie:   { x: 480, y: 252 },
+    jevil:   { x: 345, y: 100 }, pink:   { x: 350, y: 175 }, spamton: { x: 350, y: 250 },
 };
 fan_walk        = 3;
 tp_time         = 12;      // Jevil teleports: frames to vanish (and to come back)...
@@ -225,6 +228,8 @@ menu        = noone;       // the battle menu (while it's running our scripts)
 gang_arrived = 0;
 jevil_tp     = undefined;   // { t, x, y, moved, back }
 ysort        = false;
+lancer_watch = false;   // Lancer's turned round (shocked) at Susie: he turns back once she's past him
+ralsei_shake = undefined;   // { base, t } while he's shaking in his defend
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -436,7 +441,14 @@ ralsei_normal = function()
         defs[i].defend      = spr_ralsei_defend;
     }
     var _b = ralsei_box();
-    if (_b != noone) _b.body_idle_sprite = spr_ralsei_battle_idle;
+    if (_b != noone) with (_b)
+    {
+        body_idle_sprite = spr_ralsei_battle_idle;
+        defending = false;   // (his DEFEND from before attack 4 is over)
+        // a hurt flash still going would put back the pose he was in when he got hit (his serious defend): cancel it
+        if (body_hurt_timer > 0 && instance_exists(body_inst)) body_inst.x = body_saved.x;
+        body_hurt_timer = 0;
+    }
     swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
 }
 /// Ralsei turns all his stats to 999
@@ -478,11 +490,12 @@ add_blast = function(_spr, _x, _y, _fspd, _s)
 }
 
 // --- the standoff ---
-/// where his fire comes out (his hand, held out in his spell)
+/// where his fire comes out (his hand, raised in his spell)
 beam_from = function()
 {
-    var _m = mid(obj_ralsei);
-    return { x: _m.x + 24 * sign(obj_ralsei.image_xscale), y: _m.y - 6 };
+    var _r = instance_find(obj_ralsei, 0);
+    if (_r == noone) return { x: 0, y: 0 };
+    return { x: _r.x + beam_hand.x * _r.image_xscale, y: _r.y + beam_hand.y * _r.image_yscale };
 }
 /// where the two beams meet right now
 beam_clash = function()
@@ -603,6 +616,7 @@ laser_start = function()
 /// it lands: he's down to 1 HP, on his knee
 laser_hit = function()
 {
+    if (ralsei_shake != undefined) { with (obj_ralsei) x = other.ralsei_shake.base; ralsei_shake = undefined; }
     audio_play_sound(snd_explosion, 1, false);
     audio_play_sound(snd_hurt, 1, false);
     scr_camera_shake(10, 30);
@@ -695,6 +709,9 @@ susie_enter = function()
     arrived = 0;
     scr_walk_feet_to(obj_susie, spr_susie_walk_left_neutral, spr_susie_walk_right_neutral, spr_susie_walk_up, spr_susie_walk_down_neutral,
         _cx + susie_to_dx, susie_y, susie_walk, function() { arrived = 1; });
+    // Lancer turns round at her, shocked
+    pose(obj_lancer, spr_lancer_battle_hurt, -2);
+    lancer_watch = true;
 }
 ralsei_run_to_susie = function()
 {

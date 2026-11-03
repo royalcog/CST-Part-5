@@ -325,11 +325,21 @@ if (beam != undefined && beam.phase != "done")
                 beam.phase = "done";
                 if (beam_loop != noone) { audio_stop_sound(beam_loop); beam_loop = noone; }
                 rage_target = 0;
-                swap(obj_ralsei, spr_ralsei_spellready, 0);   // spent
+                // spent: he puts his defend up and holds it, shaking
+                swap(obj_ralsei, spr_ralsei_defend, 0);
+                play(obj_ralsei, 0, sprite_get_number(spr_ralsei_defend) - 1, 0.25);
+                ralsei_shake = { base: obj_ralsei.x, t: 0 };
             }
         }
         break;
     }
+}
+
+// ---------------------------------------------------------------- Ralsei shaking in his defend (until the laser)
+if (ralsei_shake != undefined)
+{
+    ralsei_shake.t++;
+    with (obj_ralsei) x = other.ralsei_shake.base + ((other.ralsei_shake.t div other.spent_shake_gap) mod 2 == 0 ? other.spent_shake : -other.spent_shake);
 }
 
 // ---------------------------------------------------------------- its laser at him
@@ -372,5 +382,17 @@ if (bomb != undefined && !bomb.done)
         scr_camera_shake(8, 20);
         var _ti = titan();
         if (_ti != noone) _ti.hurt_red = 1;
+    }
+}
+
+// ---------------------------------------------------------------- Lancer turns back round once Susie's walked past him
+if (lancer_watch)
+{
+    var _li = instance_find(obj_lancer, 0), _si = instance_find(obj_susie, 0);
+    if (_li == noone || _si == noone) lancer_watch = false;
+    else if (scr_get_feet(_si).x > scr_get_feet(_li).x)
+    {
+        lancer_watch = false;
+        pose(obj_lancer, spr_lancer_battle_hurt, 2);   // (still shocked)
     }
 }

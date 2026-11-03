@@ -146,9 +146,11 @@ if (laser != undefined)
     gpu_set_blendmode(bm_normal);
     if (laser.phase != "charge")
     {
+        // from the star, through him, off the far side of the screen
         var _m = mid(obj_ralsei);
         var _d = point_direction(_tf.x, _tf.y, _m.x, _m.y);
-        draw_laser(_tf.x, _tf.y, _m.x + lengthdir_x(80, _d), _m.y + lengthdir_y(80, _d), laser_w * 1.4, laser.a);
+        var _l = point_distance(_tf.x, _tf.y, _m.x, _m.y) + vw + vh;
+        draw_laser(_tf.x, _tf.y, _tf.x + lengthdir_x(_l, _d), _tf.y + lengthdir_y(_l, _d), laser_w * 1.4, laser.a);
     }
 }
 // ---------------------------------------------------------------- Pink's bomb

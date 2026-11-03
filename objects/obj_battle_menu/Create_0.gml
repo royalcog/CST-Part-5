@@ -206,9 +206,9 @@ choose_facing  = 1;        // (which way the one choosing faced before the curso
 // --- the panel can show a party member's face next to the text (Deltarune's in-battle lines) ---
 text_face   = undefined;   // { spr, img } while someone's talking in the panel
 say_indent  = 112;         // px the text moves right to make room for the face
-face_cx     = 58;          // the face column's middle, from the panel's left (GUI px): portraits are top-centre
-face_top    = 14;          // the face's top, from the panel's top
-face_h      = 80;          // portraits are scaled to about this tall, like the textbox's (Ralsei's & Lancer's a bit bigger)
+face_cx     = 60;          // the face column's middle, from the panel's left (GUI px): portraits are top-centre
+face_top    = 12;          // the face's top, from the panel's top
+face_h      = 90;          // portraits are scaled to the textbox's size (Ralsei's & Lancer's a bit bigger, like there)
 
 voice_delay = 1;           // like the textbox: a blip every few frames while letters are typing (snd_delay)
 voice_count = 0;
