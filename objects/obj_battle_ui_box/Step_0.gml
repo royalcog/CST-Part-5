@@ -26,3 +26,7 @@ if (body_hurt_timer > 0)
         }
     }
 }
+
+// the active box draws over the others (with two rows of boxes it can overlap the one above it)
+if (instance_exists(obj_UI) && obj_UI.active_box == id) depth = -10006;
+else if (depth == -10006) depth = -10003;

@@ -116,6 +116,49 @@ for (var i = 0; i < array_length(blasts); i++)
     draw_sprite_ext(_b.spr, floor(_b.f), _b.x, _b.y, _b.s, _b.s, _b.ang, c_white, 1);
 }
 
+// ---------------------------------------------------------------- the standoff
+if (beam != undefined && beam.phase != "done")
+{
+    var _a  = beam_from(), _tf = titan_pt(titan_face), _c = beam_clash();
+    // its laser, from its face in to where they meet
+    draw_laser(_tf.x, _tf.y, lerp(_tf.x, _c.x, beam.lk), lerp(_tf.y, _c.y, beam.lk), laser_w * (0.6 + 0.4 * beam.la), beam.la);
+    // his fire, from his hand out to where they meet
+    draw_fire_beam(_a.x, _a.y, lerp(_a.x, _c.x, beam.fk), lerp(_a.y, _c.y, beam.fk), fire_beam_w * max(0.15, beam.fw), beam.fa);
+    // where they meet
+    if (beam.phase != "grow")
+    {
+        gpu_set_blendmode(bm_add);
+        draw_set_alpha(0.6 * beam.fa);
+        draw_circle_colour(_c.x, _c.y, 26 + sin(t * 0.5) * 6, c_white, c_black, false);
+        draw_set_alpha(1);
+        gpu_set_blendmode(bm_normal);
+    }
+}
+// ---------------------------------------------------------------- its laser at him (its face glows, then it fires)
+if (laser != undefined)
+{
+    var _tf = titan_pt(titan_face);
+    var _gk = (laser.phase == "charge") ? laser.t / laser_charge : 1;
+    gpu_set_blendmode(bm_add);
+    draw_set_alpha(_gk * laser.a);
+    draw_circle_colour(_tf.x, _tf.y, 20 + 40 * _gk, c_white, c_black, false);
+    draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
+    if (laser.phase != "charge")
+    {
+        var _m = mid(obj_ralsei);
+        var _d = point_direction(_tf.x, _tf.y, _m.x, _m.y);
+        draw_laser(_tf.x, _tf.y, _m.x + lengthdir_x(80, _d), _m.y + lengthdir_y(80, _d), laser_w * 1.4, laser.a);
+    }
+}
+// ---------------------------------------------------------------- Pink's bomb
+if (bomb != undefined && !bomb.done)
+{
+    var _k  = bomb.t / bomb_time;
+    var _bx = lerp(bomb.sx, bomb.tx, _k), _by = lerp(bomb.sy, bomb.ty, _k) - sin(_k * pi) * bomb_arc;
+    draw_sprite_ext(spr_pinkbomb, 0, _bx, _by, 2, 2, bomb.rot, c_white, 1);
+}
+
 // ---------------------------------------------------------------- the inferno's flash
 if (fb.flash > 0)
 {

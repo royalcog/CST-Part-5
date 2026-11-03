@@ -53,16 +53,20 @@ var _bar = function(_x, _y, _w, _k, _bg, _fg, _txt, _txt_col)
 if (state == "fight")
 {
     // the two dark blue lines between the rows (Chapter 2 on)
-    draw_set_colour(col_attack_lines);
-    draw_rectangle(79, _o + 78,  79 + 223, _o + 79,  false);
-    draw_rectangle(79, _o + 116, 79 + 223, _o + 117, false);
+    if (party_n <= 3)
+    {
+        draw_set_colour(col_attack_lines);
+        draw_rectangle(79, _o + 78,  79 + 223, _o + 79,  false);
+        draw_rectangle(79, _o + 116, 79 + 223, _o + 117, false);
+    }
 
     for (var i = 0; i < array_length(fighters); i++)
     {
         var _f  = fighters[i];
         var _b  = members[_f.who];
         var _fc = fb_cols[$ names[_f.who]];
-        var _y1 = panel_y + 4 + _f.who * (fb_row_h + fb_row_gap), _y2 = _y1 + fb_row_h;
+        var _rh = (party_n > 3) ? floor((118 - 8) / party_n) - fb_row_gap : fb_row_h;   // 6 people: thinner rows
+        var _y1 = panel_y + 4 + _f.who * (_rh + fb_row_gap), _y2 = _y1 + _rh;
         var _ym = (_y1 + _y2) / 2;
 
         // their face (out of their party box's art), centred on x 21
@@ -70,8 +74,8 @@ if (state == "fight")
         {
             var _r  = variable_struct_exists(fb_icon_rects, names[_f.who]) ? fb_icon_rects[$ names[_f.who]]
                     : [_b.icon_rect_x, _b.icon_rect_y, _b.icon_rect_w, _b.icon_rect_h];
-            var _is = fb_head_h / _r[3];
-            draw_sprite_part_ext(_b.sprite_frame, 0, _r[0], _r[1], _r[2], _r[3], fb_head_x - _r[2] * _is / 2, _ym - fb_head_h / 2, _is, _is, c_white, 1);
+            var _is = min(fb_head_h, _rh) / _r[3];
+            draw_sprite_part_ext(_b.sprite_frame, 0, _r[0], _r[1], _r[2], _r[3], fb_head_x - _r[2] * _is / 2, _ym - _r[3] * _is / 2, _is, _is, c_white, 1);
         }
         // the box: a 2px outline in their dark colour (flashes white when Z's pressed)
         var _bx2 = fb_box_x + fb_box_w;
@@ -96,7 +100,7 @@ if (state == "fight")
             draw_rectangle(_f.x, _y1 - 1, _f.x + fb_bolt_w - 1, _y2 + 1, false);
         else if (_f.phase != "miss" && _f.alpha > 0)
         {
-            var _cx = _f.x + fb_bolt_w / 2, _hw = fb_bolt_w / 2 * _f.scale, _hh = (fb_row_h / 2 + 1) * _f.scale;
+            var _cx = _f.x + fb_bolt_w / 2, _hw = fb_bolt_w / 2 * _f.scale, _hh = (_rh / 2 + 1) * _f.scale;
             draw_set_colour(_f.col);
             draw_set_alpha(_f.alpha);
             draw_rectangle(_cx - _hw, _ym - _hh, _cx + _hw - 1, _ym + _hh, false);
@@ -188,16 +192,19 @@ if ((state == "choose" && mode != "cmd") || _protect_list)
 
         case "ally":
         {
-            // Deltarune: names at 80, a 101x16 HP bar at 400
-            for (var i = 0; i < 3; i++)
+            // Deltarune: names at 80, a 101x16 HP bar at 400. (6 people: two columns of 3)
+            for (var i = 0; i < party_n; i++)
             {
                 var _b = members[i];
                 if (_b == noone) continue;
-                var _y = _row(i);
+                var _two = party_n > 3;
+                var _y   = _row(_two ? i mod 3 : i);
+                var _nx  = _two ? 80 + (i div 3) * 290 : 80;
+                var _bx  = _two ? _nx + 140 : 400;
                 draw_set_colour(c_white);
-                draw_text_transformed(80, _y, names[i], name_scale, name_scale, 0);
-                _bar(400, _y + 1, 101, max(0, _b.hp / _b.max_hp), col_hp_bg, col_hp, "", c_white);
-                if (i == pick_i) _heart(55, _y);
+                draw_text_transformed(_nx, _y, names[i], name_scale, name_scale, 0);
+                _bar(_bx, _y + 1, 101, max(0, _b.hp / _b.max_hp), col_hp_bg, col_hp, "", c_white);
+                if (i == pick_i) _heart(_nx - 25, _y);
             }
         }
         break;
@@ -211,10 +218,18 @@ if ((state == "choose" && mode != "cmd") || _protect_list)
 // someone talking in the panel: their face on the left, the text moved over next to it
 draw_set_colour(c_white);
 var _tx0 = text_x;
-if (text_face != undefined)
+if (text_face != undefined && text_face.spr != -1)
 {
-    draw_sprite_ext(text_face.spr, text_face.img, face_x + sprite_get_xoffset(text_face.spr) * face_scale,
-        panel_y + face_y + sprite_get_yoffset(text_face.spr) * face_scale, face_scale, face_scale, 0, c_white, 1);
+    var _fs = variable_struct_exists(text_face, "scale") ? text_face.scale : face_scale;
+    var _fi = text_face.img;
+    // a portrait that talks (Pink's): its frames go round while the letters type out
+    if (variable_struct_exists(text_face, "anim") && text_face.anim && !text_done()) _fi = floor(t / 6) mod sprite_get_number(text_face.spr);
+    var _fx = face_x + sprite_get_xoffset(text_face.spr) * _fs;
+    var _fy = panel_y + face_y + sprite_get_yoffset(text_face.spr) * _fs;
+    // her tail, swishing on its own loop
+    if (variable_struct_exists(text_face, "tail"))
+        draw_sprite_ext(text_face.tail, floor(t / 4) mod sprite_get_number(text_face.tail), _fx, _fy, _fs, _fs, 0, c_white, 1);
+    draw_sprite_ext(text_face.spr, _fi, _fx, _fy, _fs, _fs, 0, c_white, 1);
     _tx0 += say_indent;
 }
 var _shown = floor(text_shown);

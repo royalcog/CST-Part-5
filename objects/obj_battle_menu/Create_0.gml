@@ -49,7 +49,7 @@ read_time = 30;   // frames an action's text stays up once it's typed out (Z ski
 //     off to the right. Z hits the bolt closest to the target (bolts on the exact same spot both go); it bursts and
 //     they swing right away. let it get 2 steps past the target: MISS. the rows are squashed to fit our panel ---
 fb_head_x     = 21;     // their face's centre
-fb_icon_rects = { Queen: [23, 15, 25, 26] };   // face rects (box-art px) when the box's own one crops it (Queen's did)
+fb_icon_rects = { Queen: [23, 15, 25, 26], Pink: [23, 15, 25, 26], Jevil: [23, 15, 25, 26], Spamton: [23, 15, 25, 26] };
 fb_box_x      = 80;     // the box's left edge...
 fb_box_w      = 123;    // ...and width (Deltarune: 15 bolt steps + 3)
 fb_row_h      = 36;     // Deltarune's (the panel's tall enough now)
@@ -71,6 +71,9 @@ fb_cols = {
     Susie:  { target: make_color_rgb(234, 121, 200), box: make_color_rgb(128, 0, 128), dmg: make_color_rgb(204, 153, 204) },
     Ralsei: { target: make_color_rgb(181, 230, 29),  box: make_color_rgb(0, 128, 0),   dmg: make_color_rgb(128, 255, 128) },
     Queen:  { target: make_color_rgb(111, 209, 255), box: make_color_rgb(55, 104, 127), dmg: make_color_rgb(183, 232, 255) },
+    Pink:    { target: make_color_rgb(255, 138, 144), box: make_color_rgb(128, 69, 72),  dmg: make_color_rgb(255, 196, 199) },
+    Jevil:   { target: make_color_rgb(109, 109, 192), box: make_color_rgb(54, 54, 96),   dmg: make_color_rgb(182, 182, 230) },
+    Spamton: { target: make_color_rgb(251, 242, 54),  box: make_color_rgb(125, 121, 27), dmg: make_color_rgb(253, 249, 170) },
 };
 fb_flash = 0;           // every box flashes white when Z's pressed
 fb_fade  = 0;
@@ -88,6 +91,7 @@ rounds              = [];  // { talk: [ { speaker, text }, ... ], attack: functi
 rounds_loop_from    = 0;   // once they've all played, it loops back to this one (so a first round can play only once)
 end_after_turn      = -1;  // >= 0: the battle ends once that enemy turn's over (no win screen; on_win still runs)
 panel_ox            = 0;   // px the panel's text/lists move right (the 2-box battle's boxes start further left)
+turn_end_hook       = undefined;   // function(_turn) at the end of each enemy turn: true if it's taken over (a script)
 
 /// this turn's round (or undefined)
 cur_round = function()
@@ -105,11 +109,12 @@ box_y_nudge         = -16;    // px up (negative) or down, so there's room under
 box_depth           = -5000;
         on_win = function() { with (obj_tower_top_scene) after_battle(); };   // weapons away, regroup, self_8
 
-// --- the party: boxes and who can do what, Susie / Ralsei / Queen ---
-names   = ["Susie", "Ralsei", "Queen"];
-members = array_create(3, noone);
-defs    = array_create(3, undefined);
-for (var i = 0; i < 3; i++)
+// --- the party: boxes and who can do what. Susie / Ralsei / Queen, unless it's made with party_names set ---
+names   = variable_instance_exists(id, "party_names") ? party_names : ["Susie", "Ralsei", "Queen"];
+party_n = array_length(names);
+members = array_create(party_n, noone);
+defs    = array_create(party_n, undefined);
+for (var i = 0; i < party_n; i++)
 {
     var _n = names[i];
     with (obj_battle_ui_box) if (char_name == _n) other.members[i] = id;
@@ -122,6 +127,9 @@ cells = {
     Susie:  { xs: [64, 204, 344, 484, 624], y: 160, w: 124, h: 104 },
     Ralsei: { xs: [61, 201, 341, 481, 621], y: 157, w: 124, h: 104 },
     Queen:  { xs: [26, 61, 96, 131, 166],   y: 48,  w: 31,  h: 26  },
+    Pink:    { xs: [26, 61, 96, 131, 166],   y: 48,  w: 31,  h: 26  },
+    Jevil:   { xs: [26, 61, 96, 131, 166],   y: 48,  w: 31,  h: 26  },
+    Spamton: { xs: [26, 61, 96, 131, 166],   y: 48,  w: 31,  h: 26  },
 };
 
 depth = -10050;   // its Draw GUI goes over the party boxes
@@ -130,9 +138,9 @@ depth = -10050;   // its Draw GUI goes over the party boxes
 state    = "turn_start";
 t        = 0;
 turn     = 0;
-actions  = array_create(3, undefined);
+actions  = array_create(party_n, undefined);
 chooser  = 0;
-cmd_i    = array_create(3, 0);
+cmd_i    = array_create(party_n, 0);
 mode     = "cmd";          // cmd / list / enemy / ally (what the chooser's looking at)
 list     = [];             // the spells / ACTs / items being shown
 list_i   = 0;
@@ -263,7 +271,7 @@ set_text = function(_s, _face = undefined)
     text_face = _face;
     voice_count = voice_delay;   // the first letter blips straight away
     var _wrap = text_wrap;
-    if (_face != undefined) text_wrap -= say_indent;   // less room next to the face
+    if (_face != undefined && _face.spr != -1) text_wrap -= say_indent;   // less room next to the face (no face: all of it)
     text = _s; text_shown = 0; text_pause = 0; text_lines = layout_text(_s);
     text_wrap = _wrap;
 }
@@ -495,7 +503,7 @@ start_protect = function()
 /// first party member from _from on who can still act (-1: nobody)
 next_chooser = function(_from)
 {
-    for (var i = _from; i < 3; i++) if (alive_member(i)) return i;
+	for (var i = _from; i < party_n; i++) if (alive_member(i)) return i;
     return -1;
 }
 /// the last one before _from who's picked something (-1: nobody)
@@ -587,7 +595,7 @@ start_execute = function()
     if (instance_exists(obj_UI)) obj_UI.active_box = noone;
     queue = [];
     fighters = [];
-    for (var i = 0; i < 3; i++)
+    for (var i = 0; i < party_n; i++)
     {
         var _a = actions[i];
         if (_a == undefined || _a.kind == "defend") continue;
@@ -798,7 +806,7 @@ apply = function(_a)
 victory_pose = function()
 {
     victory_posed = [];
-    for (var i = 0; i < 3; i++)
+    for (var i = 0; i < party_n; i++)
     {
         var _d = defs[i];
         if (_d == undefined || !variable_struct_exists(_d, "victory")) continue;
@@ -832,7 +840,7 @@ end_battle = function()
     t = 0;
 
     // back to idle, except whoever's holding their victory pose (they hold it until whatever's next takes over)
-    for (var i = 0; i < 3; i++)
+    for (var i = 0; i < party_n; i++)
     {
         if (defs[i] == undefined) continue;
         if (variable_instance_exists(id, "victory_posed") && array_contains(victory_posed, defs[i].obj)) continue;

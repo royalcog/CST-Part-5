@@ -238,3 +238,95 @@ for (var i = array_length(blasts) - 1; i >= 0; i--)
     blasts[i].f += blasts[i].fspd;
     if (blasts[i].f >= sprite_get_number(blasts[i].spr)) array_delete(blasts, i, 1);
 }
+
+// ---------------------------------------------------------------- the standoff: his fire against its laser
+if (beam != undefined && beam.phase != "done")
+{
+    beam.t++;
+    switch (beam.phase)
+    {
+        case "grow":
+            beam.fk = min(1, beam.fk + 1 / beam_grow);
+            if (beam.t >= beam_laser_delay) beam.lk = min(1, beam.lk + 1 / beam_grow);
+            if (beam.fk >= 1 && beam.lk >= 1)
+            {
+                beam.phase = "clash";
+                beam.t = 0;
+                audio_play_sound(snd_impact, 1, false);
+                scr_camera_shake(4, 16);
+            }
+        break;
+
+        case "clash":
+        {
+            var _p = min(1, beam.t / clash_time);
+            beam.k = lerp(clash_k0, clash_k1, _p * _p) + sin(beam.t * 0.15) * clash_wobble;   // pushed back toward him
+            var _c = beam_clash(), _a = beam_from();
+            if (beam.t mod 3 == 0) add_bit(spr_plat_smallfire, _c.x, _c.y, random_range(-4, 4), random_range(-4, 2), random_range(0.8, 1.6), -0.01, irandom_range(12, 22), true);
+            if (beam.t mod 5 == 0) { var _r = random(1); add_bit(spr_plat_smallfire, lerp(_a.x, _c.x, _r), lerp(_a.y, _c.y, _r), random_range(-1, 1), random_range(-2, -0.5), random_range(0.5, 1), -0.01, irandom_range(10, 18), true); }
+            if (beam.t mod 20 == 0) audio_play_sound(snd_firespell, 1, false, 0.4);
+            if (beam.t mod 12 == 0) scr_camera_shake(1, 6);
+            if (beam.t >= clash_time) { beam.phase = "tired"; beam.t = 0; }
+        }
+        break;
+
+        case "tired":   // his beam sputters out, and its laser with it
+        {
+            var _q = min(1, beam.t / tired_time);
+            beam.fw = 1 - _q;
+            beam.fa = 1 - _q;
+            beam.la = 1 - _q;
+            if (beam.t >= tired_time)
+            {
+                beam.phase = "done";
+                if (beam_loop != noone) { audio_stop_sound(beam_loop); beam_loop = noone; }
+                rage_target = 0;
+                swap(obj_ralsei, spr_ralsei_spellready, 0);   // spent
+            }
+        }
+        break;
+    }
+}
+
+// ---------------------------------------------------------------- its laser at him
+if (laser != undefined)
+{
+    laser.t++;
+    switch (laser.phase)
+    {
+        case "charge":
+            if (laser.t >= laser_charge)
+            {
+                laser.phase = "fire";
+                laser.t = 0;
+                audio_play_sound(snd_chargeshot_fire, 1, false);
+                laser_hit();
+            }
+        break;
+        case "fire":
+            if (laser.t >= laser_hold) { laser.phase = "fade"; laser.t = 0; }
+        break;
+        case "fade":
+            laser.a = 1 - laser.t / laser_fade;
+            if (laser.t >= laser_fade) laser = undefined;
+        break;
+    }
+}
+
+// ---------------------------------------------------------------- Pink's bomb
+if (bomb != undefined && !bomb.done)
+{
+    bomb.t++;
+    bomb.rot += 14;
+    if (bomb.t >= bomb_time)
+    {
+        bomb.done = true;
+        add_blast(spr_pinkbomb_explosion, bomb.tx, bomb.ty, 0.5, 5);
+        add_blast(spr_finisher_explosion, bomb.tx, bomb.ty, 0.3, 0.5);
+        audio_play_sound(snd_bomb, 1, false);
+        audio_play_sound(snd_explosion, 1, false);
+        scr_camera_shake(8, 20);
+        var _ti = titan();
+        if (_ti != noone) _ti.hurt_red = 1;
+    }
+}

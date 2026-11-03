@@ -57,3 +57,4 @@ stretch_cap_l_x  = 1;   // left border starts at this source column
 stretch_cap_r_x  = 845; // right border starts at this source column
 stretch_cap_w    = 8;   // border width, in source px
 stretch_fill_col = 20;  // a plain interior column (border lines top/bottom, black middle)
+takes_hits = true;   // false: never picked when the SOUL's hit (the 6-person battle's back row)

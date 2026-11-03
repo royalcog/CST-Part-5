@@ -354,45 +354,6 @@ function scr_game_text(_text_id)
 			scr_text("* Let's end this.", "ralsei", 48);
 			scr_text("* ...for Susie.", "ralsei", 54);
 		break;
-		
-		// ---- after the second Titan battle (obj_ralsei_rage opens self_24 to self_28)
-		case "self_24":
-			global.cutscene_lock = true;
-			scr_text("* Why Don't You Like", "queen", 2);
-			scr_text("* Use Your Fire Magic", "queen", 0);
-			scr_text("* Magic does less damage against the Titan...", "ralsei", 53);
-			scr_text("* Then Increase Your Stats", "queen", 2);
-			scr_text("* ...", "ralsei", 36);
-		break;
-
-		case "self_25":
-			global.cutscene_lock = true;
-			scr_text("* Sick", "queen", 27);
-		break;
-
-		case "self_26":
-			global.cutscene_lock = true;
-			scr_text("* ...Why isn't it working?", "ralsei", 52);
-			scr_text("* It's...", "ralsei", 53);
-			scr_text("* Do I need more???", "ralsei", 32);
-			scr_text("* No Idea", "queen", 18);
-		break;
-
-		// the cutaway to King + Lancer
-		case "self_27":
-			global.cutscene_lock = true;
-			scr_text("* Lancer. Help your father up.", "king", 3);
-				scr_call_on_page(function() { with (obj_ralsei_rage) king_shake.amt = 3; }, 1, global.page_number - 1);   // he tries to get up
-			scr_text("* ...Don't move, Dad.", "lancer", 11);
-				scr_call_on_page(function() { with (obj_ralsei_rage) { pose(obj_lancer, spr_lancer_battle, 2); scene.slide(obj_lancer, 10, 0, 10, 4); king_shake.amt = king_sit_shake; } }, 1, global.page_number - 1);
-		break;
-
-		case "self_28":
-			global.cutscene_lock = true;
-			scr_text("* If I just... keep going...", "ralsei", 54);
-			scr_text("* Ralsei Your Hands Are Shaking", "queen", 2);
-			scr_text("* I'm FINE.", "ralsei", 27);
-		break;
 /*
 
 */

@@ -300,9 +300,13 @@ function scr_titan_battle2_start()
         defs[1].attack      = spr_ralsei_attack_serious;
         defs[1].defend      = spr_ralsei_defend_serious;
 
-        rounds = [ { talk: [], attack: scr_start_titan_attack4 } ];
-        rounds_loop_from = 0;
-        end_after_turn   = 0;   // over once attack 4's done
+        rounds = [
+            { talk: [], attack: scr_start_titan_attack4 },
+            { talk: [], attack: scr_start_titan_attack5 },
+        ];
+        rounds_loop_from = 1;
+        // after each enemy turn obj_ralsei_rage takes over (attack 4: the stat boost, attack 5: everything after)
+        turn_end_hook = function(_turn) { var _r = false; with (obj_ralsei_rage) _r = on_turn_end(_turn); return _r; };
         panel_ox = _panel_ox;
         flavor = [
             "* The Titan looms over the Castle Top.",
@@ -314,7 +318,6 @@ function scr_titan_battle2_start()
         susie_rescue   = false;
         auto_mouth     = true;
         protect_target = noone;
-        on_win = function() { with (obj_ralsei_rage) after_battle(); };
 
         for (var i = 0; i < 3; i++)
         {
@@ -330,4 +333,110 @@ function scr_start_titan_attack4()
 {
     var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
     return instance_create_depth(0, 0, _d, obj_titan_attack4);
+}
+
+/// attack 5: Titan Spawn attack 1 again, twice as long; halfway, the box breaks and it goes whole-screen (obj_titan_attack5)
+function scr_start_titan_attack5()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack5);
+}
+
+/// all six boxes: the front row (Susie, Ralsei, Queen) in the usual spots, the back row (Pink, Jevil, Spamton) a row
+/// above them. the back row doesn't take hits
+function scr_party_init_six(_susie_hp, _ralsei_hp, _queen_hp)
+{
+    scr_party_init_trio(_susie_hp, _ralsei_hp, _queen_hp);
+    var _all = [];
+    for (var i = 0; i < array_length(global.party); i++) array_push(_all, global.party[i]);
+    var _back = function(_name, _hp, _body, _hurt, _idle, _x, _frame, _attack, _col)
+    {
+        return {
+            name: _name, hp: _hp, max_hp: _hp, body: _body, body_hurt_sprite: _hurt, body_idle_sprite: _idle,
+            box_offset_x: _x, box_offset_y: -62,   // a row above Queen's (-10): her box's top half (52px) higher
+            sprite_frame: _frame, hurt_frame: _frame,
+            frame_scale: 52 / 47, divider_y: 47,
+            bar_offset_x: 139, bar_offset_y: 30, bar_width: 76, bar_height: 9,
+            bar_fill_color: _col,
+            hp_current_x: 170, hp_max_x: 185, hp_text_offset_y: 17,
+            hurt_flash_time: 20,
+            attack_frame: _attack,
+            icon_rect_x: 19, icon_rect_y: 16, icon_rect_w: 20, icon_rect_h: 23, hurt_icon_scale: 1
+        };
+    };
+    array_push(_all, _back("Pink",    7000, obj_mewmew,  spr_mewmew_shocked_right_corrupted, spr_mewmew_idle_corrupted, -19, spr_pinkbox_empty,    spr_pinkbox_attack_empty,    make_color_rgb(255, 138, 144)));
+    array_push(_all, _back("Jevil",   3500, obj_jevil,   spr_jevil_tired,                    spr_jevil_right_neutral,   229, spr_jevilbox_empty,   spr_jevilbox_attack_empty,   make_color_rgb(109, 109, 192)));
+    array_push(_all, _back("Spamton", 600,  obj_spamton, spr_spamton_hurt,                   spr_spamton_right,         477, spr_spamtonbox_empty, spr_spamtonbox_attack_empty, make_color_rgb(251, 242, 54)));
+    scr_party_init(_all);
+    with (obj_battle_ui_box) if (char_name == "Pink" || char_name == "Jevil" || char_name == "Spamton") takes_hits = false;
+}
+
+global.titan_battle3_song = sng_chaosguardian;   // (a placeholder: the 6-person battle gets its own song)
+
+/// everyone's back: the 6-person Titan battle (obj_ralsei_rage starts it once they've readied up).
+/// front row (they take the hits): Susie, Ralsei, Queen. back row: Pink, Jevil, Spamton
+function scr_titan_battle3_start()
+{
+    // HP: Ralsei & Queen carry on from their boxes, Susie from before she fell. the Titan carries on too
+    var _hp = { Susie: 290, Ralsei: 210, Queen: 1510 };
+    with (obj_battle_ui_box) if (variable_struct_exists(_hp, char_name)) _hp[$ char_name] = max(1, hp);
+    if (variable_global_exists("post_battle_hp") && variable_struct_exists(global.post_battle_hp, "Susie"))
+        _hp.Susie = max(1, global.post_battle_hp.Susie.hp);
+    var _thp = 6000;
+    with (obj_battle_target) if (kind == "titan") _thp = hp;
+
+    with (obj_UI) instance_destroy();
+    instance_create_depth(0, 0, -100, obj_UI);
+    scr_party_init_six(_hp.Susie, _hp.Ralsei, _hp.Queen);
+    obj_UI.active_box = noone;
+
+    // the front row centred on the screen, like the 3-person battle (the back row's lined up over it)
+    var _cam_cx = camera_get_view_x(view_camera[0]) + camera_get_view_width(view_camera[0]) / 2;
+    var _left   = obj_UI.target_x - 1 + obj_UI.boxes_x_correction;
+    var _right  = obj_UI.target_x + 460 + obj_UI.boxes_x_correction + sprite_get_width(spr_queenbox_empty) * (52 / 47);
+    var _shift  = _cam_cx - (_left + _right) / 2;
+    obj_UI.target_x   += _shift;
+    obj_UI.onscreen_x += _shift;
+    obj_UI.panel_full_width = true;
+    obj_UI.follow_cam = true;
+    obj_UI.depth = -10002;
+    with (obj_battle_ui_box) depth = -10003;
+
+    scr_tp_init();
+    global.tp.broken = true;
+
+    if (variable_global_exists("music")) audio_stop_sound(global.music);
+    global.song  = { sound: global.titan_battle3_song, beats: 9999 };
+    global.music = audio_play_sound(global.titan_battle3_song, 2, true, 1);
+    global.song_start = current_time;
+
+    with (obj_battle_target) instance_destroy();
+    var _titan = scr_battle_target_make(obj_titan_reveal, {
+        kind: "titan", enemy_name: "Titan", side: 1, home_y: 0,
+        max_hp: 6000, at: 40, df: 0, rudebuster_mult: 0.5,
+        check_text: "* TITAN - AT 40 DF 800\n* The fear of dark, which appears in many forms."
+    });
+    if (_titan != noone) _titan.hp = max(1, _thp);
+
+    with (obj_battle_menu) instance_destroy();
+    with (instance_create_depth(0, 0, -10050, obj_battle_menu, { party_names: ["Susie", "Ralsei", "Queen", "Pink", "Jevil", "Spamton"] }))
+    {
+        rounds = [ { talk: [], attack: undefined } ];   // (placeholder: this battle's attacks go here)
+        rounds_loop_from = 0;
+        flavor = [
+            "* The Freedom Gang stands together.",
+            "* Susie cracks her knuckles.",
+            "* Spamton is [Thrilled] to be here.",
+        ];
+        facing_enabled = true;
+        default_facing = 1;
+        susie_rescue   = false;
+        auto_mouth     = true;
+        for (var i = 0; i < party_n; i++)
+        {
+            if (defs[i] == undefined) continue;
+            scr_bm_idle(defs[i]);
+            face_member(i, default_facing);
+        }
+    }
 }

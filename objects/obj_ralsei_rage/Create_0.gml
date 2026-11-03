@@ -97,9 +97,8 @@ battle_pan_time = 120;
 party_walk      = 3;
 draw_speed      = 0.25;    // frames of spr_ralsei_battle_intro_serious a frame
 ready_hold      = 30;
-// --- 5. after the battle: 999 isn't enough ---
-fight_song      = global.titan_battle2_song;   // keeps playing through it (noone: silence), fades at the low point
-fight_song_out  = 3000;    // ms it fades out over at the low point
+//  5. in the battle: after attack 4 (script_a: the stat boost), attack 5, then script_b (999 isn't enough, the standoff,
+//     Pink's bomb, the Freedom Gang, Susie's back) and the 6-person battle (scr_titan_battle3_start)
 boost_speed     = 0.25;    // frames of spr_ralsei_spell a frame (the stat boost)
 boost_frame     = 6;
 hit_speed       = 0.3;     // frames of spr_ralsei_attack a frame (the first 999)
@@ -107,20 +106,63 @@ hit_frame       = 4;       // the frame it lands
 heal_delay      = 30;      // frames after a hit the Titan heals it back
 heal_col        = make_color_rgb(150, 90, 255);   // its "+999"
 titan_aim       = { x: 330, y: 190 };   // its chest, from its top-left (where the numbers come out)
+titan_face      = { x: 330, y: 120 };   // its face (its lasers come from here, and Pink's bomb hits it)
 push_speed      = 0.45;    // his attacks when he pushes harder: this fast to start...
 push_speed_mult = 1.25;    // ...each one faster...
 push_gap        = 40;      // ...with this many frames between...
 push_gap_min    = 12;      // ...shrinking to this
 push_end_wait   = 40;      // frames after the last one before the next thing
-strike_dark     = 0.55;    // the screen darkens this much as the Titan winds up...
-strike_windup   = 70;      // ...for this many frames
-knock_dx        = 70;      // px he's knocked back (left)
+// the standoff: his fire beam against its laser
+beam_frame       = 6;      // the frame of spr_ralsei_spell he holds while he fires
+beam_grow        = 25;     // frames each beam takes to reach the middle
+beam_laser_delay = 10;     // frames after his starts that the Titan answers
+clash_time       = 240;    // frames they push against each other...
+clash_k0         = 0.5;    // ...where they meet (0 = his hand, 1 = its face) to start...
+clash_k1         = 0.25;   // ...slowly pushed back toward him
+clash_wobble     = 0.03;
+tired_time       = 70;     // frames his beam takes to sputter out (and its laser with it)
+fire_beam_w      = 14;     // px wide (his)
+laser_w          = 0.4;    // spr_titanbeam_midsection's width scale (its)
+pause_time       = 180;    // the dramatic pauses (frames of silence)
+// its laser at him
+laser_charge    = 50;      // frames its face glows first
+laser_hold      = 30;      // frames it fires for
+laser_fade      = 20;
+wince_xs        = 2;       // spr_ralsei_fall_wince's facing (2 = as drawn, -2 = flipped)
+// Queen steps in
 queen_guard_dx  = 80;      // Queen stands this far right of Ralsei's feet
 pressure_hits   = 3;       // the Titan hammers her shield this many times...
-pressure_gap    = 50;      // ...this many frames apart...
-pressure_dmg    = 100;     // ...cracking it (it has 400: it holds)...
-pressure_push   = 14;      // ...each one shoving her back this far
-low_hold        = 120;     // frames at the low point before the Freedom Gang part
+pressure_gap    = 50;
+pressure_dmg    = 100;     // (it has 400: it holds, just)
+pressure_push   = 14;
+// Pink's bomb (from off the left of the screen)
+bomb_from       = { x: -60, y: 300 };   // screen px
+bomb_time       = 55;
+bomb_arc        = 180;
+// the Freedom Gang: where they're standing (room px from the battle's camera x: their feet), and the camera
+gang_pan        = 300;     // px the camera pans left to show them
+gang_spots      = { pink: { x: 110, y: 205 }, jevil: { x: 60, y: 140 }, spamton: { x: 70, y: 260 } };
+gang_song       = sng_needsomefriends;
+gang_song_in    = 2000;    // ms it fades in over
+pink_face_scale = 0.75;    // her portrait's size in the battle panel
+// Susie, walking back
+susie_pan       = 420;     // px further left the camera pans to find her
+susie_from_dx   = -40;     // her feet start this far from the left of that view (off it)...
+susie_to_dx     = 260;     // ...and she walks to here
+susie_y         = 230;
+susie_walk      = 2;
+susie_rest      = 60;      // frames she's down on her knee
+ralsei_run      = 6;       // px a frame he runs to her
+hug_dx          = 18;      // px Susie's moved so her half of the hug sprite stays where she was
+hug_gap         = 40;      // Ralsei's feet are this far right of Susie's when they come apart
+// everyone fans out for the 6-person battle (screen px from the battle's camera: their feet). the front row (the ones
+// who take hits) nearer the Titan, the back row behind, all above the two rows of boxes
+fan_spots = {
+    queen:   { x: 470, y: 110 }, ralsei: { x: 455, y: 165 }, susie:   { x: 480, y: 220 },
+    jevil:   { x: 345, y: 85  }, pink:   { x: 360, y: 145 }, spamton: { x: 350, y: 200 },
+};
+fan_walk        = 3;
+ready_wait      = 40;      // frames they hold their readies before the six boxes come up
 
 // ---------------------------------------------------------------- refs + state
 scene = instance_find(obj_tower_top_scene, 0);
@@ -154,6 +196,12 @@ rage_tint   = 0;           // the red glow over him while he pushes
 rage_target = 0;
 titan_glow  = 0;           // the dark glow on the Titan when it heals
 blasts      = [];          // animated explosions: { spr, x, y, f, fspd, s }
+beam        = undefined;   // the standoff: { phase, t, k, fk, lk, fw, fa, la }
+beam_loop   = noone;
+laser       = undefined;   // its laser at him: { phase, t, a }
+bomb        = undefined;   // Pink's bomb: { t, sx, sy, tx, ty, rot, done }
+menu        = noone;       // the battle menu (while it's running our scripts)
+gang_arrived = 0;
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -298,25 +346,8 @@ shield_put = function()
 }
 shield_face = function() { return shield.x + sprite_get_width(spr_queen_shield) * shield_scale * 0.4; }
 
-/// the battle's over (obj_battle_menu.on_win)
-/// the battle's over (obj_battle_menu.on_win): out of his serious sprites, then the rest of the scene
-after_battle = function()
-{
-    swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
-    with (obj_queen) image_speed = 0;
-    global.cutscene_lock = true;
-    if (fight_song != noone)
-    {
-        music = audio_play_sound(fight_song, 2, true);
-        global.music = music;
-        global.song  = { sound: fight_song, beats: 9999 };
-        global.song_start = current_time;
-    }
-    part_two();
-}
-
-// ---------------------------------------------------------------- after the battle: helpers
-/// a straight sprite swap (Ralsei's battle sprites are all lined up by their origins)
+// ---------------------------------------------------------------- in the battle (after attack 4): helpers
+/// a straight sprite swap (battle sprites are all lined up by their origins)
 swap = function(_o, _spr, _spd)
 {
     for (var k = array_length(anims) - 1; k >= 0; k--) if (anims[k].o == instance_find(_o, 0)) array_delete(anims, k, 1);
@@ -324,6 +355,13 @@ swap = function(_o, _spr, _spd)
 }
 battle_cam = function() { return variable_global_exists("titan_battle_cam_x") ? global.titan_battle_cam_x : scene.cam_battle_x; }
 titan = function() { return instance_find(obj_titan_reveal, 0); }
+/// a point on the Titan (_o: from its top-left)
+titan_pt = function(_o)
+{
+    var _t = titan();
+    if (_t == noone) return { x: camera_get_view_x(view_camera[0]) + 700, y: 200 };
+    return { x: _t.x + _o.x, y: _t.y + _o.y };
+}
 /// a number (or word) off the Titan's chest
 titan_popup = function(_txt, _col)
 {
@@ -353,6 +391,30 @@ head_popup = function(_o, _txt, _col, _snd)
     var _top = (sprite_get_bbox_top(_i.sprite_index) - sprite_get_yoffset(_i.sprite_index)) * _i.image_yscale - 6;
     var _p = scr_trigger_damage_popup(_i, _txt, _col, _col, 0, _top, _snd);
     if (_p != noone) _p.depth = -9100;
+}
+/// the panel's text, cleared (between lines, while things happen)
+clear = function() { if (instance_exists(menu)) menu.set_text(""); }
+/// Ralsei's party box
+ralsei_box = function()
+{
+    var _b = noone;
+    with (obj_battle_ui_box) if (char_name == "Ralsei") _b = id;
+    return _b;
+}
+/// out of his serious sprites for the rest of it
+ralsei_normal = function()
+{
+    with (obj_battle_menu) for (var i = 0; i < party_n; i++)
+    {
+        if (names[i] != "Ralsei" || defs[i] == undefined) continue;
+        defs[i].idle        = spr_ralsei_battle_idle;
+        defs[i].ready_fight = spr_ralsei_attack_ready;
+        defs[i].attack      = spr_ralsei_attack;
+        defs[i].defend      = spr_ralsei_defend;
+    }
+    var _b = ralsei_box();
+    if (_b != noone) _b.body_idle_sprite = spr_ralsei_battle_idle;
+    swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
 }
 /// Ralsei turns all his stats to 999
 stat_boost = function()
@@ -391,85 +453,418 @@ add_blast = function(_spr, _x, _y, _fspd, _s)
 {
     array_push(blasts, { spr: _spr, x: _x, y: _y, f: 0, fspd: _fspd, s: _s, ang: irandom(360) });
 }
-/// the Titan strikes Ralsei down
-titan_strike = function()
+
+// --- the standoff ---
+/// where his fire comes out (his hand, held out in his spell)
+beam_from = function()
 {
     var _m = mid(obj_ralsei);
-    add_blast(spr_titan_shockwave_bullet_explosion, _m.x, _m.y, 0.25, 1);
-    add_blast(spr_finisher_explosion, _m.x, _m.y, 0.3, 0.6);
+    return { x: _m.x + 24 * sign(obj_ralsei.image_xscale), y: _m.y - 6 };
+}
+/// where the two beams meet right now
+beam_clash = function()
+{
+    var _a = beam_from(), _b = titan_pt(titan_face);
+    return { x: lerp(_a.x, _b.x, beam.k), y: lerp(_a.y, _b.y, beam.k) };
+}
+beam_start = function()
+{
+    rage_target = 1;
+    swap(obj_ralsei, spr_ralsei_spell, 0);
+    obj_ralsei.image_index = beam_frame;
+    beam = { phase: "grow", t: 0, k: clash_k0, fk: 0, lk: 0, fw: 1, fa: 1, la: 1 };
+    audio_play_sound(snd_firespell, 1, false);
+    beam_loop = audio_play_sound(snd_titan_blastloop, 2, true, 0.5);
+}
+/// the Titan's laser from (_x1, _y1) to (_x2, _y2): spr_titanbeam_midsection, turned and stretched
+draw_laser = function(_x1, _y1, _x2, _y2, _w, _a)
+{
+    var _len = point_distance(_x1, _y1, _x2, _y2);
+    if (_len < 1 || _a <= 0) return;
+    var _n = sprite_get_number(spr_titanbeam_midsection);
+    draw_sprite_ext(spr_titanbeam_midsection, floor(t / 4) mod _n, _x1, _y1, _w, _len / sprite_get_height(spr_titanbeam_midsection),
+        point_direction(_x1, _y1, _x2, _y2) + 90, c_white, _a);
+}
+/// Ralsei's fire beam: a glow, a burning core and a white-hot middle, wavering
+draw_fire_beam = function(_x1, _y1, _x2, _y2, _w, _a)
+{
+    if (_a <= 0) return;
+    var _wv = 1 + 0.15 * sin(t * 0.7);
+    gpu_set_blendmode(bm_add);
+    draw_set_alpha(0.35 * _a);
+    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * 2.6 * _wv, c_orange, c_red);
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(_a);
+    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * _wv, c_orange, c_yellow);
+    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * 0.35, c_white, c_white);
+    draw_set_alpha(1);
+}
+
+// --- its laser at him ---
+laser_start = function()
+{
+    laser = { phase: "charge", t: 0, a: 1 };
+    audio_play_sound(snd_titan_petrify_blast, 1, false);
+}
+/// it lands: he's down to 1 HP, on his knee
+laser_hit = function()
+{
     audio_play_sound(snd_explosion, 1, false);
     audio_play_sound(snd_hurt, 1, false);
     scr_camera_shake(10, 30);
     fb.flash = 1;
-    fb.target = 0;
     rage_target = 0;
-    push = undefined;
-    swap(obj_ralsei, spr_ralsei_defeat, 0);
-    scene.slide(obj_ralsei, -knock_dx, 0, 24, 30);
-    head_popup(obj_ralsei, "DOWN", c_red, noone);
+    var _m = mid(obj_ralsei);
+    add_blast(spr_titan_shockwave_bullet_explosion, _m.x, _m.y, 0.25, 1);
+    pose(obj_ralsei, spr_ralsei_fall_wince, wince_xs);
+    var _b = ralsei_box();
+    if (_b != noone)
+    {
+        var _dmg = max(0, _b.hp - 1);
+        _b.hp = 1;
+        _b.hurt_timer = _b.hurt_flash_time;
+        scr_party_head_popup(_b, _dmg, c_white, noone);
+    }
 }
 
-/// the steps after the battle (added onto the end of the script, so it carries on from here)
-part_two = function()
+// --- Queen steps in ---
+queen_guard = function()
 {
-    add(undefined, undefined, 40);
-    add(function() { create_textbox("self_24"); }, function() { return !instance_exists(obj_textbox); }, 20);
-    add(function() { stat_boost(); }, function() { return anim_done(obj_ralsei); }, 30);
-    add(function()
-    {
-        swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
-        create_textbox("self_25");
-    }, function() { return !instance_exists(obj_textbox); }, 30);
+    arrived = 0;
+    var _rf = feet(obj_ralsei);
+    scr_walk_feet_to(obj_queen, spr_queen_walk_left_unhappy, spr_queen_walk_right_unhappy, spr_queen_walk_up, spr_queen_walk_down_unhappy,
+        _rf.x + queen_guard_dx, _rf.y, queen_walk * 2, function() { arrived = 1; });
+}
+queen_shield = function()
+{
+    pose(obj_queen, spr_queen_walk_right_unhappy, 2);
+    with (obj_queen_shield) instance_destroy();
+    with (instance_create_depth(0, 0, 0, obj_queen_shield)) { section_every = 1; side = 1; side_k = 1; follow_queen(); }
+}
 
-    // 999... and it heals right back
-    add(function() { ralsei_hit(hit_speed); }, function() { return anim_done(obj_ralsei); });
-    add(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }, undefined, heal_delay + 50);
-    add(function() { create_textbox("self_26"); }, function() { return !instance_exists(obj_textbox); }, 20);
+// --- Pink's bomb, then the Freedom Gang ---
+bomb_start = function()
+{
+    var _f = titan_pt(titan_face);
+    bomb = { t: 0, sx: camera_get_view_x(view_camera[0]) + bomb_from.x, sy: camera_get_view_y(view_camera[0]) + bomb_from.y,
+             tx: _f.x, ty: _f.y, rot: 0, done: false };
+    audio_play_sound(snd_bombfall, 1, false);
+}
+/// Ralsei's up, and he and Queen turn round
+turn_round = function()
+{
+    pose(obj_ralsei, spr_ralsei_battle_idle, -2);
+    with (obj_ralsei) image_speed = 0.15;
+    pose(obj_queen, spr_queen_walk_left_unhappy, 2);
+    with (obj_queen_shield) if (state == "build" || state == "up") { state = "down"; t = 0; }
+}
+/// _i standing on _spr (facing right) with its feet on (_x, _y)
+stand = function(_i, _spr, _x, _y, _spd)
+{
+    with (_i) { sprite_index = _spr; image_index = 0; image_speed = _spd; image_xscale = 2; image_yscale = 2; visible = true; image_alpha = 1; if (variable_instance_exists(id, "last_sprite")) last_sprite = _spr; }
+    scene.set_feet(_i, _x, _y);
+    with (_i) { if (variable_instance_exists(id, "start_y")) start_y = y; if (variable_instance_exists(id, "expected_y")) expected_y = y; }
+}
+/// Pink, Jevil & Spamton, where they came up (off the left of the screen until the camera pans)
+place_gang = function()
+{
+    var _bc = battle_cam();
+    var _p = instance_exists(obj_mewmew)  ? instance_find(obj_mewmew, 0)  : instance_create_layer(0, 0, "Instances", obj_mewmew);
+    var _j = instance_exists(obj_jevil)   ? instance_find(obj_jevil, 0)   : instance_create_layer(0, 0, "Instances", obj_jevil);
+    var _s = instance_exists(obj_spamton) ? instance_find(obj_spamton, 0) : instance_create_layer(0, 0, "Instances", obj_spamton);
+    with (_p) { corrupted = true; ghosted = false; }
+    stand(_p, spr_mewmew_idle_corrupted, _bc + gang_spots.pink.x,    gang_spots.pink.y,    1);
+    stand(_j, spr_jevil_right_neutral,   _bc + gang_spots.jevil.x,   gang_spots.jevil.y,   0);
+    stand(_s, spr_spamton_right,         _bc + gang_spots.spamton.x, gang_spots.spamton.y, 0);
+    // (the tower's shadow on them too, like everyone else)
+    if (instance_exists(obj_shadow_tint))
+        with (obj_shadow_tint) { if (!array_contains(shade_objs, obj_mewmew)) array_push(shade_objs, obj_mewmew, obj_jevil, obj_spamton); }
+}
+gang_music = function()
+{
+    if (variable_global_exists("music")) audio_stop_sound(global.music);
+    music = audio_play_sound(gang_song, 2, true, 0);
+    audio_sound_gain(music, 1, gang_song_in);
+    global.music = music;
+    global.song  = { sound: gang_song, beats: 9999 };
+    global.song_start = current_time;
+}
 
-    // over to King + Lancer, and back
-    add(function() { scene.pan_cam(cam_rage_x, cam_pan_time); }, function() { return !scene.cam_pan.on; }, 20);
-    add(function() { create_textbox("self_27"); }, function() { return !instance_exists(obj_textbox); }, 30);
-    add(function() { scene.pan_cam(battle_cam(), cam_pan_time); }, function() { return !scene.cam_pan.on; }, 20);
+// --- Susie ---
+susie_enter = function()
+{
+    var _cx = battle_cam() - gang_pan - susie_pan;
+    with (obj_susie) { visible = true; image_angle = 0; image_alpha = 1; image_xscale = 2; }
+    scene.place(obj_susie, spr_susie_walk_right_neutral, _cx + susie_from_dx, susie_y);
+    scene.pan_cam(_cx, cam_pan_time);
+    arrived = 0;
+    scr_walk_feet_to(obj_susie, spr_susie_walk_left_neutral, spr_susie_walk_right_neutral, spr_susie_walk_up, spr_susie_walk_down_neutral,
+        _cx + susie_to_dx, susie_y, susie_walk, function() { arrived = 1; });
+}
+ralsei_run_to_susie = function()
+{
+    arrived = 0;
+    var _sf = feet(obj_susie);
+    pose(obj_ralsei, spr_ralsei_run_left, 2);
+    scr_walk_feet_to(obj_ralsei, spr_ralsei_run_left, scene.ralsei_right, scene.ralsei_up, scene.ralsei_down,
+        _sf.x + hug_gap, _sf.y, ralsei_run, function() { arrived = 1; });
+}
+hug = function()
+{
+    with (obj_ralsei) visible = false;
+    scene.pose_flip(obj_susie, spr_ralsei_susie_hug, 2);
+    with (obj_susie) { x += other.hug_dx; image_speed = 1; anim_loop = true; }
+}
+/// "Now." she pushes off him
+unhug = function()
+{
+    scene.pose_flip(obj_susie, spr_ralsei_susie_hug_push, 2);
+    play(obj_susie, 0, sprite_get_number(spr_ralsei_susie_hug_push) - 1, 0.12);
+}
+/// two of them again
+apart = function()
+{
+    scene.pose_flip(obj_susie, spr_susie_walk_right_neutral, 2);
+    with (obj_susie) { x -= other.hug_dx; image_speed = 0; }
+    var _sf = feet(obj_susie);
+    with (obj_ralsei) visible = true;
+    scene.pose_flip(obj_ralsei, scene.ralsei_left, 2);
+    with (obj_ralsei) image_speed = 0;
+    scene.set_feet(obj_ralsei, _sf.x + hug_gap, _sf.y);
+}
 
-    // he pushes harder
-    add(function() { push_start(2, push_speed); }, function() { return push == undefined; });
-    add(function() { create_textbox("self_28"); }, function() { return !instance_exists(obj_textbox); }, 10);
-    add(function() { push_start(3, push_speed * push_speed_mult * push_speed_mult); }, function() { return push == undefined; });
+// --- everyone together ---
+fan_out = function()
+{
+    with (obj_queen_shield) instance_destroy();
+    var _bc = battle_cam();
+    scene.pan_cam(_bc, cam_pan_time);
+    gang_arrived = 0;
+    var _done = function() { gang_arrived++; };
+    var _s = fan_spots;
+    with (obj_susie)   image_xscale = 2;
+    with (obj_ralsei)  image_xscale = 2;
+    with (obj_queen)   image_xscale = 2;
+    with (obj_mewmew)  image_xscale = 2;
+    with (obj_jevil)   image_xscale = 2;
+    with (obj_spamton) image_xscale = 2;
+    scr_walk_feet_to(obj_susie,   spr_susie_walk_left_neutral, spr_susie_walk_right_neutral, spr_susie_walk_up, spr_susie_walk_down_neutral, _bc + _s.susie.x,   _s.susie.y,   fan_walk, _done);
+    scr_walk_feet_to(obj_ralsei,  scene.ralsei_left, scene.ralsei_right, scene.ralsei_up, scene.ralsei_down,                                 _bc + _s.ralsei.x,  _s.ralsei.y,  fan_walk, _done);
+    scr_walk_feet_to(obj_queen,   spr_queen_walk_left_unhappy, spr_queen_walk_right_unhappy, spr_queen_walk_up, spr_queen_walk_down_unhappy, _bc + _s.queen.x,   _s.queen.y,   fan_walk, _done);
+    scr_walk_feet_to(obj_mewmew,  spr_mewmew_walkright_corrupted, spr_mewmew_walkright_corrupted, spr_mewmew_walkup_corrupted, spr_mewmew_walkright_corrupted, _bc + _s.pink.x, _s.pink.y, fan_walk, _done);
+    scr_walk_feet_to(obj_jevil,   spr_jevil_left, spr_jevil_right, spr_jevil_right, spr_jevil_right,                                         _bc + _s.jevil.x,   _s.jevil.y,   fan_walk, _done);
+    scr_walk_feet_to(obj_spamton, spr_spamton_left, spr_spamton_right, spr_spamton_right, spr_spamton_right,                                 _bc + _s.spamton.x, _s.spamton.y, fan_walk, _done);
+}
+/// all facing the Titan
+face_all_right = function()
+{
+    pose(obj_susie,  spr_susie_walk_right_neutral, 2);
+    pose(obj_ralsei, scene.ralsei_right, 2);
+    pose(obj_queen,  spr_queen_walk_right_unhappy, 2);
+    swap(obj_mewmew, spr_mewmew_idle_corrupted, 1);
+    swap(obj_jevil,  spr_jevil_right_neutral, 0);
+    swap(obj_spamton, spr_spamton_right, 0);
+}
+/// attack readies
+ready_all = function()
+{
+    swap(obj_susie,   spr_susie_attack_ready, 0);
+    swap(obj_ralsei,  spr_ralsei_attack_ready, 0);
+    pose(obj_queen,   spr_queen_pie_throw, 2);
+    swap(obj_mewmew,  spr_pink_throw_bomb_corrupted, 0);
+    swap(obj_jevil,   spr_jevil_right_neutral, 0);
+    swap(obj_spamton, spr_spamton_armsout_right, 0);
+    audio_play_sound(snd_taking_out_sword, 1, false);
+}
 
-    // the Titan strikes back
-    add(function()
+// ---------------------------------------------------------------- the battle's scripts (obj_battle_menu runs them)
+// R: run once, U: wait until, W: wait frames, S: a line in the panel ("ralsei" / "queen" / "king" / "lancer" /
+// "susie" with their portrait frame; "pink" with her portrait sprite; "jevil" / "spamton" / "susie_off": no face).
+// made here so every function in them belongs to this instance
+R = function(_f) { return { run: method(id, _f) }; }
+U = function(_f) { return { wait_until: method(id, _f) }; }
+W = function(_n) { return { wait: _n }; }
+S = function(_who, _img, _text, _opt = undefined)
+{
+    var _f;
+    switch (_who)
     {
-        fb.target = strike_dark;
-        audio_play_sound(snd_titan_petrify_blast, 1, false);
-    }, undefined, strike_windup);
-    add(function() { titan_strike(); }, undefined, 60);
+        case "ralsei":  _f = { spr: spr_ralsei_dialogue, img: _img }; break;
+        case "queen":   _f = { spr: spr_queen_dialogue,  img: _img }; break;
+        case "king":    _f = { spr: spr_king_dialogue,   img: _img }; break;
+        case "lancer":  _f = { spr: spr_lancer_dialogue, img: _img }; break;
+        case "susie":   _f = { spr: spr_susie_dialogue,  img: _img }; break;
+        case "pink":    _f = { spr: _img, img: 0, scale: pink_face_scale, tail: spr_mewmewspeaker_tail_corrupted, anim: true, voice: noone }; break;
+        case "jevil":   _f = { spr: -1, img: 0, voice: snd_jevil };   break;
+        case "spamton": _f = { spr: -1, img: 0, voice: snd_spamton }; break;
+        default:        _f = { spr: -1, img: 0, voice: snd_susie };   break;   // "susie_off": Susie, from off the screen
+    }
+    _f.text = _text;
+    if (_opt != undefined)
+    {
+        var _k = variable_struct_get_names(_opt);
+        for (var i = 0; i < array_length(_k); i++) _f[$ _k[i]] = _opt[$ _k[i]];
+        if (variable_struct_exists(_f, "on_start")) _f.on_start = method(id, _f.on_start);
+    }
+    return { say: _f };
+}
 
-    // Queen gets in front of him, shield up
-    add(function()
+/// obj_battle_menu asks at the end of each enemy turn: true if we've taken over
+on_turn_end = function(_turn)
+{
+    menu = instance_find(obj_battle_menu, 0);
+    if (_turn == 0)
     {
-        arrived = 0;
-        var _rf = feet(obj_ralsei);
-        scr_walk_feet_to(obj_queen, spr_queen_walk_left_unhappy, spr_queen_walk_right_unhappy, spr_queen_walk_up, spr_queen_walk_down_unhappy,
-            _rf.x + queen_guard_dx, _rf.y, queen_walk * 2, function() { arrived = 1; });
-    }, function() { return arrived == 1; });
-    add(function()
+        // after attack 4: the stat boost, then straight into attack 5
+        menu.start_script(script_a(), method(id, function() { with (obj_battle_menu) { turn = 1; state = "enemy_turn"; t = 0; } }));
+        return true;
+    }
+    if (_turn == 1)
     {
-        pose(obj_queen, spr_queen_walk_right_unhappy, 2);
-        with (obj_queen_shield) instance_destroy();
-        with (instance_create_depth(0, 0, 0, obj_queen_shield)) { section_every = 1; side = 1; side_k = 1; follow_queen(); }
-    }, function() { return instance_exists(obj_queen_shield) && obj_queen_shield.state == "up"; }, 20);
-    add(function() { pressure = { left: pressure_hits, t: 0 }; }, function() { return pressure == undefined; }, 30);
+        // after attack 5: everything, through to the 6-person battle
+        menu.start_script(script_b(), method(id, function() { scr_call_after_frames(function() { scr_titan_battle3_start(); }, 1); }));
+        return true;
+    }
+    return false;
+}
 
-    // the low point
-    add(function()
-    {
-        if (music != noone) audio_sound_gain(music, 0, fight_song_out);
-    }, undefined, low_hold);
-    add(function()
-    {
-        if (music != noone) { audio_stop_sound(music); music = noone; }
-        // ---- the Freedom Gang comes in here
-    });
+script_a = function()
+{
+    return [
+        R(function() { ralsei_normal(); }),
+        W(20),
+        S("queen", 2, "* Why Don't You Like"),
+        S("queen", 0, "* Use Your Fire Magic"),
+        S("ralsei", 53, "* Magic does less damage against the Titan..."),
+        S("queen", 2, "* Then Increase Your Stats"),
+        S("ralsei", 36, "* ..."),
+        R(function() { clear(); stat_boost(); }),
+        U(function() { return anim_done(obj_ralsei); }),
+        W(30),
+        R(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }),
+        S("queen", 27, "* Sick"),
+    ];
+}
+
+script_b = function()
+{
+    return [
+        // 999... and it heals right back
+        R(function() { clear(); ralsei_hit(hit_speed); }),
+        U(function() { return anim_done(obj_ralsei); }),
+        R(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }),
+        W(heal_delay + 50),
+        S("ralsei", 52, "* ...Why isn't it working?"),
+        S("ralsei", 53, "* It's..."),
+        S("ralsei", 32, "* Do I need more???"),
+        S("queen", 18, "* No Idea"),
+
+        // over to King + Lancer, and back
+        R(function() { clear(); scene.pan_cam(cam_rage_x, cam_pan_time); }),
+        U(function() { return !scene.cam_pan.on; }),
+        W(20),
+        S("king", 3, "* Lancer. Help your father up.", { on_start: function() { king_shake.amt = 3; } }),
+        S("lancer", 11, "* ...Don't move, Dad.", { on_start: function()
+            { pose(obj_lancer, spr_lancer_battle, 2); scene.slide(obj_lancer, 10, 0, 10, 4); king_shake.amt = king_sit_shake; } }),
+        R(function() { clear(); scene.pan_cam(battle_cam(), cam_pan_time); }),
+        U(function() { return !scene.cam_pan.on; }),
+        W(20),
+
+        // he pushes harder
+        R(function() { push_start(2, push_speed); }),
+        U(function() { return push == undefined; }),
+        S("ralsei", 54, "* If I just... keep going..."),
+        S("queen", 2, "* Ralsei Your Hands Are Shaking"),
+        S("ralsei", 27, "* I'm FINE."),
+        R(function() { clear(); push_start(3, push_speed * push_speed_mult * push_speed_mult); }),
+        U(function() { return push == undefined; }),
+
+        // his fire beam against its laser, until he's spent... then the dramatic pause
+        R(function() { beam_start(); }),
+        U(function() { return beam != undefined && beam.phase == "done"; }),
+        R(function() { beam = undefined; if (variable_global_exists("music")) audio_sound_gain(global.music, 0, 1500); }),
+        W(pause_time),
+
+        // its laser at him: 1 HP, down on his knee
+        R(function() { if (variable_global_exists("music")) audio_stop_sound(global.music); laser_start(); }),
+        U(function() { return laser == undefined; }),
+        W(40),
+
+        // Queen gets in front of him, shield up, and it hammers it
+        R(function() { queen_guard(); }),
+        U(function() { return arrived == 1; }),
+        R(function() { queen_shield(); }),
+        U(function() { return instance_exists(obj_queen_shield) && obj_queen_shield.state == "up"; }),
+        W(20),
+        R(function() { pressure = { left: pressure_hits, t: 0 }; }),
+        U(function() { return pressure == undefined; }),
+        W(30),
+        S("queen", 2, "* My Shield Is Almost Broken"),
+        S("ralsei", 28, "* I..."),
+        S("ralsei", 53, "* How are we going to..."),
+        R(function() { clear(); }),
+        W(pause_time),
+
+        // Pink's bomb, right in its face
+        R(function() { bomb_start(); }),
+        U(function() { return bomb != undefined && bomb.done; }),
+        W(20),
+        S("ralsei", 32, "* !!!"),
+        R(function() { clear(); bomb = undefined; turn_round(); }),
+        W(30),
+
+        // Pink, Jevil & Spamton
+        R(function() { place_gang(); gang_music(); scene.pan_cam(battle_cam() - gang_pan, cam_pan_time); }),
+        U(function() { return !scene.cam_pan.on; }),
+        W(20),
+        S("pink", spr_mewmewspeaker_talkhappy_corrupted, "* Need some friends?"),
+        S("ralsei", 12, "* How did you guys..."),
+        S("jevil", 0, "* WE SAW YOUR FRIEND AT THE BOTTOM, BOTTOM!"),
+        S("pink", spr_mewmewspeaker_concerned_corrupted, "* Gerson warned us that you guys would be in trouble."),
+        S("pink", spr_mewmewspeaker_talkhappy_corrupted, "* He couldn't make it here, so he sent us instead!"),
+        S("ralsei", 28, "* Is Susie..."),
+        S("susie_off", 0, "* Susie's good, Ralsei."),
+
+        // the camera finds her, walking back. down on her knee a second, then up
+        R(function() { clear(); susie_enter(); }),
+        U(function() { return arrived == 1 && !scene.cam_pan.on; }),
+        R(function() { scene.pose_flip(obj_susie, spr_susie_landed, -2); with (obj_susie) image_speed = 0; }),
+        W(susie_rest),
+        R(function() { scene.pose_flip(obj_susie, spr_susie_walk_right_neutral, 2); with (obj_susie) image_speed = 0; }),
+        W(20),
+        S("susie", 30, "* I'm okay."),
+
+        // Ralsei runs over and hugs her
+        R(function() { clear(); ralsei_run_to_susie(); }),
+        U(function() { return arrived == 1; }),
+        R(function() { hug(); }),
+        W(30),
+        S("susie", 55, "* I'm fine, Ralsei."),
+        S("ralsei", 57, "* I was so worried, Susie..."),
+        S("susie", 31, "* ..."),
+        S("susie", 34, "* Now.", { on_start: function() { unhug(); } }),
+        U(function() { return anim_done(obj_susie); }),
+        R(function() { apart(); }),
+        S("susie", 17, "* Where's that-", { auto: 4 }),
+        S("ralsei", 48, "* After, Susie."),
+        S("susie", 15, "* ???"),
+        S("ralsei", 27, "* We'll deal with him after."),
+        S("susie", 31, "* ..."),
+        S("susie", 30, "* ...Okay."),
+
+        // everyone together
+        R(function() { clear(); fan_out(); }),
+        U(function() { return gang_arrived >= 6 && !scene.cam_pan.on; }),
+        R(function() { face_all_right(); }),
+        W(20),
+        S("susie", 7, "* Everyone ready?"),
+        S("spamton", 0, "* [Hell yeah!]"),
+        S("susie", 31, "* ..."),
+        S("susie", 5, "* Let's do this."),
+        S("susie", 34, "* ...again."),
+        R(function() { clear(); ready_all(); }),
+        W(ready_wait),
+    ];
 }
 // ---------------------------------------------------------------- the script: steps run one after another
 steps   = [];

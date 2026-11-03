@@ -1,6 +1,7 @@
-if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
+var _area = scr_attack_area_state();
+if (_area == "gone") { instance_destroy(); exit; }
 if (collected) { ring++; if (ring >= 10) instance_destroy(); exit; }
-if (obj_battlebox.state == "closing") fading = true;
+if (_area == "fade") fading = true;
 if (fading)
 {
     image_alpha -= 0.08;

@@ -34,7 +34,7 @@ else if (text_shown < string_length(text))
     if (text_face != undefined)
     {
         var _vc = string_char_at(text, max(1, floor(text_shown)));
-        var _voice = face_voice(text_face.spr);
+        var _voice = variable_struct_exists(text_face, "voice") ? text_face.voice : face_voice(text_face.spr);
         if (_voice != noone && _vc != " " && _vc != "*" && _vc != "." && _vc != "?" && _vc != "!" && _vc != "," && _vc != "\n")
         {
             if (voice_count < voice_delay) voice_count++;
@@ -147,9 +147,9 @@ switch (state)
         with (obj_battle_ui_box) if (hp <= 0) _down = true;
         if (_down) scr_party_turn_recover();
 
-        actions = array_create(3, undefined);
+        actions = array_create(party_n, undefined);
         with (obj_battle_ui_box) defending = false;
-        for (var i = 0; i < 3; i++) if (alive_member(i)) scr_bm_idle(defs[i]);
+        for (var i = 0; i < party_n; i++) if (alive_member(i)) scr_bm_idle(defs[i]);
 
         set_text(flavor[irandom(array_length(flavor) - 1)]);
         var _first = next_chooser(0);
@@ -274,8 +274,21 @@ switch (state)
 
             case "ally":
             {
-                if (keyboard_check_pressed(vk_down)) { pick_i = (pick_i + 1) mod 3; snd_move(); }
-                if (keyboard_check_pressed(vk_up))   { pick_i = (pick_i + 2) mod 3; snd_move(); }
+                if (party_n <= 3)
+                {
+                    if (keyboard_check_pressed(vk_down)) { pick_i = (pick_i + 1) mod party_n; snd_move(); }
+                    if (keyboard_check_pressed(vk_up))   { pick_i = (pick_i + party_n - 1) mod party_n; snd_move(); }
+                }
+                else
+                {
+                    // two columns of 3 (the 6-person party)
+                    var _col = pick_i div 3, _row = pick_i mod 3;
+                    var _rows = (_col == 0) ? 3 : party_n - 3;
+                    if (keyboard_check_pressed(vk_down)) { pick_i = _col * 3 + (_row + 1) mod _rows; snd_move(); }
+                    if (keyboard_check_pressed(vk_up))   { pick_i = _col * 3 + (_row + _rows - 1) mod _rows; snd_move(); }
+                    if (keyboard_check_pressed(vk_right) && _col == 0) { pick_i = 3 + min(_row, party_n - 4); snd_move(); }
+                    if (keyboard_check_pressed(vk_left)  && _col == 1) { pick_i = _row; snd_move(); }
+                }
                 if (key_back()) { mode = "list"; snd_move(); t = 0; break; }
                 if (!key_ok()) break;
 
@@ -316,8 +329,21 @@ switch (state)
         var _next = false;
         if (variable_struct_exists(_st, "say"))
         {
-            if (!_sc.started) { set_text(_st.say.text, { spr: _st.say.spr, img: _st.say.img }); _sc.started = true; t = 0; }
-            else if (t > 2 && text_done() && key_ok()) _next = true;
+            var _sy = _st.say;
+            if (!_sc.started)
+            {
+                set_text(_sy.text, _sy);
+                if (variable_struct_exists(_sy, "on_start")) _sy.on_start();
+                _sc.started = true;
+                _sc.done_t  = 0;
+                t = 0;
+            }
+            else if (text_done())
+            {
+                _sc.done_t++;
+                // auto: it goes on by itself this many frames after it's typed out (a line that gets cut off). otherwise Z
+                if (variable_struct_exists(_sy, "auto") ? _sc.done_t >= _sy.auto : (t > 2 && key_ok())) _next = true;
+            }
         }
         else if (variable_struct_exists(_st, "talk"))
         {
@@ -472,6 +498,15 @@ switch (state)
                 // they swing right now
                 scr_bm_pose(_d.obj, _d.attack, true);
                 if (_d.attack_sound_frame <= 0) play_once(snd_attack);
+                // (Pink, Jevil, Spamton: their attack's a thing that flies at it. the hit lands when it gets there)
+                if (variable_struct_exists(_d, "fight_fx"))
+                {
+                    _f.fx = instance_create_depth(0, 0, -3000, obj_party_fx);
+                    _f.fx.kind          = _d.fight_fx;
+                    _f.fx.owner         = _d.obj;
+                    _f.fx.target        = retarget(_f.target);
+                    _f.fx.release_frame = variable_struct_exists(_d, "fx_frame") ? _d.fx_frame : 0;
+                }
             }
         }
 
@@ -519,6 +554,18 @@ switch (state)
 
                 case "attack":
                     _all_done = false;
+                    if (variable_struct_exists(_f, "fx"))
+                    {
+                        if (!instance_exists(_f.fx) || _f.fx.hit || _f.t >= 240)
+                        {
+                            var _tg = retarget(_f.target);
+                            if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult) - _tg.df * 3), _d.color);
+                            scr_tp_add(_f.points / (global.tp.dark ? fight_tp_div_dark : fight_tp_div) * 0.4);
+                            _f.phase = "after";
+                            _f.t = 0;
+                        }
+                        break;
+                    }
                     if (_d.attack_sound_frame > 0 && !variable_struct_exists(_f, "snd_done") && floor(_d.obj.image_index) >= _d.attack_sound_frame)
                     {
                         _f.snd_done = true;
@@ -630,6 +677,7 @@ switch (state)
         if (t >= 10 && !instance_exists(obj_queen_shield))
         {
             if (end_after_turn >= 0 && turn >= end_after_turn) { end_battle(); break; }
+            if (turn_end_hook != undefined && turn_end_hook(turn)) break;   // (something's taken over: it carries on from there)
             turn++; state = "turn_start"; t = 0;
         }
     break;

@@ -6,7 +6,7 @@ function scr_party_damage(_amount)
     var _candidates = [];
     with (obj_battle_ui_box)
     {
-        if (hp > 0) array_push(_candidates, id);
+        if (hp > 0 && takes_hits) array_push(_candidates, id);   // (the back row never gets hit)
     }
     if (array_length(_candidates) == 0) return _result; // whole party's down
 

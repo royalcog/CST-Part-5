@@ -68,6 +68,54 @@ function scr_bm_member_def(_name)
                   desc: "" },     // Deltarune's ACT against the Titan Spawn: the SOUL's light grows (12px a time)
             ],
         };
+        case "Pink": return {
+            obj: obj_mewmew, color: make_color_rgb(255, 138, 144),
+            cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
+            at: 16, mg: 4,
+            idle: spr_mewmew_idle_corrupted, idle_hold: false,
+            ready_fight: -1, ready_magic: -1, ready_act: -1,
+            ready_item: -1, item_anim: -1,
+            defend: -1,
+            attack: spr_pink_throw_bomb_corrupted, attack_sound_frame: 999,
+            fight_fx: "bomb", fx_frame: 12,                   // her bomb leaves her hand on frame 12 of her throw
+            spell_anim: -1,
+            magic: [   // her ACTs (placeholders)
+                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
+                { name: "Cheer", tp: 0, target: "ally",  effect: "heal",  amount: 60, desc: "" },
+            ],
+        };
+        case "Jevil": return {
+            obj: obj_jevil, color: make_color_rgb(109, 109, 192),
+            cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
+            at: 18, mg: 6,
+            idle: spr_jevil_right_neutral, idle_hold: true,
+            ready_fight: -1, ready_magic: -1, ready_act: -1,
+            ready_item: -1, item_anim: -1,
+            defend: -1,
+            attack: spr_jevil_right, attack_sound_frame: 999,
+            fight_fx: "spade",                                // summons a spade and shoots it
+            spell_anim: -1,
+            magic: [
+                { name: "Check",  tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
+                { name: "Juggle", tp: 0, target: "ally",  effect: "heal",  amount: 40, desc: "" },
+            ],
+        };
+        case "Spamton": return {
+            obj: obj_spamton, color: make_color_rgb(251, 242, 54),
+            cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
+            at: 12, mg: 2,
+            idle: spr_spamton_right, idle_hold: true,
+            ready_fight: -1, ready_magic: -1, ready_act: -1,
+            ready_item: -1, item_anim: -1,
+            defend: -1,
+            attack: spr_spamton_armsout_right, attack_sound_frame: 999,
+            fight_fx: "pipis",                                // drops pipis on its face, remotely
+            spell_anim: -1,
+            magic: [
+                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
+                { name: "Deal",  tp: 0, target: "ally",  effect: "heal",  amount: 50, desc: "" },
+            ],
+        };
     }
     return undefined;
 }
