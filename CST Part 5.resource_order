@@ -817,6 +817,7 @@
     {"name":"spr_lancer_right","order":3,"path":"sprites/spr_lancer_right/spr_lancer_right.yy",},
     {"name":"spr_lantern","order":2,"path":"sprites/spr_lantern/spr_lantern.yy",},
     {"name":"spr_menu","order":2,"path":"sprites/spr_menu/spr_menu.yy",},
+    {"name":"spr_mewmew_idle_corrupted","order":8,"path":"sprites/spr_mewmew_idle_corrupted/spr_mewmew_idle_corrupted.yy",},
     {"name":"spr_mewmew_kneelleft","order":1,"path":"sprites/spr_mewmew_kneelleft/spr_mewmew_kneelleft.yy",},
     {"name":"spr_mewmew_overjoyed_corrupted","order":5,"path":"sprites/spr_mewmew_overjoyed_corrupted/spr_mewmew_overjoyed_corrupted.yy",},
     {"name":"spr_mewmew_overjoyed","order":13,"path":"sprites/spr_mewmew_overjoyed/spr_mewmew_overjoyed.yy",},

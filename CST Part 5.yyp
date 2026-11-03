@@ -1005,6 +1005,7 @@
     {"id":{"name":"spr_lantern","path":"sprites/spr_lantern/spr_lantern.yy",},},
     {"id":{"name":"spr_menu","path":"sprites/spr_menu/spr_menu.yy",},},
     {"id":{"name":"spr_mewmew_crying","path":"sprites/spr_mewmew_crying/spr_mewmew_crying.yy",},},
+    {"id":{"name":"spr_mewmew_idle_corrupted","path":"sprites/spr_mewmew_idle_corrupted/spr_mewmew_idle_corrupted.yy",},},
     {"id":{"name":"spr_mewmew_kneelleft","path":"sprites/spr_mewmew_kneelleft/spr_mewmew_kneelleft.yy",},},
     {"id":{"name":"spr_mewmew_overjoyed_corrupted","path":"sprites/spr_mewmew_overjoyed_corrupted/spr_mewmew_overjoyed_corrupted.yy",},},
     {"id":{"name":"spr_mewmew_overjoyed","path":"sprites/spr_mewmew_overjoyed/spr_mewmew_overjoyed.yy",},},

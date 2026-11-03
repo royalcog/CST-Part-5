@@ -6,11 +6,11 @@
     "path":"audiogroups/audiogroup_default",
   },
   "bitDepth":1,
-  "channelFormat":0,
-  "compression":0,
+  "channelFormat":1,
+  "compression":1,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.0,
+  "duration":46.545464,
   "exportDir":"",
   "name":"sng_needsomefriends",
   "parent":{
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"",
+  "soundFile":"sng_needsomefriends.wav",
   "volume":1.0,
 }
