@@ -653,6 +653,7 @@
     {"id":{"name":"snd_chain_wave","path":"sounds/snd_chain_wave/snd_chain_wave.yy",},},
     {"id":{"name":"snd_charge","path":"sounds/snd_charge/snd_charge.yy",},},
     {"id":{"name":"snd_chargeshot_fire","path":"sounds/snd_chargeshot_fire/snd_chargeshot_fire.yy",},},
+    {"id":{"name":"snd_closet_fall","path":"sounds/snd_closet_fall/snd_closet_fall.yy",},},
     {"id":{"name":"snd_closet_impact","path":"sounds/snd_closet_impact/snd_closet_impact.yy",},},
     {"id":{"name":"snd_criticalswing","path":"sounds/snd_criticalswing/snd_criticalswing.yy",},},
     {"id":{"name":"snd_crowdlaugh","path":"sounds/snd_crowdlaugh/snd_crowdlaugh.yy",},},

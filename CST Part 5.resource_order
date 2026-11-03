@@ -505,6 +505,7 @@
     {"name":"snd_chain_wave","order":73,"path":"sounds/snd_chain_wave/snd_chain_wave.yy",},
     {"name":"snd_charge","order":44,"path":"sounds/snd_charge/snd_charge.yy",},
     {"name":"snd_chargeshot_fire","order":69,"path":"sounds/snd_chargeshot_fire/snd_chargeshot_fire.yy",},
+    {"name":"snd_closet_fall","order":79,"path":"sounds/snd_closet_fall/snd_closet_fall.yy",},
     {"name":"snd_closet_impact","order":41,"path":"sounds/snd_closet_impact/snd_closet_impact.yy",},
     {"name":"snd_criticalswing","order":58,"path":"sounds/snd_criticalswing/snd_criticalswing.yy",},
     {"name":"snd_crowdlaugh","order":34,"path":"sounds/snd_crowdlaugh/snd_crowdlaugh.yy",},

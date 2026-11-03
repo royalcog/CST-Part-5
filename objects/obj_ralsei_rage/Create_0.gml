@@ -156,7 +156,7 @@ bomb_time       = 55;
 bomb_arc        = 180;
 // the Freedom Gang: where they're standing (room px from the battle's camera x: their feet), and the camera
 gang_pan        = 300;     // px the camera pans left to show them
-gang_spots      = { pink: { x: 110, y: 205 }, jevil: { x: 60, y: 140 }, spamton: { x: 70, y: 260 } };
+gang_spots      = { pink: { x: -60, y: 205 }, jevil: { x: -110, y: 140 }, spamton: { x: -100, y: 262 } };   // left of the battle's view: already there when the camera pans
 gang_song       = sng_needsomefriends;
 gang_song_in    = 2000;    // ms it fades in over
 // who talks in what colour in the battle panel (the textbox's): Pink's goes white to pink
@@ -168,7 +168,7 @@ say_cols = {
 pink_col        = make_colour_rgb(255, 138, 144);
 // Susie, walking back in from the left (she took the chair back up). from the left of the gang's view
 susie_from_dx   = -40;
-susie_to_dx     = 300;
+susie_to_dx     = 330;
 susie_y         = 290;
 susie_walk      = 2;
 ralsei_run      = 6;       // px a frame he runs to her

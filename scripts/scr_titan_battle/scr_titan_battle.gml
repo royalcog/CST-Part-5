@@ -424,7 +424,7 @@ function scr_titan_battle3_start()
         rounds = [ { talk: [], attack: undefined } ];   // (placeholder: this battle's attacks go here)
         rounds_loop_from = 0;
         flavor = [
-            "* The Freedom Gang stands together.",
+            "* A new sense of freedom arises.",
             "* Susie cracks her knuckles.",
             "* Spamton is [Thrilled] to be here.",
         ];
