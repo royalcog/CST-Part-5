@@ -881,6 +881,7 @@
     {"name":"spr_petrifycrack_3_debris","order":16,"path":"sprites/spr_petrifycrack_3_debris/spr_petrifycrack_3_debris.yy",},
     {"name":"spr_petrifycrack_3","order":19,"path":"sprites/spr_petrifycrack_3/spr_petrifycrack_3.yy",},
     {"name":"spr_phone","order":22,"path":"sprites/spr_phone/spr_phone.yy",},
+    {"name":"spr_pink_throw_bomb_corrupted","order":9,"path":"sprites/spr_pink_throw_bomb_corrupted/spr_pink_throw_bomb_corrupted.yy",},
     {"name":"spr_pinkbomb_explosion","order":4,"path":"sprites/spr_pinkbomb_explosion/spr_pinkbomb_explosion.yy",},
     {"name":"spr_pinkbomb_white","order":6,"path":"sprites/spr_pinkbomb_white/spr_pinkbomb_white.yy",},
     {"name":"spr_pinkbomb","order":1,"path":"sprites/spr_pinkbomb/spr_pinkbomb.yy",},
