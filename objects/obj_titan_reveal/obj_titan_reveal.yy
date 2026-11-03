@@ -12,8 +12,8 @@
   "name":"obj_titan_reveal",
   "overriddenProperties":[],
   "parent":{
-    "name":"Titan Reveal",
-    "path":"folders/Objects/Special Cutscenes/Titan Reveal.yy",
+    "name":"Titan",
+    "path":"folders/Objects/Special Cutscenes/Titan.yy",
   },
   "parentObjectId":null,
   "persistent":false,

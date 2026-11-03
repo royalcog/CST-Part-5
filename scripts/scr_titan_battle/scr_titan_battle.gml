@@ -421,7 +421,13 @@ function scr_titan_battle3_start()
     with (obj_battle_menu) instance_destroy();
     with (instance_create_depth(0, 0, -10050, obj_battle_menu, { party_names: ["Susie", "Ralsei", "Queen", "Pink", "Jevil", "Spamton"] }))
     {
-        rounds = [ { talk: [], attack: undefined } ];   // (placeholder: this battle's attacks go here)
+        rounds = [
+            { talk: [], attack: scr_start_titan_attack6 },
+            { talk: [], attack: scr_start_titan_attack7 },
+            { talk: [], attack: scr_start_titan_attack8 },
+            { talk: [], attack: scr_start_titan_final },
+        ];
+        rounds_loop_from = 3;
         rounds_loop_from = 0;
         flavor = [
             "* A new sense of freedom arises.",
@@ -439,4 +445,46 @@ function scr_titan_battle3_start()
             face_member(i, default_facing);
         }
     }
+}
+
+/// the 6-person battle's last attack: the battle ends and obj_titan_finale takes over (the run, then the end)
+function scr_start_titan_final()
+{
+    var _f = instance_create_depth(0, 0, 20, obj_titan_finale);   // (it reads everyone's HP and the Titan's first)
+    with (obj_dialogue_chain) instance_destroy();
+    with (obj_talkbox) instance_destroy();
+    with (obj_soul) instance_destroy();
+    with (obj_battlebox) instance_destroy();
+    with (obj_battle_target) instance_destroy();
+    with (obj_battle_ui_box) instance_destroy();
+    with (obj_UI) instance_destroy();
+    with (obj_tp_bar) instance_destroy();
+    with (obj_queen_shield) instance_destroy();
+    with (obj_battle_menu) instance_destroy();
+    global.cutscene_lock = true;
+    return _f;
+}
+
+/// the 6-person battle's remixed attacks (each has the Titan's lasers in it: scr_titan_beams)
+function scr_start_titan_attack6()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack6);
+}
+function scr_start_titan_attack7()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack7);
+}
+function scr_start_titan_attack8()
+{
+    var _d = instance_exists(obj_battlebox) ? obj_battlebox.depth - 1 : -5001;
+    return instance_create_depth(0, 0, _d, obj_titan_attack8);
+}
+
+/// after the damage numbers (obj_titan_finale runs this): Castle Town, then the Pipis, then the end
+function scr_titan_epilogue_start()
+{
+    with (obj_titan_finale) instance_destroy();
+    instance_create_depth(0, 0, -9500, obj_titan_epilogue);
 }

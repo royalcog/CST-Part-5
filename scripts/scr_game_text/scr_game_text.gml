@@ -354,6 +354,52 @@ function scr_game_text(_text_id)
 			scr_text("* Let's end this.", "ralsei", 48);
 			scr_text("* ...for Susie.", "ralsei", 54);
 		break;
+		
+		case "self_24":
+			global.cutscene_lock = true;
+			scr_text("* Susie...!", "ralsei", 32);
+			scr_text("* RUN!!", "ralsei", 27);
+		break;
+		
+		// ---- after the Titan (obj_titan_epilogue)
+		case "self_25":
+			global.cutscene_lock = true;
+			scr_text("* We...", "susie", 31);
+			scr_text("* We did it?", "susie", 15);
+			scr_text("* I... I guess so?", "ralsei", 12);
+			scr_text("* But...", "susie", 31);
+			scr_text("* We didn't banish it, so...", "susie", 17);
+			scr_text("* Just be happy it's over, mew.", "mewmew", 0);
+		break;
+
+		case "self_26":
+			global.cutscene_lock = true;
+			scr_text("* Wait...", "ralsei", 28);
+			scr_text("* Where are...", "susie", 15);
+		break;
+
+		case "self_27":
+			global.cutscene_lock = true;
+			scr_text("* Lancer Move Away", "queen", 2);
+			scr_text("* ...", "lancer", 10);
+		break;
+
+		case "self_28":
+			global.cutscene_lock = true;
+			scr_text("* I hope you all get what's coming to you.", "king", 3);
+			scr_text("* You Tried That Already LOL", "queen", 27);
+			scr_text("* Anyways", "queen", 0);
+			scr_text("* Spamton", "queen", 2);
+			scr_text("* YES YOU [Hochi Mama]", "spamton");
+			scr_text("* Launch Pipis Attack", "queen", 19);
+			scr_text("* ...What?", "king", 3);
+			scr_text("* GLADLY.", "spamton");
+		break;
+
+		case "self_29":
+			global.cutscene_lock = true;
+			scr_text("* Damn it.", "king", 3);
+		break;
 /*
 
 */
