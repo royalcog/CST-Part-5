@@ -1,3 +1,11 @@
+// no bob: he stays where he's put
+if (!bob_on)
+{
+    start_y    = y;
+    expected_y = y;
+    exit;
+}
+
 // Check if his position was changed by something outside of this script (like a cutscene)
 if (y != expected_y || x != xprevious)
 {

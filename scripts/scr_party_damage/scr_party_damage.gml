@@ -27,6 +27,7 @@ function scr_party_damage(_amount)
     {
         // DEFENDing (the battle menu) takes a third off
         if (variable_instance_exists(id, "defending") && defending) _amount = ceil(_amount * 2 / 3);
+        if (variable_global_exists("party_guard")) _amount = ceil(_amount * global.party_guard);   // Spamton's Deal
         hp -= _amount;
         hurt_timer = hurt_flash_time;
 

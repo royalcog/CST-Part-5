@@ -323,7 +323,7 @@ function scr_game_text(_text_id)
 			scr_text("* D...", "lancer", 11);
 			scr_text("* Dad...?", "lancer", 12);
 			scr_text("* ...", "king", 12);
-			scr_text("* I knew you had it in you, you lier", "king", 10);
+			scr_text("* I knew you had it in you, you liar", "king", 10);
 				scr_text_cutoff(string_length("* I knew you had it in you, you lier"));   // Ralsei's fireball cuts him off
 		break;
 

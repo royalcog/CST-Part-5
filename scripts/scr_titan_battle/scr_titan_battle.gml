@@ -365,7 +365,7 @@ function scr_party_init_six(_susie_hp, _ralsei_hp, _queen_hp)
         };
     };
     array_push(_all, _back("Pink",    7000, obj_mewmew,  spr_mewmew_shocked_right_corrupted, spr_mewmew_idle_corrupted, -19, spr_pinkbox_empty,    spr_pinkbox_attack_empty,    make_color_rgb(255, 138, 144)));
-    array_push(_all, _back("Jevil",   3500, obj_jevil,   spr_jevil_tired,                    spr_jevil_right_neutral,   229, spr_jevilbox_empty,   spr_jevilbox_attack_empty,   make_color_rgb(109, 109, 192)));
+    array_push(_all, _back("Jevil",   3500, obj_jevil,   spr_jevil_tired,                    spr_jevil_dance,           229, spr_jevilbox_empty,   spr_jevilbox_attack_empty,   make_color_rgb(109, 109, 192)));
     array_push(_all, _back("Spamton", 600,  obj_spamton, spr_spamton_hurt,                   spr_spamton_right,         477, spr_spamtonbox_empty, spr_spamtonbox_attack_empty, make_color_rgb(251, 242, 54)));
     scr_party_init(_all);
     with (obj_battle_ui_box) if (char_name == "Pink" || char_name == "Jevil" || char_name == "Spamton") takes_hits = false;

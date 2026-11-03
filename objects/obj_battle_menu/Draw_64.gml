@@ -217,26 +217,37 @@ if ((state == "choose" && mode != "cmd") || _protect_list)
 // otherwise: the battle text, typed out (Deltarune: x 30, 28px lines, wraps at 580 wide).
 // someone talking in the panel: their face on the left, the text moved over next to it
 draw_set_colour(c_white);
+draw_set_colour(c_white);
 var _tx0 = text_x;
 if (text_face != undefined && text_face.spr != -1)
 {
-    var _fs = variable_struct_exists(text_face, "scale") ? text_face.scale : face_scale;
+    var _spr = text_face.spr;
+    // sized like the textbox's portraits (Ralsei's and Lancer's a bit bigger), drawn top-centre in the face column
+    var _fs = (face_h / sprite_get_height(_spr)) * (variable_struct_exists(text_face, "scale") ? text_face.scale : 1);
+    var _dy = 0;
+    if (_spr == spr_lancer_dialogue)      { _fs *= 1.15; _dy = -8 * face_h / 90; }
+    else if (_spr == spr_ralsei_dialogue) { _fs *= 1.2;  _dy = -6 * face_h / 90; }
     var _fi = text_face.img;
-    // a portrait that talks (Pink's): its frames go round while the letters type out
-    if (variable_struct_exists(text_face, "anim") && text_face.anim && !text_done()) _fi = floor(t / 6) mod sprite_get_number(text_face.spr);
-    var _fx = face_x + sprite_get_xoffset(text_face.spr) * _fs;
-    var _fy = panel_y + face_y + sprite_get_yoffset(text_face.spr) * _fs;
-    // her tail, swishing on its own loop
+    if (variable_struct_exists(text_face, "anim") && text_face.anim && !text_done()) _fi = floor(t / 6) mod sprite_get_number(_spr);
+    var _fx = face_cx, _fy = panel_y + face_top + _dy;
     if (variable_struct_exists(text_face, "tail"))
         draw_sprite_ext(text_face.tail, floor(t / 4) mod sprite_get_number(text_face.tail), _fx, _fy, _fs, _fs, 0, c_white, 1);
-    draw_sprite_ext(text_face.spr, _fi, _fx, _fy, _fs, _fs, 0, c_white, 1);
+    draw_sprite_ext(_spr, _fi, _fx, _fy, _fs, _fs, 0, c_white, 1);
     _tx0 += say_indent;
+}
+// whoever's talking talks in their colour (the textbox's): col, and col2 for a top-to-bottom gradient (Pink's)
+var _c1 = c_white, _c2 = c_white;
+if (text_face != undefined)
+{
+    if (variable_struct_exists(text_face, "col")) _c1 = text_face.col;
+    _c2 = variable_struct_exists(text_face, "col2") ? text_face.col2 : _c1;
 }
 var _shown = floor(text_shown);
 for (var i = 0; i < array_length(text_lines); i++)
 {
     var _l   = text_lines[i];
     var _vis = clamp(_shown - _l.from + 1, 0, _l.len);
-    if (_vis > 0) draw_text_transformed(_tx0 + _l.x, panel_y + 18 + _l.y, string_copy(text, _l.from, _vis), text_scale, text_scale, 0);
+    if (_vis > 0) draw_text_transformed_colour(_tx0 + _l.x, panel_y + 18 + _l.y, string_copy(text, _l.from, _vis),
+        text_scale, text_scale, 0, _c1, _c1, _c2, _c2, 1);
 }
 matrix_set(matrix_world, matrix_build_identity());

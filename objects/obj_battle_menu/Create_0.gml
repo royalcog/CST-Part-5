@@ -92,6 +92,47 @@ rounds_loop_from    = 0;   // once they've all played, it loops back to this one
 end_after_turn      = -1;  // >= 0: the battle ends once that enemy turn's over (no win screen; on_win still runs)
 panel_ox            = 0;   // px the panel's text/lists move right (the 2-box battle's boxes start further left)
 turn_end_hook       = undefined;   // function(_turn) at the end of each enemy turn: true if it's taken over (a script)
+// --- the Freedom Gang's ACTs ---
+cheer_left = 0;      // FIGHT attacks still to be boosted (Pink's Cheer, Jevil's bell)...
+cheer_mult = 1.5;    // ...by this much
+guard_mult = 0.5;    // Spamton's Deal: damage taken in the next enemy turn is multiplied by this
+global.party_guard = 1;
+/// a FIGHT's damage multiplier (uses up one of the boosted attacks, if there are any)
+fight_boost = function() { if (cheer_left <= 0) return 1; cheer_left--; return cheer_mult; }
+/// Jevil's Chaos: something random
+jevil_chaos = function(_d)
+{
+    audio_play_sound(snd_jevillaugh, 1, false);
+    switch (irandom(5))
+    {
+        case 0:
+        {
+            var _e = enemies();
+            if (array_length(_e) > 0) _e[0].take_hit(irandom_range(300, 700), _d.color);
+            set_text("* Jevil threw a CHAOS BOMB!\n* It hit hard!");
+        }
+        break;
+        case 1:
+            for (var i = 0; i < party_n; i++) if (members[i] != noone && instance_exists(members[i])) scr_bm_heal(members[i], irandom_range(30, 90));
+            set_text("* Jevil spun the wheel!\n* Everyone's HP went up!");
+        break;
+        case 2:
+            cheer_left += 2;
+            set_text("* Jevil tossed his bell!\n* The next 2 attacks will hit harder!");
+        break;
+        case 3:
+            global.party_guard = guard_mult;
+            set_text("* Jevil shuffled the deck!\n* Damage taken this turn went down!");
+        break;
+        case 4:
+            global.soul_glow_radius = 63;
+            set_text("* Jevil juggled the SOUL's light!\n* It grew!");
+        break;
+        default:
+            set_text("* Jevil laughed.\n* ...Nothing happened! CHAOS, CHAOS!");
+        break;
+    }
+}
 
 /// this turn's round (or undefined)
 cur_round = function()
@@ -165,9 +206,9 @@ choose_facing  = 1;        // (which way the one choosing faced before the curso
 // --- the panel can show a party member's face next to the text (Deltarune's in-battle lines) ---
 text_face   = undefined;   // { spr, img } while someone's talking in the panel
 say_indent  = 112;         // px the text moves right to make room for the face
-face_x      = 10;          // the face's left edge / top, from the panel (GUI px)
-face_y      = 10;
-face_scale  = 2;
+face_cx     = 58;          // the face column's middle, from the panel's left (GUI px): portraits are top-centre
+face_top    = 14;          // the face's top, from the panel's top
+face_h      = 80;          // portraits are scaled to about this tall, like the textbox's (Ralsei's & Lancer's a bit bigger)
 
 voice_delay = 1;           // like the textbox: a blip every few frames while letters are typing (snd_delay)
 voice_count = 0;
@@ -671,6 +712,12 @@ run_action = function(_a)
                         if (_sp.effect == "check") { _a.target = retarget(_a.target); set_text((_a.target != noone) ? _a.target.check_text : "* ..."); }
                         else set_text("* Queen turned her screen brightness all the way up!\n* The SOUL's light grew!");
                     }
+                    else if (_sp.effect == "cheer" || _sp.effect == "deal" || _sp.effect == "chaos")
+                    {
+                        // the Freedom Gang's ACTs: what happened's said once it's happened (Z goes on)
+                        _a.wait_z = true;
+                        set_text("* " + _who + " used " + string_upper(_sp.name) + "!");
+                    }
                     else
                     {
                         set_text("* " + _who + " cast " + string_upper(_sp.name) + "!");
@@ -778,6 +825,19 @@ apply = function(_a)
                     // the SOUL's light grows for the rest of the battle (obj_titanspawn_attack1 reads it)
                     global.soul_glow_radius = 63;   // Deltarune: 48 -> 63 for the turn
                     audio_play_sound(snd_power, 1, false);
+                break;
+                case "cheer":
+                    cheer_left += _sp.amount;
+                    audio_play_sound(snd_power, 1, false);
+                    set_text("* Pink cheered everyone on!\n* The next " + string(_sp.amount) + " attacks will hit harder!");
+                break;
+                case "deal":
+                    global.party_guard = guard_mult;
+                    audio_play_sound(snd_boost, 1, false);
+                    set_text("* Spamton made everyone a [[Deal of a Lifetime]]!\n* Damage taken this turn is [Halved]!");
+                break;
+                case "chaos":
+                    jevil_chaos(_d);
                 break;
             }
         }

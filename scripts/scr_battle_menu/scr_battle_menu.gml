@@ -79,25 +79,25 @@ function scr_bm_member_def(_name)
             attack: spr_pink_throw_bomb_corrupted, attack_sound_frame: 999,
             fight_fx: "bomb", fx_frame: 12,                   // her bomb leaves her hand on frame 12 of her throw
             spell_anim: -1,
-            magic: [   // her ACTs (placeholders)
-                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
-                { name: "Cheer", tp: 0, target: "ally",  effect: "heal",  amount: 60, desc: "" },
+            magic: [   // her ACTs
+                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0, desc: "" },
+                { name: "Cheer", tp: 0, target: "none",  effect: "cheer", amount: 3, desc: "" },   // the next 3 attacks hit harder
             ],
         };
         case "Jevil": return {
             obj: obj_jevil, color: make_color_rgb(109, 109, 192),
             cmds: ["FIGHT", "ACT", "ITEM", "SPARE", "DEFEND"],
             at: 18, mg: 6,
-            idle: spr_jevil_right_neutral, idle_hold: true,
+            idle: spr_jevil_dance, idle_hold: false,
             ready_fight: -1, ready_magic: -1, ready_act: -1,
             ready_item: -1, item_anim: -1,
             defend: -1,
-            attack: spr_jevil_right, attack_sound_frame: 999,
+            attack: spr_jevil_dance, attack_sound_frame: 999,
             fight_fx: "spade",                                // summons a spade and shoots it
             spell_anim: -1,
             magic: [
-                { name: "Check",  tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
-                { name: "Juggle", tp: 0, target: "ally",  effect: "heal",  amount: 40, desc: "" },
+                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0, desc: "" },
+                { name: "Chaos", tp: 0, target: "none",  effect: "chaos", amount: 0, desc: "" },   // something random
             ],
         };
         case "Spamton": return {
@@ -112,8 +112,8 @@ function scr_bm_member_def(_name)
             fight_fx: "pipis",                                // drops pipis on its face, remotely
             spell_anim: -1,
             magic: [
-                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0,  desc: "" },
-                { name: "Deal",  tp: 0, target: "ally",  effect: "heal",  amount: 50, desc: "" },
+                { name: "Check", tp: 0, target: "enemy", effect: "check", amount: 0, desc: "" },
+                { name: "Deal",  tp: 0, target: "none",  effect: "deal",  amount: 0, desc: "" },   // less damage taken this turn
             ],
         };
     }

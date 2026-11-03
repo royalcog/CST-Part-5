@@ -314,6 +314,7 @@ switch (state)
     // ---------------------------------------------------------------- a scripted moment (start_script)
     case "scripted":
     {
+        if (script == undefined) break;   // (the script's then() already ran: whatever it set up takes over next frame)
         var _sc = script;
         _sc.t++;
         if (_sc.i >= array_length(_sc.steps))
@@ -559,7 +560,7 @@ switch (state)
                         if (!instance_exists(_f.fx) || _f.fx.hit || _f.t >= 240)
                         {
                             var _tg = retarget(_f.target);
-                            if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult) - _tg.df * 3), _d.color);
+                            if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult * fight_boost()) - _tg.df * 3), _d.color);
                             scr_tp_add(_f.points / (global.tp.dark ? fight_tp_div_dark : fight_tp_div) * 0.4);
                             _f.phase = "after";
                             _f.t = 0;
@@ -575,7 +576,7 @@ switch (state)
                     if (_d.obj.image_speed == 0 || _f.t >= 60)
                     {
                         var _tg = retarget(_f.target);
-                        if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult) - _tg.df * 3), _d.color);
+                        if (_tg != noone) _tg.take_hit(max(1, round(_d.at * _f.points / 20 * fight_mult * fight_boost()) - _tg.df * 3), _d.color);
                         scr_tp_add(_f.points / (global.tp.dark ? fight_tp_div_dark : fight_tp_div) * 0.4);   // TP (much less in darkness)
                         _f.phase = "after";
                         _f.t = 0;
@@ -673,7 +674,7 @@ switch (state)
 
     case "turn_end":
         // Queen used her shield this round: it breaks now (like her Chapter 2 shields)
-        if (t == 1) scr_queen_shield_break();
+        if (t == 1) { scr_queen_shield_break(); global.party_guard = 1; }   // (Spamton's Deal only lasts the one enemy turn)
         if (t >= 10 && !instance_exists(obj_queen_shield))
         {
             if (end_after_turn >= 0 && turn >= end_after_turn) { end_battle(); break; }

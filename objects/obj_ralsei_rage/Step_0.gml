@@ -177,15 +177,59 @@ if (shield != undefined)
     shield.flash = max(0, shield.flash - 0.15);
 }
 
+// ---------------------------------------------------------------- from the gang on: everyone sorted by where they stand
+if (ysort)
+{
+    var _ys = [obj_susie, obj_ralsei, obj_queen, obj_mewmew, obj_jevil, obj_spamton];
+    for (var i = 0; i < array_length(_ys); i++)
+        with (_ys[i]) depth = other.ysort_base - round(scr_get_feet(id).y);
+}
+
+// ---------------------------------------------------------------- Jevil teleporting (the fan-out)
+if (jevil_tp != undefined)
+{
+    var _jt = jevil_tp;
+    var _j  = instance_find(obj_jevil, 0);
+    _jt.t++;
+    if (_j == noone) { jevil_tp = undefined; gang_arrived++; }
+    else
+    {
+        var _k = 0;   // 0 = all there, 1 = gone
+        if (_jt.t <= tp_time) _k = _jt.t / tp_time;
+        else if (_jt.t <= tp_time + tp_gap)
+        {
+            _k = 1;
+            if (!_jt.moved)
+            {
+                _jt.moved = true;
+                with (_j) { image_xscale = 2; image_yscale = 2; }
+                scene.set_feet(_j, _jt.x, _jt.y);
+                with (_j) { if (variable_instance_exists(id, "start_y")) start_y = y; if (variable_instance_exists(id, "expected_y")) expected_y = y; }
+            }
+        }
+        else
+        {
+            if (!_jt.back) { _jt.back = true; audio_play_sound(tp_sound, 1, false); }
+            _k = max(0, 1 - (_jt.t - tp_time - tp_gap) / tp_time);
+        }
+        with (_j) { image_xscale = 2 * (1 - 0.9 * _k); image_yscale = 2 * (1 + 0.5 * _k); image_alpha = 1 - _k; }
+        if (_jt.back && _k <= 0) { jevil_tp = undefined; gang_arrived++; }
+    }
+}
+
 // ---------------------------------------------------------------- after the battle
 // stay drawn just in front of everyone (the shield over King, the red glow on Ralsei)
 if (fb.sa <= 0 && shield != undefined)
 {
     var _d = 0;
-    with (obj_king)   _d = min(_d, depth);
-    with (obj_lancer) _d = min(_d, depth);
-    with (obj_ralsei) _d = min(_d, depth);
-    with (obj_queen)  _d = min(_d, depth);
+    with (obj_king)    _d = min(_d, depth);
+    with (obj_lancer)  _d = min(_d, depth);
+    with (obj_ralsei)  _d = min(_d, depth);
+    with (obj_queen)   _d = min(_d, depth);
+    with (obj_susie)   _d = min(_d, depth);
+    with (obj_mewmew)  _d = min(_d, depth);
+    with (obj_jevil)   _d = min(_d, depth);
+    with (obj_spamton) _d = min(_d, depth);
     depth = _d - 1;
 }
 rage_tint  = approach(rage_tint, rage_target, 0.03);

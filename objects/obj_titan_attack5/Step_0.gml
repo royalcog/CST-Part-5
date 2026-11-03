@@ -3,15 +3,18 @@ t++;
 var _goal = (phase == "full") ? full_aura : (variable_global_exists("soul_glow_radius") ? global.soul_glow_radius : 48);
 aura_radius = scr_approach(aura_radius, _goal, abs(_goal - aura_radius) * 0.0513);
 
+cast_update();
+if (boom != undefined) { boom.f += 0.4; if (boom.f >= sprite_get_number(spr_titan_shockwave_bullet_explosion)) boom = undefined; }
+
 switch (phase)
 {
     case "box":
         if (!instance_exists(obj_battlebox)) { instance_destroy(); exit; }
         if (t mod max(1, round(spawn_gap / spawn_rate)) == 0) spawn_shape();
-        if (t >= break_at) { break_box(); phase = "breaking"; }
+        if (t >= break_at && cast == undefined) cast_start();
     break;
 
-    case "breaking":   // the Rude Buster's on its way
+    case "breaking":   // the box is in pieces
         if (!instance_exists(obj_battlebox)) { phase = "full"; full_t = 0; }
     break;
 

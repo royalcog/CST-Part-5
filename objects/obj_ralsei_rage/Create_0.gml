@@ -122,7 +122,19 @@ clash_k1         = 0.25;   // ...slowly pushed back toward him
 clash_wobble     = 0.03;
 tired_time       = 70;     // frames his beam takes to sputter out (and its laser with it)
 fire_beam_w      = 14;     // px wide (his)
-laser_w          = 0.4;    // spr_titanbeam_midsection's width scale (its)
+laser_w         = 12;      // px wide (its)
+laser_col_glow  = make_colour_rgb(90, 40, 200);
+laser_col       = make_colour_rgb(170, 110, 255);
+laser_col_hot   = make_colour_rgb(230, 215, 255);
+laser_streaks   = 10;      // streaks of light running down it...
+laser_flow      = 22;      // ...this many px a frame
+laser_streak_len = 46;
+fire_col_glow   = make_colour_rgb(200, 40, 0);
+fire_col        = make_colour_rgb(255, 120, 20);
+fire_col_hot    = make_colour_rgb(255, 220, 90);
+fire_flames     = 18;      // flames riding his beam...
+fire_flow       = 0.035;   // ...how fast they go down it (of its length a frame)
+fire_embers     = 14;
 pause_time       = 180;    // the dramatic pauses (frames of silence)
 // its laser at him
 laser_charge    = 50;      // frames its face glows first
@@ -144,24 +156,33 @@ gang_pan        = 300;     // px the camera pans left to show them
 gang_spots      = { pink: { x: 110, y: 205 }, jevil: { x: 60, y: 140 }, spamton: { x: 70, y: 260 } };
 gang_song       = sng_needsomefriends;
 gang_song_in    = 2000;    // ms it fades in over
-pink_face_scale = 0.75;    // her portrait's size in the battle panel
-// Susie, walking back
-susie_pan       = 420;     // px further left the camera pans to find her
-susie_from_dx   = -40;     // her feet start this far from the left of that view (off it)...
-susie_to_dx     = 260;     // ...and she walks to here
-susie_y         = 230;
+// who talks in what colour in the battle panel (the textbox's): Pink's goes white to pink
+say_cols = {
+    susie:  make_colour_rgb(175, 103, 175), ralsei: make_colour_rgb(77, 204, 142),  queen:   make_colour_rgb(111, 209, 255),
+    king:   make_colour_rgb(96, 128, 192),  lancer: make_colour_rgb(85, 133, 189),  jevil:   make_colour_rgb(109, 109, 192),
+    spamton: c_white,
+};
+pink_col        = make_colour_rgb(255, 138, 144);
+// Susie, walking back in from the left (she took the chair back up). from the left of the gang's view
+susie_from_dx   = -40;
+susie_to_dx     = 300;
+susie_y         = 290;
 susie_walk      = 2;
-susie_rest      = 60;      // frames she's down on her knee
 ralsei_run      = 6;       // px a frame he runs to her
 hug_dx          = 18;      // px Susie's moved so her half of the hug sprite stays where she was
 hug_gap         = 40;      // Ralsei's feet are this far right of Susie's when they come apart
-// everyone fans out for the 6-person battle (screen px from the battle's camera: their feet). the front row (the ones
-// who take hits) nearer the Titan, the back row behind, all above the two rows of boxes
+hug_speed       = 0.15;    // the hug plays once and holds
+// everyone fans out for the 6-person battle (screen px from the battle's camera: their feet). front row (the ones who
+// take hits) nearer the Titan, back row behind; staggered so nobody's on top of anybody, all on the floor and above the boxes
 fan_spots = {
-    queen:   { x: 470, y: 110 }, ralsei: { x: 455, y: 165 }, susie:   { x: 480, y: 220 },
-    jevil:   { x: 345, y: 85  }, pink:   { x: 360, y: 145 }, spamton: { x: 350, y: 200 },
+    queen:   { x: 470, y: 132 }, ralsei: { x: 385, y: 188 }, susie:   { x: 470, y: 250 },
+    jevil:   { x: 185, y: 128 }, pink:   { x: 265, y: 192 }, spamton: { x: 150, y: 250 },
 };
 fan_walk        = 3;
+tp_time         = 12;      // Jevil teleports: frames to vanish (and to come back)...
+tp_gap          = 16;      // ...frames gone
+tp_sound        = snd_appear;
+ysort_base      = -2000;   // from the gang on, everyone's depth: this minus their feet's y (further down = in front)
 ready_wait      = 40;      // frames they hold their readies before the six boxes come up
 
 // ---------------------------------------------------------------- refs + state
@@ -202,6 +223,8 @@ laser       = undefined;   // its laser at him: { phase, t, a }
 bomb        = undefined;   // Pink's bomb: { t, sx, sy, tx, ty, rot, done }
 menu        = noone;       // the battle menu (while it's running our scripts)
 gang_arrived = 0;
+jevil_tp     = undefined;   // { t, x, y, moved, back }
+ysort        = false;
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -476,28 +499,99 @@ beam_start = function()
     audio_play_sound(snd_firespell, 1, false);
     beam_loop = audio_play_sound(snd_titan_blastloop, 2, true, 0.5);
 }
-/// the Titan's laser from (_x1, _y1) to (_x2, _y2): spr_titanbeam_midsection, turned and stretched
+/// a soft band from (_x1, _y1) to (_x2, _y2): _col down the middle fading out to its edges (draw it under bm_add).
+/// _wob > 0: it wavers like fire, and starts thinner at (_x1, _y1)
+soft_strip = function(_x1, _y1, _x2, _y2, _w, _col, _a, _wob = 0, _ph = 0)
+{
+    var _len = point_distance(_x1, _y1, _x2, _y2);
+    if (_len < 1 || _a <= 0) return;
+    var _d  = point_direction(_x1, _y1, _x2, _y2);
+    var _nx = lengthdir_x(1, _d + 90), _ny = lengthdir_y(1, _d + 90);
+    var _n  = (_wob == 0) ? 1 : max(2, ceil(_len / 12));
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        draw_primitive_begin(pr_trianglestrip);
+        for (var i = 0; i <= _n; i++)
+        {
+            var _k  = i / _n;
+            var _o  = (_wob == 0) ? 0 : sin(_k * 9 - t * 0.45 + _ph) * _wob * _k;
+            var _hw = _w * 0.5 * ((_wob == 0) ? 1 : (0.55 + 0.45 * _k));
+            var _cx = lerp(_x1, _x2, _k) + _nx * _o, _cy = lerp(_y1, _y2, _k) + _ny * _o;
+            draw_vertex_colour(_cx, _cy, _col, _a);
+            draw_vertex_colour(_cx + _nx * _hw * _side, _cy + _ny * _hw * _side, c_black, _a);
+        }
+        draw_primitive_end();
+    }
+}
+/// the Titan's laser: a violet glow round a white-hot core, light streaking down it, flaring where it starts and lands
 draw_laser = function(_x1, _y1, _x2, _y2, _w, _a)
 {
     var _len = point_distance(_x1, _y1, _x2, _y2);
     if (_len < 1 || _a <= 0) return;
-    var _n = sprite_get_number(spr_titanbeam_midsection);
-    draw_sprite_ext(spr_titanbeam_midsection, floor(t / 4) mod _n, _x1, _y1, _w, _len / sprite_get_height(spr_titanbeam_midsection),
-        point_direction(_x1, _y1, _x2, _y2) + 90, c_white, _a);
+    var _d  = point_direction(_x1, _y1, _x2, _y2);
+    var _nx = lengthdir_x(1, _d + 90), _ny = lengthdir_y(1, _d + 90);
+    var _fl = 1 + 0.08 * sin(t * 1.7) + random_range(-0.04, 0.04);
+    gpu_set_blendmode(bm_add);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 4.0 * _fl, laser_col_glow, 0.6 * _a);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 2.0 * _fl, laser_col,      0.9 * _a);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 1.0 * _fl, laser_col_hot,  _a);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 0.5,       c_white,        _a);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 0.5,       c_white,        _a);
+    // light streaking down it
+    draw_set_alpha(0.7 * _a);
+    for (var i = 0; i < laser_streaks; i++)
+    {
+        var _k  = frac(t * laser_flow / _len + i / laser_streaks);
+        var _r  = frac(abs(sin(i * 12.9898)) * 43758.5453);
+        var _o  = (_r - 0.5) * _w * 0.9;
+        var _sx = lerp(_x1, _x2, _k) + _nx * _o, _sy = lerp(_y1, _y2, _k) + _ny * _o;
+        draw_line_width_colour(_sx, _sy, _sx + lengthdir_x(laser_streak_len, _d), _sy + lengthdir_y(laser_streak_len, _d), 2, c_white, laser_col);
+    }
+    // flares
+    draw_set_alpha(_a);
+    draw_circle_colour(_x1, _y1, _w * 2.4 * _fl, c_white, c_black, false);
+    draw_circle_colour(_x2, _y2, _w * 1.8 * _fl, laser_col_hot, c_black, false);
+    draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
 }
-/// Ralsei's fire beam: a glow, a burning core and a white-hot middle, wavering
+/// Ralsei's fire beam: layers of wavering flame round a white-hot core, flames riding it and embers flying off
 draw_fire_beam = function(_x1, _y1, _x2, _y2, _w, _a)
 {
-    if (_a <= 0) return;
-    var _wv = 1 + 0.15 * sin(t * 0.7);
+    var _len = point_distance(_x1, _y1, _x2, _y2);
+    if (_len < 1 || _a <= 0) return;
+    var _d  = point_direction(_x1, _y1, _x2, _y2);
+    var _nx = lengthdir_x(1, _d + 90), _ny = lengthdir_y(1, _d + 90);
     gpu_set_blendmode(bm_add);
-    draw_set_alpha(0.35 * _a);
-    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * 2.6 * _wv, c_orange, c_red);
-    gpu_set_blendmode(bm_normal);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 3.4, fire_col_glow, 0.55 * _a, _w * 0.5,  0);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 2.0, fire_col,      0.9 * _a,  _w * 0.35, 1.3);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 1.0, fire_col_hot,  _a,        _w * 0.25, 2.1);
+    soft_strip(_x1, _y1, _x2, _y2, _w * 0.45, c_white,      _a,        _w * 0.15, 2.1);
+    // flames riding it, licking back the way they came
+    var _fs = _w * 1.3 / sprite_get_width(spr_plat_fire);
+    for (var i = 0; i < fire_flames; i++)
+    {
+        var _r  = frac(abs(sin(i * 78.233)) * 43758.5453);
+        var _k  = frac(t * fire_flow + i / fire_flames + _r * 0.05);
+        var _o  = (_r - 0.5) * _w * 1.2 * _k + sin(t * 0.3 + i) * _w * 0.2;
+        var _fx = lerp(_x1, _x2, _k) + _nx * _o, _fy = lerp(_y1, _y2, _k) + _ny * _o;
+        var _s  = _fs * (0.6 + 0.8 * _k) * (0.7 + 0.5 * _r);
+        draw_sprite_ext(spr_plat_fire, 0, _fx, _fy, _s, _s, _d + 90 + sin(t * 0.4 + i) * 12,
+            merge_colour(c_white, fire_col, _k), _a * sin(_k * pi));
+    }
+    // embers flying off
+    for (var j = 0; j < fire_embers; j++)
+    {
+        var _r = frac(abs(sin(j * 39.346)) * 43758.5453);
+        var _k = frac(t * fire_flow * 1.4 + j / fire_embers);
+        var _o = (_r - 0.5) * _w * 3.2 * _k;
+        draw_set_alpha(_a * (1 - _k));
+        draw_circle_colour(lerp(_x1, _x2, _k) + _nx * _o, lerp(_y1, _y2, _k) + _ny * _o, 2 + _r * 2, fire_col_hot, fire_col, false);
+    }
+    // his hand, burning
     draw_set_alpha(_a);
-    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * _wv, c_orange, c_yellow);
-    draw_line_width_colour(_x1, _y1, _x2, _y2, _w * 0.35, c_white, c_white);
+    draw_circle_colour(_x1, _y1, _w * 1.4 * (1 + 0.1 * sin(t * 0.8)), fire_col_hot, c_black, false);
     draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
 }
 
 // --- its laser at him ---
@@ -574,11 +668,13 @@ place_gang = function()
     var _s = instance_exists(obj_spamton) ? instance_find(obj_spamton, 0) : instance_create_layer(0, 0, "Instances", obj_spamton);
     with (_p) { corrupted = true; ghosted = false; }
     stand(_p, spr_mewmew_idle_corrupted, _bc + gang_spots.pink.x,    gang_spots.pink.y,    1);
-    stand(_j, spr_jevil_right_neutral,   _bc + gang_spots.jevil.x,   gang_spots.jevil.y,   0);
+	with (_j) bob_on = false;   // (dancing in battle: no float bob)
+    stand(_j, spr_jevil_dance,           _bc + gang_spots.jevil.x,   gang_spots.jevil.y,   1);
     stand(_s, spr_spamton_right,         _bc + gang_spots.spamton.x, gang_spots.spamton.y, 0);
     // (the tower's shadow on them too, like everyone else)
     if (instance_exists(obj_shadow_tint))
         with (obj_shadow_tint) { if (!array_contains(shade_objs, obj_mewmew)) array_push(shade_objs, obj_mewmew, obj_jevil, obj_spamton); }
+    ysort = true;   // (from now on everyone's sorted by where they're standing)
 }
 gang_music = function()
 {
@@ -593,10 +689,9 @@ gang_music = function()
 // --- Susie ---
 susie_enter = function()
 {
-    var _cx = battle_cam() - gang_pan - susie_pan;
-    with (obj_susie) { visible = true; image_angle = 0; image_alpha = 1; image_xscale = 2; }
+    var _cx = battle_cam() - gang_pan;   // (the camera stays on the gang: she walks in from the left of the screen)
+    with (obj_susie) { visible = true; image_angle = 0; image_alpha = 1; image_xscale = 2; image_yscale = 2; }
     scene.place(obj_susie, spr_susie_walk_right_neutral, _cx + susie_from_dx, susie_y);
-    scene.pan_cam(_cx, cam_pan_time);
     arrived = 0;
     scr_walk_feet_to(obj_susie, spr_susie_walk_left_neutral, spr_susie_walk_right_neutral, spr_susie_walk_up, spr_susie_walk_down_neutral,
         _cx + susie_to_dx, susie_y, susie_walk, function() { arrived = 1; });
@@ -613,7 +708,8 @@ hug = function()
 {
     with (obj_ralsei) visible = false;
     scene.pose_flip(obj_susie, spr_ralsei_susie_hug, 2);
-    with (obj_susie) { x += other.hug_dx; image_speed = 1; anim_loop = true; }
+    with (obj_susie) { x += other.hug_dx; anim_loop = false; }
+    play(obj_susie, 0, sprite_get_number(spr_ralsei_susie_hug) - 1, hug_speed);   // once, then it holds
 }
 /// "Now." she pushes off him
 unhug = function()
@@ -633,7 +729,6 @@ apart = function()
     scene.set_feet(obj_ralsei, _sf.x + hug_gap, _sf.y);
 }
 
-// --- everyone together ---
 fan_out = function()
 {
     with (obj_queen_shield) instance_destroy();
@@ -646,33 +741,33 @@ fan_out = function()
     with (obj_ralsei)  image_xscale = 2;
     with (obj_queen)   image_xscale = 2;
     with (obj_mewmew)  image_xscale = 2;
-    with (obj_jevil)   image_xscale = 2;
     with (obj_spamton) image_xscale = 2;
     scr_walk_feet_to(obj_susie,   spr_susie_walk_left_neutral, spr_susie_walk_right_neutral, spr_susie_walk_up, spr_susie_walk_down_neutral, _bc + _s.susie.x,   _s.susie.y,   fan_walk, _done);
     scr_walk_feet_to(obj_ralsei,  scene.ralsei_left, scene.ralsei_right, scene.ralsei_up, scene.ralsei_down,                                 _bc + _s.ralsei.x,  _s.ralsei.y,  fan_walk, _done);
     scr_walk_feet_to(obj_queen,   spr_queen_walk_left_unhappy, spr_queen_walk_right_unhappy, spr_queen_walk_up, spr_queen_walk_down_unhappy, _bc + _s.queen.x,   _s.queen.y,   fan_walk, _done);
     scr_walk_feet_to(obj_mewmew,  spr_mewmew_walkright_corrupted, spr_mewmew_walkright_corrupted, spr_mewmew_walkup_corrupted, spr_mewmew_walkright_corrupted, _bc + _s.pink.x, _s.pink.y, fan_walk, _done);
-    scr_walk_feet_to(obj_jevil,   spr_jevil_left, spr_jevil_right, spr_jevil_right, spr_jevil_right,                                         _bc + _s.jevil.x,   _s.jevil.y,   fan_walk, _done);
     scr_walk_feet_to(obj_spamton, spr_spamton_left, spr_spamton_right, spr_spamton_right, spr_spamton_right,                                 _bc + _s.spamton.x, _s.spamton.y, fan_walk, _done);
+    // Jevil doesn't walk: he teleports (counts as arrived once he's back)
+    jevil_tp = { t: 0, x: _bc + _s.jevil.x, y: _s.jevil.y, moved: false, back: false };
+    audio_play_sound(tp_sound, 1, false);
 }
-/// all facing the Titan
+/// all facing the Titan (Jevil dancing)
 face_all_right = function()
 {
     pose(obj_susie,  spr_susie_walk_right_neutral, 2);
     pose(obj_ralsei, scene.ralsei_right, 2);
     pose(obj_queen,  spr_queen_walk_right_unhappy, 2);
     swap(obj_mewmew, spr_mewmew_idle_corrupted, 1);
-    swap(obj_jevil,  spr_jevil_right_neutral, 0);
+    swap(obj_jevil,  spr_jevil_dance, 1);
     swap(obj_spamton, spr_spamton_right, 0);
 }
-/// attack readies
+/// attack readies (Jevil just keeps dancing)
 ready_all = function()
 {
     swap(obj_susie,   spr_susie_attack_ready, 0);
     swap(obj_ralsei,  spr_ralsei_attack_ready, 0);
     pose(obj_queen,   spr_queen_pie_throw, 2);
     swap(obj_mewmew,  spr_pink_throw_bomb_corrupted, 0);
-    swap(obj_jevil,   spr_jevil_right_neutral, 0);
     swap(obj_spamton, spr_spamton_armsout_right, 0);
     audio_play_sound(snd_taking_out_sword, 1, false);
 }
@@ -694,11 +789,12 @@ S = function(_who, _img, _text, _opt = undefined)
         case "king":    _f = { spr: spr_king_dialogue,   img: _img }; break;
         case "lancer":  _f = { spr: spr_lancer_dialogue, img: _img }; break;
         case "susie":   _f = { spr: spr_susie_dialogue,  img: _img }; break;
-        case "pink":    _f = { spr: _img, img: 0, scale: pink_face_scale, tail: spr_mewmewspeaker_tail_corrupted, anim: true, voice: noone }; break;
+        case "pink":    _f = { spr: -1, img: 0, voice: snd_empty, col2: pink_col }; break;   // no face, her blips, white to pink
         case "jevil":   _f = { spr: -1, img: 0, voice: snd_jevil };   break;
         case "spamton": _f = { spr: -1, img: 0, voice: snd_spamton }; break;
-        default:        _f = { spr: -1, img: 0, voice: snd_susie };   break;   // "susie_off": Susie, from off the screen
+        default:        _f = { spr: -1, img: 0, voice: snd_susie }; _who = "susie"; break;   // "susie_off": Susie, from off the screen
     }
+    _f.col = variable_struct_exists(say_cols, _who) ? say_cols[$ _who] : c_white;
     _f.text = _text;
     if (_opt != undefined)
     {
@@ -825,12 +921,10 @@ script_b = function()
         S("ralsei", 28, "* Is Susie..."),
         S("susie_off", 0, "* Susie's good, Ralsei."),
 
-        // the camera finds her, walking back. down on her knee a second, then up
+        // she walks back in from the left (she rode the chair back up)
         R(function() { clear(); susie_enter(); }),
-        U(function() { return arrived == 1 && !scene.cam_pan.on; }),
-        R(function() { scene.pose_flip(obj_susie, spr_susie_landed, -2); with (obj_susie) image_speed = 0; }),
-        W(susie_rest),
-        R(function() { scene.pose_flip(obj_susie, spr_susie_walk_right_neutral, 2); with (obj_susie) image_speed = 0; }),
+        U(function() { return arrived == 1; }),
+        R(function() { pose(obj_susie, spr_susie_walk_right_neutral, 2); }),
         W(20),
         S("susie", 30, "* I'm okay."),
 
@@ -845,8 +939,8 @@ script_b = function()
         S("susie", 34, "* Now.", { on_start: function() { unhug(); } }),
         U(function() { return anim_done(obj_susie); }),
         R(function() { apart(); }),
-        S("susie", 17, "* Where's that-", { auto: 4 }),
-        S("ralsei", 48, "* After, Susie."),
+        S("susie", 17, "* Time to deal with that-", { auto: 4, on_start: function() { pose(obj_susie, spr_susie_walk_left_neutral, 2); } }),
+        S("ralsei", 48, "* After, Susie.", { on_start: function() { pose(obj_susie, spr_susie_walk_right_neutral, 2); } }),
         S("susie", 15, "* ???"),
         S("ralsei", 27, "* We'll deal with him after."),
         S("susie", 31, "* ..."),

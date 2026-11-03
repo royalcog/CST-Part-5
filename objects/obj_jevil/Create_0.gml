@@ -16,3 +16,5 @@ light_offset_y = -16;
 damage_color = make_colour_rgb(109, 109, 192);
 
 char_id = CharID.Jevil;
+
+bob_on = true;   // false: no float bob (in battle he's dancing: the dance has its own hops)
