@@ -13,6 +13,7 @@
 
 // ---------------------------------------------------------------- tuning: the intro (rm_tower_top, room px)
 intro_wait     = 40;       // frames after the battle UI goes
+heal_hold      = 70;       // frames after it heals itself back to full, before it sinks
 pan_time       = 360;      // the camera's slow pan right, to the end of the room
 sink_dist      = 440;      // px the Titan sinks into the clouds...
 sink_time      = 320;      // ...over this many frames
@@ -161,7 +162,9 @@ allies = [
     { name: "Jevil",   x: 210, up: 80, spr: spr_jevil_dance,              s: 2, anim: true,  jump: false, atk: spr_jevil_dance,               shot: spr_spade, col: c_white,                        shield: false }
 ];
 volley_frames  = 40;       // the ones who stay: how long their shots take to get to it
-pink_bomb_frame = 12;      // the frame of her throw (in the air) the bomb leaves her hand
+pink_takeoff    = 3;       // the frame of her throw she leaves the ground on (before it, she's crouching)
+pink_bomb_frame = 12;      // ...and the one the bomb leaves her hand on
+pink_bomb_at    = { x: 12, y: -136 };   // where the bomb is in her hand then (px from her feet, at 2x)
 box_in         = 30;       // frames the PRESS box takes to come up
 press_add      = 0.055;    // each Z fills it this much...
 press_decay    = 0.0025;   // ...and it drains this much a frame
@@ -219,7 +222,6 @@ make_member = function(_who, _sx)
 }
 susie  = make_member("Susie", susie_sx);
 ralsei = make_member("Ralsei", ralsei_sx);
-input_hist = [];        // Susie's jump inputs, so Ralsei can copy them once he's where she was
 orbs     = [];          // { wx, y, k, sx0, sy0, high, landed, done }
 spawn    = undefined;   // { who, st, t, x, y, s, dead }
 shots    = [];          // { x, y, tx, ty, spr, t, time, kill }
