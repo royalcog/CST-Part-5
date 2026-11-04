@@ -13,10 +13,12 @@ function scr_debug_skip_to_tower_top(_to_battle = false, _to_titan = false)
     with (obj_textbox) instance_destroy();
     with (obj_cutscenefade) instance_destroy();
 
-    // the climb's song (it keeps going up there until the Titan Spawn land)
-    if (!(variable_global_exists("song") && global.song == sng_chaostower))
+    // the music, as it'd be at that point: everything that was playing stops (the scenes that would've cut it off
+    // aren't coming), then the climb's song if it'd still be going (it plays until the Titan Spawn land). by the
+    // Titan reveal the Titan Spawn battle's song has already ended: silence
+    scr_debug_music_reset();
+    if (!_to_titan)
     {
-        if (variable_global_exists("music")) audio_stop_sound(global.music);
         global.music = audio_play_sound(sng_chaostower, 2, true);
         global.song  = sng_chaostower;
     }
@@ -35,6 +37,14 @@ function scr_debug_skip_to_titan2()
     global.cutscene_lock  = true;
     with (obj_textbox) instance_destroy();
     with (obj_cutscenefade) instance_destroy();
-    if (variable_global_exists("music")) audio_stop_sound(global.music);
+    scr_debug_music_reset();   // (silence: the battle starts its own song)
     room_goto(rm_tower_top);   // (restarts it if you're already there)
+}
+
+/// every sound stops, and nothing's "the song" (so nothing carries over from where you skipped from)
+function scr_debug_music_reset()
+{
+    audio_stop_all();
+    global.music = noone;
+    global.song  = noone;
 }

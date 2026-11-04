@@ -1,6 +1,6 @@
 // the 6-person Titan battle's last attack (scr_start_titan_final makes it). like the last phase of the Flowery fight:
 //   "intro": the battle UI goes. the camera pans slowly right, platforms rise out of the clouds off the tower's edge,
-//            and the Titan sinks into the cloud sea. Ralsei: "RUN!!". Susie holds up the Petal Feather: white.
+//            and the Titan sinks into the cloud sea. Ralsei: "Let's end this...". Susie holds up the Petal Feather: white.
 //   "run":   Susie & Ralsei run right on their own across the platforms. Z / Up: jump (hold it: the feather slows
 //            the fall), X: attack. the cloud sea stretches to the horizon and the Titan comes up out of it far away.
 //            it throws orbs that land on the path ahead (a ! shows where: jump the low ones, stay down for the high
@@ -84,7 +84,12 @@ spawn_chance   = 0.25;     // how often it's a Titan Spawn (only one at a time)
 pair_chance    = 0.15;     // how often an orb has another right behind it
 orb_time       = 70;       // frames an orb takes from its star to the path...
 orb_land_sx    = 760;      // ...landing where the path's at this x on screen
-orb_r          = 14;
+fish_scale     = 1;        // the Titan fish (head, 4 body pieces, tail), at this size...
+fish_swim      = 2.5;      // ...swimming at them along the path this fast once it's landed (px a frame)
+fish_hit_r     = 12;       // px around each piece that hurts
+fish_gap       = 22;       // its pieces' spacing (sprite px), like obj_plat_titanfish
+fish_tail_gap  = 20;
+fish_wave      = 4;        // px each piece wiggles
 orb_low        = 22;       // px above the path a low orb sits (jump it)...
 orb_high       = 86;       // ...and a high one (stay down)
 high_chance    = 0.15;
@@ -427,6 +432,30 @@ throw_orb = function()
     array_push(orbs, { wx: _wx, y: _g - (_high ? orb_high : orb_low), k: 0, sx0: _st.x, sy0: _st.y, high: _high, landed: false, done: false });
     audio_play_sound(snd_spawn_attack, 1, false, 0.6);
 }
+/// piece _k of a fish (0 = head, 1-4 = body, 5 = tail) whose head's at (_hx, _hy), going _ang, at scale _s
+fish_piece = function(_k, _hx, _hy, _ang, _s, _ph)
+{
+    var _back = ((_k <= 4) ? _k * fish_gap : 4 * fish_gap + fish_tail_gap) * _s;
+    var _wig  = sin(_ph - _k * 0.7) * fish_wave * _s;
+    return { x: _hx - lengthdir_x(_back, _ang) + lengthdir_x(_wig, _ang + 90),
+             y: _hy - lengthdir_y(_back, _ang) + lengthdir_y(_wig, _ang + 90) };
+}
+/// a whole fish (its sprites face right as drawn: anything going leftish is flipped instead of turned upside down)
+draw_fish = function(_hx, _hy, _ang, _s, _ph)
+{
+    var _left = (lengthdir_x(1, _ang) < 0);
+    var _xs   = _left ? -_s : _s;
+    var _a    = _left ? _ang - 180 : _ang;
+    var _f    = t / 6;
+    var _p    = fish_piece(5, _hx, _hy, _ang, _s, _ph);
+    draw_sprite_ext(spr_titanfish_tail, _f, _p.x, _p.y, _xs, _s, _a, c_white, 1);
+    for (var k = 4; k >= 1; k--)
+    {
+        _p = fish_piece(k, _hx, _hy, _ang, _s, _ph);
+        draw_sprite_ext(spr_titanfish_body, _f + k, _p.x, _p.y, _xs, _s, _a, c_white, 1);
+    }
+    draw_sprite_ext(spr_titanfish_head, _f, _hx, _hy, _xs, _s, _a, c_white, 1);
+}
 send_spawn = function()
 {
     var _st = far_star();
@@ -469,7 +498,7 @@ add(function()
     with (obj_titan_reveal) visible = false;   // (under the clouds now)
     scene.pose_flip(obj_ralsei, scene.ralsei_down, 2);
     with (obj_ralsei) image_speed = 0;
-    create_textbox("self_24");                  // Ralsei: "RUN!!"
+    create_textbox("self_24");                  // Ralsei: "Let's end this..."
 }, function() { return !instance_exists(obj_textbox); }, 10);
 add(function()
 {

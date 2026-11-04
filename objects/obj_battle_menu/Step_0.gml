@@ -627,6 +627,13 @@ switch (state)
         var _r = cur_round();
         if (_r != undefined && variable_struct_exists(_r, "attack") && _r.attack != undefined)
         {
+            // a round that does its own thing (no box): straight into it
+            if (variable_struct_exists(_r, "no_box") && _r.no_box)
+            {
+                atk_inst = _r.attack();
+                state = "enemy_box_attack";
+                break;
+            }
             with (obj_soul) instance_destroy();
             with (obj_battlebox) instance_destroy();
             box_inst = scr_spawn_battlebox(box_x_nudge);

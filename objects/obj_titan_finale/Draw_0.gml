@@ -146,16 +146,19 @@ if (spawn != undefined)
     }
 }
 
-// orbs: flying in from its star (a ! where they'll land), then sitting on the path
+// the fish: diving in from its star (a ! where it'll land), then swimming along the path at them
 for (var i = 0; i < array_length(orbs); i++)
 {
     var _o  = orbs[i];
     var _tx = _o.wx - dist;
     if (!_o.landed)
     {
-        var _k = _o.k;
-        var _x = lerp(_o.sx0, _tx, _k), _y = lerp(_o.sy0, _o.y, _k) - sin(_k * pi) * 60;
-        draw_sprite_ext(spr_orb, 0, _ox + _x, _oy + _y, lerp(0.15, 0.6, _k), lerp(0.15, 0.6, _k), t * 4, c_white, 1);
+        var _k  = _o.k;
+        var _x  = lerp(_o.sx0, _tx, _k), _y = lerp(_o.sy0, _o.y, _k) - sin(_k * pi) * 60;
+        // nose first along its arc
+        var _k2 = min(1, _k + 0.02);
+        var _x2 = lerp(_o.sx0, _tx, _k2), _y2 = lerp(_o.sy0, _o.y, _k2) - sin(_k2 * pi) * 60;
+        draw_fish(_ox + _x, _oy + _y, point_direction(_x, _y, _x2, _y2), lerp(0.3, fish_scale, _k), t * 0.22);
         if ((t div 4) mod 2 == 0)
         {
             draw_set_font(fnt_determination);
@@ -166,7 +169,7 @@ for (var i = 0; i < array_length(orbs); i++)
             draw_set_colour(c_white);
         }
     }
-    else draw_sprite_ext(spr_orb, 0, _ox + _tx, _oy + _o.y + sin(t / 8 + i) * 2, 0.6, 0.6, t * 4, c_white, 1);
+    else draw_fish(_ox + _tx, _oy + _o.y, 180, fish_scale, t * 0.22);
 }
 
 // their shots

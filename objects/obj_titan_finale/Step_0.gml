@@ -142,7 +142,7 @@ if (phase == "run")
     }
 }
 
-// orbs: from its star down to the path ahead, then sitting there as the path comes past
+// the fish: from its star down onto the path ahead, then swimming along it at them
 for (var i = array_length(orbs) - 1; i >= 0; i--)
 {
     var _o = orbs[i];
@@ -151,21 +151,29 @@ for (var i = array_length(orbs) - 1; i >= 0; i--)
         _o.k += 1 / orb_time;
         if (_o.k >= 1) { _o.landed = true; audio_play_sound(snd_impact, 1, false, 0.5); }
     }
+    else _o.wx -= fish_swim;
     var _ox = _o.wx - dist;
     if (_o.landed)
     {
-        for (var j = 0; j < 2; j++)
+        // any piece of it touching either of them
+        for (var j = 0; j < 2 && !_o.done; j++)
         {
             var _m = _ms[j];
-            if (abs(_ox - _m.sx) < orb_r + hw && _m.y > _o.y - orb_r && _m.y - body_h < _o.y + orb_r)
+            var _l = _m.sx - hw, _r = _m.sx + hw, _tp = _m.y - body_h, _bt = _m.y;
+            for (var k = 0; k <= 5; k++)
             {
-                hurt(_m, orb_dmg);
-                array_push(pops, { x: _ox, y: _o.y, t: 0, spr: spr_titan_shockwave_bullet_explosion, s: 0.15, txt: "", col: c_white });
-                _o.done = true;
+                var _pc = fish_piece(k, _ox, _o.y, 180, fish_scale, t * 0.22);
+                if (point_distance(_pc.x, _pc.y, clamp(_pc.x, _l, _r), clamp(_pc.y, _tp, _bt)) < fish_hit_r * fish_scale)
+                {
+                    hurt(_m, orb_dmg);
+                    array_push(pops, { x: _pc.x, y: _pc.y, t: 0, spr: spr_titan_shockwave_bullet_explosion, s: 0.15, txt: "", col: c_white });
+                    _o.done = true;
+                    break;
+                }
             }
         }
     }
-    if (_o.done || _ox < -60) array_delete(orbs, i, 1);
+    if (_o.done || _ox < -200) array_delete(orbs, i, 1);
 }
 
 // the Titan Spawn: flies in, the ring closes on it, then it's hit (or it hits)

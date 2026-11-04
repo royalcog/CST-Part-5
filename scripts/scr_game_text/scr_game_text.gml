@@ -358,7 +358,7 @@ function scr_game_text(_text_id)
 		case "self_24":
 			global.cutscene_lock = true;
 			scr_text("* Susie...!", "ralsei", 32);
-			scr_text("* RUN!!", "ralsei", 27);
+			scr_text("* Let's end this...", "ralsei", 27);
 		break;
 		
 		// ---- after the Titan (obj_titan_epilogue)
@@ -375,7 +375,8 @@ function scr_game_text(_text_id)
 		case "self_26":
 			global.cutscene_lock = true;
 			scr_text("* Wait...", "ralsei", 28);
-			scr_text("* Where are...", "susie", 15);
+				scr_obj_sprite_on_page(obj_ralsei, spr_ralsei_right_neutral, false);
+			scr_text("* Where are...", "susie", 15);	
 		break;
 
 		case "self_27":

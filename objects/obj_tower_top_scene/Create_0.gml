@@ -522,9 +522,23 @@ debug_titan2 = function()
     titan = instance_create_depth(0, 0, 25, obj_titan_reveal);
     titan.skip_to_idle();
     set_cam(_cam);
-    // King where he fought (Lancer by him), Susie gone, Ralsei & Queen at their battle spots
-    king   = place(obj_king,   spr_king_kneel_sad, _cam + king_fight.x,        king_fight.y);
-    lancer = place(obj_lancer, lancer_stand,       _cam + lancer_fight.x + 10, lancer_fight.y);
+
+    // King & Lancer where Susie's scene left them: Lancer backed off (y 300) then walked up next to Ralsei at the edge
+    // (his feet 80 right of Ralsei's, who stopped at ~307), King 90 right of Lancer. once you've got to this battle the
+    // normal way, their exact spots are remembered and used instead
+    ini_open("debug_skip.ini");
+    var _kx  = ini_read_real("titan2", "king_x",    477);
+    var _ky  = ini_read_real("titan2", "king_y",    245);
+    var _lx  = ini_read_real("titan2", "lancer_x",  387);
+    var _ly  = ini_read_real("titan2", "lancer_y",  300);
+    var _lxs = ini_read_real("titan2", "lancer_xs", 2);
+    ini_close();
+    king   = place(obj_king,   spr_king_kneel_sad, _kx, _ky);
+    lancer = place(obj_lancer, lancer_stand,       _lx, _ly);
+    with (lancer) image_xscale = _lxs;
+    set_feet(lancer, _lx, _ly);
+
+    // Susie's gone; Ralsei & Queen at their battle spots
     with (obj_susie) visible = false;
     place(obj_ralsei, spr_ralsei_attack_ready_serious, _cam + party_land_x, ralsei_land_y);
     place(obj_queen,  spr_queen_walk_right_unhappy,    _cam + party_land_x, queen_land_y);
@@ -539,6 +553,7 @@ debug_titan2 = function()
         king_shake = { on: true, base: obj_king.x, amt: king_sit_shake };
         shield_put();
     }
+    global.debug_titan2_skip = true;   // (so the battle doesn't save these as where they really were)
     scr_titan_battle2_start();
 }
 

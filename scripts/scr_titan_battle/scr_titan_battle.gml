@@ -233,6 +233,15 @@ global.titan_battle2_song = sng_chaosguardian;
 /// one enemy turn (attack 4), then it ends and obj_ralsei_rage.after_battle() takes over
 function scr_titan_battle2_start()
 {
+    // (where King & Lancer ended up after Susie's scene and the flashback: the F8 debug skip puts them back there)
+    if (!(variable_global_exists("debug_titan2_skip") && global.debug_titan2_skip))
+    {
+        ini_open("debug_skip.ini");
+        with (obj_king)   { var _kf = scr_get_feet(id); ini_write_real("titan2", "king_x", _kf.x); ini_write_real("titan2", "king_y", _kf.y); }
+        with (obj_lancer) { var _lf = scr_get_feet(id); ini_write_real("titan2", "lancer_x", _lf.x); ini_write_real("titan2", "lancer_y", _lf.y); ini_write_real("titan2", "lancer_xs", image_xscale); }
+        ini_close();
+    }
+    global.debug_titan2_skip = false;
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
 
@@ -388,6 +397,7 @@ function scr_titan_battle3_start()
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
     scr_party_init_six(_hp.Susie, _hp.Ralsei, _hp.Queen);
+    with (obj_battle_ui_box) if (char_name == "Ralsei") cant_die = true;   // (a hit that'd down him goes to Susie or Queen)
     obj_UI.active_box = noone;
 
     // the front row centred on the screen, like the 3-person battle (the back row's lined up over it)
@@ -425,7 +435,7 @@ function scr_titan_battle3_start()
             { talk: [], attack: scr_start_titan_attack6 },
             { talk: [], attack: scr_start_titan_attack7 },
             { talk: [], attack: scr_start_titan_attack8 },
-            { talk: [], attack: scr_start_titan_final },
+            { talk: [], attack: scr_start_titan_final, no_box: true },   // (the run: no box)
         ];
         rounds_loop_from = 3;
         flavor = [

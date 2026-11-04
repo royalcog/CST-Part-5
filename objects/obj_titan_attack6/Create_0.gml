@@ -8,7 +8,6 @@ spawn_scale = 1;
 red_every   = 5;
 spawn_rate  = 1.3;
 titan_beams_init();
-beam_out = 0;        // (just inside the box: they stop at its walls)
 beam_start  = 100;   // frames in before the first laser...
 beam_gap    = 95;    // ...then one every this many frames
 beam_cross  = 0.3;   // how often it's a row AND a column at once
