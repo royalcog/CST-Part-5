@@ -179,7 +179,7 @@ function scr_game_text(_text_id)
 			global.cutscene_lock = true;   // they walk forward after this, then the Titan reveal
 			scr_text("* ...", "susie", 31);
 			scr_text("* ...", "ralsei", 45);
-			scr_text("* Susie, is everything okay?", "ralsei", 34);
+			scr_text("* Susie...?", "ralsei", 34);
 			scr_text("* Why can we only do this... outside of battles?", "susie", 32);
 			scr_text("* ...What?", "ralsei", 50);
 			scr_text("* Heal each other at will.", "susie", 30);

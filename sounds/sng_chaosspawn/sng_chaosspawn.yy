@@ -10,7 +10,7 @@
   "compression":1,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":71.157555,
+  "duration":71.11537,
   "exportDir":"",
   "name":"sng_chaosspawn",
   "parent":{
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"sng_chaosspawn.mp3",
+  "soundFile":"sng_chaosspawn.wav",
   "volume":1.0,
 }

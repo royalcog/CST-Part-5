@@ -10,7 +10,7 @@
   "compression":1,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":228.04898,
+  "duration":226.89424,
   "exportDir":"",
   "name":"sng_chaosguardian",
   "parent":{
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"sng_chaosguardian.mp3",
+  "soundFile":"sng_chaosguardian.wav",
   "volume":1.0,
 }

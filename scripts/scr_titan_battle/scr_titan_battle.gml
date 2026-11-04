@@ -489,7 +489,7 @@ function scr_titan_epilogue_start()
     instance_create_depth(0, 0, -9500, obj_titan_epilogue);
 }
 
-/// the 6-person battle: after an enemy turn where anyone got hurt, Susie & Ralsei heal everyone back to full
+/// the 6-person battle: after an enemy turn where anyone got hurt, Ralsei heals everyone back to full
 /// (its turn_end_hook: true while it's doing it, then it carries on to the next turn)
 function scr_titan_battle3_heal()
 {
@@ -499,8 +499,7 @@ function scr_titan_battle3_heal()
     start_script([
         { run: function()
             {
-                // Susie's heal (it faces left as drawn) and Ralsei's spell
-                with (obj_susie)  { sprite_index = spr_susie_heal;   last_sprite = sprite_index; image_index = 0; image_speed = 1; anim_loop = false; image_xscale = -2; }
+                // Ralsei's spell
                 with (obj_ralsei) { sprite_index = spr_ralsei_spell; last_sprite = sprite_index; image_index = 0; image_speed = 1; anim_loop = false; image_xscale = 2; }
                 audio_play_sound(snd_spell_pacify, 1, false);
             } },
@@ -518,7 +517,7 @@ function scr_titan_battle3_heal()
                     }
                 }
             } },
-        { say: { spr: -1, img: 0, text: "* Susie and Ralsei healed everyone!", voice: noone, auto: 40 } },
+        { say: { spr: -1, img: 0, text: "* Ralsei healed everyone!", voice: noone, auto: 40 } },
     ], function()
     {
         for (var i = 0; i < party_n; i++) if (defs[i] != undefined) { scr_bm_idle(defs[i]); face_member(i, default_facing); }

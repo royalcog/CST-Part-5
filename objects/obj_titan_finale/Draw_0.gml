@@ -87,11 +87,12 @@ for (var i = 0; i < array_length(allies); i++)
     var _a  = allies[i];
     var _ay = _oy + segs[array_length(segs) - 1].y - _a.up + ((_a.up > 0) ? sin(t / 14) * 4 : 0);
     var _ax = _ox + _a.x;
-    draw_sprite_ext(_a.spr, t * spd_of(_a.spr), _ax, _ay, _a.s, _a.s, 0, c_white, ally_k[i]);
+    var _img = _a.anim ? t * spd_of(_a.spr) : 0;   // (Queen stands still: only the idles move)
+    draw_sprite_ext(_a.spr, _img, _ax, _ay, _a.s, _a.s, 0, c_white, ally_k[i]);
     if (ally_k[i] < 1)
     {
         gpu_set_fog(true, c_white, 0, 0);
-        draw_sprite_ext(_a.spr, t * spd_of(_a.spr), _ax, _ay, _a.s, _a.s, 0, c_white, 1 - ally_k[i]);
+        draw_sprite_ext(_a.spr, _img, _ax, _ay, _a.s, _a.s, 0, c_white, 1 - ally_k[i]);
         gpu_set_fog(false, c_white, 0, 0);
     }
     if (_a.shield)   // Queen's shield up
@@ -120,8 +121,6 @@ for (var i = 0; i < 2; i++)
         draw_sprite_ext(_spr, _img, _ox + _m.sx, _oy + _m.y, _s, _s, 0, c_white, _m.fx * 0.7);
         gpu_set_fog(false, c_white, 0, 0);
     }
-    // the feather, while it's holding them up
-    if (_m.glide && _su) draw_sprite_ext(spr_petal_feather, 0, _ox + _m.sx + 6, _oy + _m.y - body_h - 18 + sin(t / 6) * 2, 2, 2, 0, c_white, 1);
 }
 
 // the Titan Spawn, and the ring closing in on it

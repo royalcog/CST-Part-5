@@ -46,13 +46,13 @@ grav           = 0.45;
 jump_spd       = 9.6;
 max_fall       = 10;
 feather_fall   = 1.8;      // the most they fall a frame while you hold jump (the feather)
-coyote_max     = 6;
-buffer_max     = 6;
+coyote_max     = 10;
+buffer_max     = 10;
+fall_dmg       = 10;       // ...for this much
+invuln_max     = 90;
 rescue_spd     = 17;       // fall down a gap (or into a wall) and the feather throws them back up this fast...
-fall_dmg       = 20;       // ...for this much
-invuln_max     = 60;
-plat_w         = [4, 9];   // platform widths, tiles (40px)
-plat_gap       = [64, 120];// px between platforms
+plat_w         = [6, 11];  // platform widths, tiles (40px)
+plat_gap       = [50, 90]; // px between platforms
 plat_step      = 40;       // px a platform can be higher or lower than the last
 plat_y         = [270, 390];   // where their tops can be (where you stand)
 plat_start_y   = 330;
@@ -78,23 +78,23 @@ titan_rise_time = 200;     // ...taking this long...
 titan_rise_dist = 220;     // ...from this far down
 // what it throws
 hazard_start   = 330;      // frames into the run the attacks start
-run_len        = 3600;     // frames of attacks (60s), then the end
-hazard_gap     = [110, 60];// frames between attacks: at the start / by the end
-spawn_chance   = 0.3;      // how often it's a Titan Spawn (only one at a time)
-pair_chance    = 0.35;     // how often an orb has another right behind it
+run_len        = 3000;     // frames of attacks (50s), then the end
+hazard_gap     = [150, 100];// frames between attacks: at the start / by the end
+spawn_chance   = 0.25;     // how often it's a Titan Spawn (only one at a time)
+pair_chance    = 0.15;     // how often an orb has another right behind it
 orb_time       = 70;       // frames an orb takes from its star to the path...
 orb_land_sx    = 760;      // ...landing where the path's at this x on screen
-orb_r          = 18;
+orb_r          = 14;
 orb_low        = 22;       // px above the path a low orb sits (jump it)...
 orb_high       = 86;       // ...and a high one (stay down)
-high_chance    = 0.25;
-orb_dmg        = 30;
+high_chance    = 0.15;
+orb_dmg        = 20;
 spawn_fly      = 80;       // frames a Titan Spawn takes to fly in from its star...
 spawn_hover    = { x: 600, y: 230 };
 ring_time      = 70;       // ...then the ring closes in on it over this long...
 ring_r         = [110, 26];
-ring_window    = 10;       // ...X within this many frames of it closing hits it
-spawn_dmg      = 40;
+ring_window    = 18;       // ...X within this many frames of it closing hits it
+spawn_dmg      = 30;
 spawn_lunge    = 16;       // frames it takes to fly into them if you miss
 // Queen's chair, catching up in the distance (Pink & Spamton on its arms, Jevil flying behind)
 queen_at       = 1500;     // frames into the run
@@ -133,10 +133,10 @@ allies_gap     = 40;       // frames between each of the four appearing behind t
 // it: Pink jumps with Susie & Ralsei; the others stay where they are and fire something at it (shot: a sprite, or -1
 // for a ball of light in their colour)
 allies = [
-    { name: "Queen",   x: 240, up: 0,  spr: spr_queen_walk_right_unhappy, s: 2, jump: false, atk: spr_queen_pie_throw,           shot: -1,        col: make_colour_rgb(111, 209, 255), shield: true },
-    { name: "Pink",    x: 200, up: 0,  spr: spr_mewmew_idle_corrupted,    s: 2, jump: true,  atk: spr_pink_throw_bomb_corrupted, shot: -1,        col: c_white,                        shield: false },
-    { name: "Spamton", x: 165, up: 0,  spr: spr_spamton_right,            s: 2, jump: false, atk: spr_spamton_armsout_right,     shot: spr_pipis, col: c_white,                        shield: false },
-    { name: "Jevil",   x: 210, up: 80, spr: spr_jevil_dance,              s: 2, jump: false, atk: spr_jevil_dance,               shot: spr_spade, col: c_white,                        shield: false }
+    { name: "Queen",   x: 240, up: 0,  spr: spr_queen_walk_right_unhappy, s: 2, anim: false, jump: false, atk: spr_queen_pie_throw,           shot: spr_pie,   col: make_colour_rgb(111, 209, 255), shield: true },
+    { name: "Pink",    x: 200, up: 0,  spr: spr_mewmew_idle_corrupted,    s: 2, anim: true,  jump: true,  atk: spr_pink_throw_bomb_corrupted, shot: -1,        col: c_white,                        shield: false },
+    { name: "Spamton", x: 165, up: 0,  spr: spr_spamton_right,            s: 2, anim: false, jump: false, atk: spr_spamton_armsout_right,     shot: spr_pipis, col: c_white,                        shield: false },
+    { name: "Jevil",   x: 210, up: 80, spr: spr_jevil_dance,              s: 2, anim: true,  jump: false, atk: spr_jevil_dance,               shot: spr_spade, col: c_white,                        shield: false }
 ];
 volley_frames  = 40;       // the ones who stay: how long their shots take to get to it
 box_in         = 30;       // frames the PRESS box takes to come up

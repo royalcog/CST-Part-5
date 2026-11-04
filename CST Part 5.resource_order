@@ -1053,6 +1053,7 @@
     {"name":"spr_spamton_armsout_left","order":8,"path":"sprites/spr_spamton_armsout_left/spr_spamton_armsout_left.yy",},
     {"name":"spr_spamton_armsout_right_dark","order":10,"path":"sprites/spr_spamton_armsout_right_dark/spr_spamton_armsout_right_dark.yy",},
     {"name":"spr_spamton_armsout_right","order":5,"path":"sprites/spr_spamton_armsout_right/spr_spamton_armsout_right.yy",},
+    {"name":"spr_spamton_head","order":15,"path":"sprites/spr_spamton_head/spr_spamton_head.yy",},
     {"name":"spr_spamton_hurt","order":11,"path":"sprites/spr_spamton_hurt/spr_spamton_hurt.yy",},
     {"name":"spr_spamton_lookup","order":4,"path":"sprites/spr_spamton_lookup/spr_spamton_lookup.yy",},
     {"name":"spr_spamton_right","order":7,"path":"sprites/spr_spamton_right/spr_spamton_right.yy",},

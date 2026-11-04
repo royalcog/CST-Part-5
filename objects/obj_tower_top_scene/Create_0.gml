@@ -557,6 +557,9 @@ spade_hit_sounds = [snd_impact, snd_hurt];
 // --- tuning: getting ready, King's cape + laugh ---
 ready_hold       = 30;            // frames after they ready before his cape comes
 laugh_time       = 120;            // frames he laughs for
+cardjail_in      = 2500;           // ms sng_cardjail takes to fade in (when the camera pans over to King & Lancer)...
+cardjail_out     = 1500;           // ...and to fade out (when King starts laughing)
+cardjail         = -1;             // (the playing sound)
 battle_hold      = 20;            // frames after the laugh before the battle starts
 
 // --- tuning: poses (which way each sprite faces as drawn: 1 right, -1 left) ---
@@ -673,11 +676,12 @@ ambush_first = function()
         with (obj_queen_shield) flash = 1;
     });
 
-    // then the camera pans over to them
+    // then the camera pans over to them (their music fading in)
     var _wait = ceil((vw + 40) / spade_back_speed) + spade_delay + 4 + ambush_hold;
     scr_call_after_frames(function()
     {
         pan_cam(cam_x - ambush_pan_dist, ambush_pan_time);
+        if (cardjail == -1) cardjail = scr_audio_fade_in(sng_cardjail, cardjail_in, 1, true);
         scr_call_after_frames(function()
         {
             create_textbox("self_12");
@@ -816,6 +820,12 @@ king_cape = function()
         pose_flip(obj_king, spr_king_laugh, -2);   // his battle sprites face left as drawn
         with (obj_king) image_speed = 1;
         audio_play_sound(snd_kinglaugh, 1, false);
+        // his music fades out under the laugh
+        if (cardjail != -1)
+        {
+            audio_sound_gain(cardjail, 0, cardjail_out);
+            scr_call_after_frames(function() { audio_stop_sound(cardjail); cardjail = -1; }, ceil(cardjail_out * 60 / 1000));
+        }
         scr_call_after_frames(function()
         {
             // his laugh and battle idle are already lined up by their origins (the King fight swaps them straight):

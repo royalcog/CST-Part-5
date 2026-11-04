@@ -1269,6 +1269,7 @@
     {"id":{"name":"spr_spamton_armsout_left","path":"sprites/spr_spamton_armsout_left/spr_spamton_armsout_left.yy",},},
     {"id":{"name":"spr_spamton_armsout_right_dark","path":"sprites/spr_spamton_armsout_right_dark/spr_spamton_armsout_right_dark.yy",},},
     {"id":{"name":"spr_spamton_armsout_right","path":"sprites/spr_spamton_armsout_right/spr_spamton_armsout_right.yy",},},
+    {"id":{"name":"spr_spamton_head","path":"sprites/spr_spamton_head/spr_spamton_head.yy",},},
     {"id":{"name":"spr_spamton_hurt","path":"sprites/spr_spamton_hurt/spr_spamton_hurt.yy",},},
     {"id":{"name":"spr_spamton_left","path":"sprites/spr_spamton_left/spr_spamton_left.yy",},},
     {"id":{"name":"spr_spamton_lookup","path":"sprites/spr_spamton_lookup/spr_spamton_lookup.yy",},},
