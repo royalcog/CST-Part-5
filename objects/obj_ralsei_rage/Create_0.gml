@@ -668,11 +668,10 @@ bomb_start = function()
              tx: _f.x, ty: _f.y, rot: 0, done: false };
     audio_play_sound(snd_bombfall, 1, false);
 }
-/// Ralsei's up, and he and Queen turn round
+/// Ralsei's up (shocked), and he and Queen turn round to see who threw that
 turn_round = function()
 {
-    pose(obj_ralsei, ralsei_idle, -2);
-    with (obj_ralsei) image_speed = 1;
+    pose(obj_ralsei, spr_ralsei_shocked, -2);   // (facing them: his battle sprites face right as drawn)
     pose(obj_queen, spr_queen_walk_left_unhappy, 2);
     with (obj_queen_shield) if (state == "build" || state == "up") { state = "down"; t = 0; }
 }
@@ -782,7 +781,8 @@ fan_out = function()
 face_all_right = function()
 {
     pose(obj_susie,  spr_susie_walk_right_neutral, 2);
-    pose(obj_ralsei, scene.ralsei_right, 2);
+    pose(obj_ralsei, ralsei_idle, 2);
+    with (obj_ralsei) image_speed = 1;   // (his mad idle, at its own speed)
     pose(obj_queen,  spr_queen_walk_right_unhappy, 2);
     swap(obj_mewmew, spr_mewmew_idle_corrupted, 1);
     swap(obj_jevil,  spr_jevil_dance, 1);
@@ -886,7 +886,7 @@ script_b = function()
         R(function() { clear(); scene.pan_cam(cam_rage_x, cam_pan_time); }),
         U(function() { return !scene.cam_pan.on; }),
         W(20),
-        S("king", 3, "* Lancer.|* Help your father up.", { on_start: function() { king_shake.amt = 3; } }),
+        S("king", 3, "* Lancer. Help your father up.", { on_start: function() { king_shake.amt = 3; } }),
         S("lancer", 11, "* ...Don't move, Dad.", { on_start: function()
             { pose(obj_lancer, spr_lancer_battle, 2); scene.slide(obj_lancer, 10, 0, 10, 4); king_shake.amt = king_sit_shake; } }),
         R(function() { clear(); scene.pan_cam(battle_cam(), cam_pan_time); }),
@@ -992,7 +992,7 @@ steps   = [];
 step_i  = 0;
 step_t  = 0;
 step_on = false;
-add = function(_run, _until = undefined, _wait = 0) { array_push(steps, { run: _run, until: _until, wait: _wait }); }
+add = function(_run, _until = undefined, _wait = 0) { array_push(steps, until run: _run,: _until, wait: _wait }); }
 
 // ---- 1. back to Ralsei: he gets up (slowly), turns to King, stomps
 add(function() { scene.pan_cam(cam_rage_x, cam_pan_time); }, function() { return !scene.cam_pan.on; }, 30);

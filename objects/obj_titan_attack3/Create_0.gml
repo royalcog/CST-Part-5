@@ -254,7 +254,7 @@ step_on = false;
 /// a step: _run() once, then wait until _until() is true (if given), then _wait more frames
 add = function(_run, _until = undefined, _wait = 0)
 {
-    array_push(steps, { run: _run, until: _until, wait: _wait });
+    array_push(steps, until run: _run,: _until, wait: _wait });
 }
 wait_frames = function(_n) { add(undefined, undefined, _n); }
 

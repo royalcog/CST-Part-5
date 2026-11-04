@@ -138,21 +138,10 @@ susie_heal_frame  = 14;   // frame of spr_susie_heal the heal leaves on
 ralsei_heal_frame = 6;    // frame of spr_ralsei_spell his lands on
 heal_hold         = 50;   // frames after both land before they turn back
 
-/// _o goes to _spr facing _xs (2 = the sprite's own way, -2 = flipped) without its body moving
+/// _o goes to _spr facing _xs (2 = the sprite's own way, -2 = flipped) with its feet staying exactly where they were
 pose_flip = function(_o, _spr, _xs)
 {
-    if (!instance_exists(_o)) return;
-    with (_o)
-    {
-        var _bx = x + ((sprite_get_bbox_left(sprite_index) + sprite_get_bbox_right(sprite_index) + 1) / 2 - sprite_get_xoffset(sprite_index)) * image_xscale;
-        var _by = y + (sprite_get_bbox_bottom(sprite_index) + 1 - sprite_get_yoffset(sprite_index)) * image_yscale;
-        image_xscale = _xs;
-        sprite_index = _spr;
-        last_sprite  = _spr;
-        image_index  = 0;
-        x = _bx - ((sprite_get_bbox_left(_spr) + sprite_get_bbox_right(_spr) + 1) / 2 - sprite_get_xoffset(_spr)) * image_xscale;
-        y = _by - (sprite_get_bbox_bottom(_spr) + 1 - sprite_get_yoffset(_spr)) * image_yscale;
-    }
+    scr_pose_keep_feet(_o, _spr, _xs);
 }
 
 /// a heal lands on _o: snd_heal, a green flash, their HP back (the amount in green, or MAX if they were full)

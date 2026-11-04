@@ -328,7 +328,6 @@ function scr_titan_battle2_start()
         default_facing = 1;      // at the Titan
         susie_rescue   = false;
         auto_mouth     = true;
-        for (var i = 0; i < party_n; i++) if (names[i] == "Ralsei" && defs[i] != undefined) defs[i].idle = spr_ralsei_battle_idle_mad;
         protect_target = noone;
 
         for (var i = 0; i < 3; i++)
@@ -465,6 +464,7 @@ function scr_titan_battle3_start()
         susie_rescue   = false;
         auto_mouth     = true;
         turn_end_hook  = function(_turn) { return scr_titan_battle3_heal(); };
+        for (var i = 0; i < party_n; i++) if (names[i] == "Ralsei" && defs[i] != undefined) defs[i].idle = spr_ralsei_battle_idle_mad;
         for (var i = 0; i < party_n; i++)
         {
             if (defs[i] == undefined) continue;

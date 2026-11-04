@@ -484,7 +484,7 @@ steps   = [];
 step_i  = 0;
 step_t  = 0;
 step_on = false;
-add = function(_run, _until = undefined, _wait = 0) { array_push(steps, { run: _run, until: _until, wait: _wait }); }
+add = function(_run, _until = undefined, _wait = 0) { array_push(steps, until run: _run,: _until, wait: _wait }); }
 
 add(function()
 {

@@ -478,6 +478,7 @@
     {"name":"scr_spawn_shockwave","order":1,"path":"scripts/scr_spawn_shockwave/scr_spawn_shockwave.yy",},
     {"name":"scr_spawn_soj_hit_hammer","order":4,"path":"scripts/scr_spawn_soj_hit_hammer/scr_spawn_soj_hit_hammer.yy",},
     {"name":"scr_spawn_throw","order":6,"path":"scripts/scr_spawn_throw/scr_spawn_throw.yy",},
+    {"name":"scr_sprite_feet","order":27,"path":"scripts/scr_sprite_feet/scr_sprite_feet.yy",},
     {"name":"scr_start_dating_sim","order":1,"path":"scripts/scr_start_dating_sim/scr_start_dating_sim.yy",},
     {"name":"scr_start_falling_hammer_attack","order":1,"path":"scripts/scr_start_falling_hammer_attack/scr_start_falling_hammer_attack.yy",},
     {"name":"scr_start_friend_attack4","order":2,"path":"scripts/scr_start_friend_attack4/scr_start_friend_attack4.yy",},
