@@ -39,7 +39,7 @@ white_out      = 45;       // ...and fades back out onto the run
 // ---------------------------------------------------------------- tuning: the run (screen px)
 run_speed      = 6;        // px a frame everything scrolls past
 susie_sx       = 330;      // Susie's feet, across the screen...
-ralsei_sx      = 250;      // ...and Ralsei's (he copies her jumps a moment later, at the same spot)
+ralsei_sx      = 250;      // ...and Ralsei's (he dodges on his own)
 hw             = 12;       // their half-width
 body_h         = 70;       // their height
 grav           = 0.45;
@@ -86,16 +86,18 @@ pair_gap       = 55;       // ...this many frames later
 orb_time       = 70;       // frames a fish takes from its star to the path...
 orb_land_sx    = 760;      // ...landing (at the soonest) where the path's at this x on screen
 fish_scale     = 0.75;     // the Titan fish (head, 4 body pieces, tail), at this size...
-fish_swim      = 0;        // ...staying where it lands (so Ralsei, jumping where Susie did, clears it too)
+fish_swim      = 2;        // px a frame it swims along the path at them (on top of the scrolling)
 fish_hit_r     = 10;       // px around each piece that hurts
 fish_gap       = 22;       // its pieces' spacing (sprite px), like obj_plat_titanfish
 fish_tail_gap  = 20;
 fish_wave      = 4;        // px each piece wiggles
-fish_in        = 200;      // a low one lands at least this far onto a platform (past where a jump over the gap comes down)...
+fish_in        = 260;      // a low one is at least this far onto a platform when it gets to Susie (past where a jump over the gap comes down)...
 fish_end       = 60;       // ...and this far short of its end (room to jump it, then the gap)
 fish_in_high   = 270;      // a high one (any jump touches it) only in the middle of a long platform, away from the jumps
 fish_end_high  = 140;
-fish_space     = 320;      // px between any two (more than a jump)
+fish_space     = 360;      // px between any two (more than a jump)
+ralsei_fish_lead = 40;     // px before a low fish reaches him that Ralsei jumps it
+ralsei_edge_lead = 50;     // px before the end of his platform that he jumps the gap
 fish_in_time   = 10;       // frames a new one takes to fade in at the star
 orb_low        = 22;       // px above the path a low orb sits (jump it)...
 orb_high       = 86;       // ...and a high one (stay down)
@@ -135,6 +137,14 @@ laser_col_glow = make_colour_rgb(90, 40, 200);
 laser_col      = make_colour_rgb(170, 110, 255);
 laser_col_hot  = make_colour_rgb(230, 215, 255);
 parry_col      = make_colour_rgb(255, 230, 140);
+fire_col_glow  = make_colour_rgb(200, 40, 0);     // their fire beam into the shield...
+fire_col       = make_colour_rgb(255, 120, 20);
+fire_col_hot   = make_colour_rgb(255, 220, 90);
+shield_col     = make_colour_rgb(255, 140, 30);   // ...and the shield: orange, curved toward the Titan
+shield_hot     = make_colour_rgb(255, 235, 170);
+shield_r       = 44;       // px: its curve's radius...
+shield_span    = 140;      // ...how far round it goes (degrees)...
+shield_th      = 10;       // ...and how thick its bright rim is
 battle_s       = 1.6;      // battle sprites are bigger than the overworld ones: drawn at this instead of 2
 defend_susie   = spr_susie_defend;
 defend_ralsei  = spr_ralsei_defend;
@@ -151,6 +161,7 @@ allies = [
     { name: "Jevil",   x: 210, up: 80, spr: spr_jevil_dance,              s: 2, anim: true,  jump: false, atk: spr_jevil_dance,               shot: spr_spade, col: c_white,                        shield: false }
 ];
 volley_frames  = 40;       // the ones who stay: how long their shots take to get to it
+pink_bomb_frame = 12;      // the frame of her throw (in the air) the bomb leaves her hand
 box_in         = 30;       // frames the PRESS box takes to come up
 press_add      = 0.055;    // each Z fills it this much...
 press_decay    = 0.0025;   // ...and it drains this much a frame
@@ -182,8 +193,9 @@ shake = { amt: 0, t: 0, x: 0, y: 0 };
 hp     = { Susie: 290, Ralsei: 210 };
 max_hp = { Susie: 290, Ralsei: 210 };
 with (obj_battle_ui_box) if (char_name == "Susie" || char_name == "Ralsei") { other.hp[$ char_name] = max(1, hp); other.max_hp[$ char_name] = max_hp; }
-titan_hp = 6000;
-with (obj_battle_target) if (kind == "titan") other.titan_hp = max(1, hp);
+titan_hp  = 6000;
+titan_max = 6000;
+with (obj_battle_target) if (kind == "titan") { other.titan_hp = max(1, hp); other.titan_max = max_hp; }
 
 // the intro
 pillar_k = array_create(pillars, 0);
@@ -226,6 +238,7 @@ ally_k   = array_create(array_length(allies), 0);
 ts       = 1;           // time's speed (the slow motion)
 leap     = [];          // everyone going for it: { name, spr, s, x0, y0, x1, y1, k, h, delay, stay }
 volley   = [];          // the shots from the ones who stay: { spr, col, x0, y0, x1, y1, k, delay, rot }
+shield_pos = { x: 0, y: 0, dir: 0 };   // (where the shield last was: it fades out there once they've won)
 dmg_list = [];          // { name, amount, x, y, t }
 dmg_t    = 0;
 
@@ -332,6 +345,45 @@ draw_beam = function(_x1, _y1, _x2, _y2, _w, _a, _glow, _mid, _hot)
     gpu_set_blendmode(bm_normal);
 }
 
+/// the party's shield: an orange curve of light around (_x, _y), facing _dir, glowing at its rim and fading into it
+draw_shield = function(_x, _y, _dir, _a)
+{
+    if (_a <= 0) return;
+    var _r = shield_r * (1 + 0.04 * sin(t * 0.5));
+    var _n = 18;
+    gpu_set_blendmode(bm_add);
+    // the dome: faint orange, brightest at the rim
+    draw_primitive_begin(pr_trianglestrip);
+    for (var i = 0; i <= _n; i++)
+    {
+        var _ang = _dir - shield_span / 2 + shield_span * i / _n;
+        var _e   = 1 - abs(i / _n - 0.5) * 2;   // (fades toward its ends)
+        draw_vertex_colour(_x + lengthdir_x(_r, _ang), _y + lengthdir_y(_r, _ang), merge_colour(c_black, shield_col, _e), 0.5 * _a);
+        draw_vertex_colour(_x + lengthdir_x(_r * 0.25, _ang), _y + lengthdir_y(_r * 0.25, _ang), c_black, _a);
+    }
+    draw_primitive_end();
+    // the rim: a glow either side of a white-hot line
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        draw_primitive_begin(pr_trianglestrip);
+        for (var i = 0; i <= _n; i++)
+        {
+            var _ang = _dir - shield_span / 2 + shield_span * i / _n;
+            var _e   = 1 - abs(i / _n - 0.5) * 2;
+            draw_vertex_colour(_x + lengthdir_x(_r, _ang), _y + lengthdir_y(_r, _ang), merge_colour(c_black, shield_hot, _e), _a);
+            draw_vertex_colour(_x + lengthdir_x(_r + _side * shield_th, _ang), _y + lengthdir_y(_r + _side * shield_th, _ang), c_black, _a);
+        }
+        draw_primitive_end();
+    }
+    // sparks where the laser hits it
+    var _hx = _x + lengthdir_x(_r, _dir), _hy = _y + lengthdir_y(_r, _dir);
+    draw_set_alpha(_a);
+    for (var i = 0; i < 4; i++)
+        draw_circle_colour(_hx + random_range(-10, 10), _hy + random_range(-14, 14), random_range(2, 5), c_white, shield_col, false);
+    draw_set_alpha(1);
+    gpu_set_blendmode(bm_normal);
+}
+
 // --- the run's platforms ---
 /// where you'd stand at run-x _wx (-1: nothing there). _pad: how far off a platform's edge you still stand on it
 ground_at = function(_wx, _pad = 0)
@@ -427,26 +479,57 @@ far_star = function()
 throw_orb = function()
 {
     var _st   = far_star();
-    var _want = dist + orb_land_sx + run_speed * orb_time;   // (the soonest bit of path it can get to in time)
-    // a spot it can be dodged from: the first one from there on that's far enough onto a platform and short of its end
+    var _r    = run_speed, _s = fish_swim;
+    var _d    = dist + _r * orb_time + susie_sx;          // where Susie is when it lands
+    var _want = dist + orb_land_sx + _r * orb_time;       // (the soonest bit of path it can get to in time)
+    var _meet = (_r * _want + _s * _d) / (_r + _s);       // ...and where that one would have swum to by the time she gets to it
+    // a spot it can be dodged from (where it is when she gets to it): far enough onto a platform and short of its end
     var _place = function(_wx, _in, _end)
     {
         for (var i = 0; i < array_length(segs); i++)
         {
-            var _s = segs[i];
-            if (_s.x1 - _end < _wx) continue;
-            var _x = max(_wx, _s.x0 + _in);
-            if (_x <= _s.x1 - _end) return { x: _x, y: _s.y };
+            var _sg = segs[i];
+            if (_sg.x1 - _end < _wx) continue;
+            var _x = max(_wx, _sg.x0 + _in);
+            if (_x <= _sg.x1 - _end) return { x: _x, y: _sg.y };
         }
         return undefined;
     };
     var _high = random(1) < high_chance;
-    var _spot = _high ? _place(_want, fish_in_high, fish_end_high) : undefined;
-    if (_spot == undefined) { _high = false; _spot = _place(_want, fish_in, fish_end); }
+    var _spot = _high ? _place(_meet, fish_in_high, fish_end_high) : undefined;
+    if (_spot == undefined) { _high = false; _spot = _place(_meet, fish_in, fish_end); }
     if (_spot == undefined) return;
-    for (var i = 0; i < array_length(orbs); i++) if (abs(orbs[i].wx - _spot.x) < fish_space) return;   // (too close to another)
-    array_push(orbs, { wx: _spot.x, y: _spot.y - (_high ? orb_high : orb_low), k: 0, sx0: _st.x, sy0: _st.y, high: _high, landed: false, done: false });
+    var _land = (_spot.x * (_r + _s) - _s * _d) / _r;     // where it lands, to have swum to the spot when she gets there
+    var _c    = _land + _s * (t + orb_time);              // (its place with the swimming taken out: they all swim the same, so this is how far apart they stay)
+    for (var i = 0; i < array_length(orbs); i++) if (abs(orbs[i].c - _c) < fish_space) return;   // (too close to another)
+    array_push(orbs, { wx: _land, c: _c, y: _spot.y - (_high ? orb_high : orb_low), k: 0, sx0: _st.x, sy0: _st.y, high: _high, landed: false, done: false });
     audio_play_sound(snd_spawn_attack, 1, false, 0.6);
+}
+
+/// Ralsei jumps by himself: over a low fish that's about to get to him, and off the end of his platform
+ralsei_jump = function()
+{
+    var _m = ralsei;
+    if (!_m.grounded) return false;
+    var _wx  = dist + _m.sx;
+    var _len = (4 * fish_gap + fish_tail_gap) * fish_scale;
+    var _rr  = fish_hit_r * fish_scale;
+    // a low fish coming at him
+    for (var i = 0; i < array_length(orbs); i++)
+    {
+        var _o = orbs[i];
+        if (!_o.landed || _o.done || _o.high) continue;
+        if (abs(_o.y + orb_low - _m.y) > 20) continue;   // (not on his platform)
+        var _hx = _o.wx - dist;
+        if (_hx - _rr - (_m.sx + hw) <= ralsei_fish_lead && _hx + _len + _rr > _m.sx - hw) return true;
+    }
+    // the end of the platform he's on (not the last one)
+    for (var i = 0; i < array_length(segs); i++)
+    {
+        var _sg = segs[i];
+        if (_wx >= _sg.x0 && _wx <= _sg.x1) return (_sg.x1 - _wx <= ralsei_edge_lead) && (i < array_length(segs) - 1);
+    }
+    return false;
 }
 /// piece _k of a fish (0 = head, 1-4 = body, 5 = tail) whose head's at (_hx, _hy), going _ang, at scale _s
 fish_piece = function(_k, _hx, _hy, _ang, _s, _ph)
@@ -484,7 +567,14 @@ steps   = [];
 step_i  = 0;
 step_t  = 0;
 step_on = false;
-add = function(_run, _until = undefined, _wait = 0) { array_push(steps, until run: _run,: _until, wait: _wait }); }
+add = function(_run, _until = undefined, _wait = 0)
+{
+    var _st = {};
+    _st[$ "run"]   = _run;
+    _st[$ "until"] = _until;
+    _st[$ "wait"]  = _wait;
+    array_push(steps, _st);
+}
 
 add(function()
 {
@@ -499,6 +589,14 @@ add(function()
     with (obj_queen)   image_speed = 0;
     with (obj_spamton) image_speed = 0;
 }, undefined, intro_wait);
+add(function()
+{
+    // it heals itself all the way back up first
+    var _amt = max(0, titan_max - titan_hp);
+    titan_hp = titan_max;
+    if (instance_exists(obj_ralsei_rage)) { with (obj_ralsei_rage) if (_amt > 0) titan_heal(_amt); }
+    else audio_play_sound(snd_heal, 1, false, 1, 0, 0.6);
+}, undefined, heal_hold);
 add(function()
 {
     // the slow pan right. the platforms come up out of the clouds, the clouds rise, it sinks

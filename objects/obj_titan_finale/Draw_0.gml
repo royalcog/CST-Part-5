@@ -193,13 +193,16 @@ if (fin.st == "charge" || fin.st == "laser" || fin.st == "press")
     }
     else
     {
-        var _fx = _ox + susie.sx + 46, _fy = _oy + susie.y - 46;   // just in front of them
-        var _cx = lerp(_fx, _sx, press_k * 0.85), _cy = lerp(_fy, _sy, press_k * 0.85);
-        draw_beam(_sx, _sy, _cx, _cy, laser_w, 1, laser_col_glow, laser_col, laser_col_hot);
-        if (press_on) draw_beam(_fx, _fy, _cx, _cy, laser_w * 0.8, 1, c_orange, parry_col, c_white);
-        gpu_set_blendmode(bm_add);
-        draw_circle_colour(_cx, _cy, 30 + sin(t * 0.6) * 6, c_white, c_black, false);
-        gpu_set_blendmode(bm_normal);
+        // their shield, pushed out toward it as the bar fills; its laser stops against the shield's front,
+        // their fire beam runs from them into it
+        var _fx  = _ox + susie.sx + 46, _fy = _oy + susie.y - 46;
+        var _cx  = lerp(_fx, _sx, press_k * 0.85), _cy = lerp(_fy, _sy, press_k * 0.85);
+        var _dir = point_direction(_cx, _cy, _sx, _sy);
+        var _hx  = _cx + lengthdir_x(shield_r, _dir), _hy = _cy + lengthdir_y(shield_r, _dir);
+        draw_beam(_sx, _sy, _hx, _hy, laser_w, 1, laser_col_glow, laser_col, laser_col_hot);
+        if (press_on) draw_beam(_fx, _fy, _cx, _cy, laser_w * 0.7, 1, fire_col_glow, fire_col, fire_col_hot);
+        draw_shield(_cx, _cy, _dir, 1);
+        shield_pos = { x: _cx - _ox, y: _cy - _oy, dir: _dir };
     }
 }
 
@@ -210,9 +213,10 @@ if (fin.st == "leap" && fin.t < retract + 20)
     if (fin.t < retract)
     {
         var _rk = fin.t / retract;
-        var _fx = _ox + susie.sx + 46, _fy = _oy + susie.y - 46;
-        var _cx = lerp(lerp(_fx, _sx, 0.85), _sx, _rk), _cy = lerp(lerp(_fy, _sy, 0.85), _sy, _rk);
+        var _hx = _ox + shield_pos.x + lengthdir_x(shield_r, shield_pos.dir), _hy = _oy + shield_pos.y + lengthdir_y(shield_r, shield_pos.dir);
+        var _cx = lerp(_hx, _sx, _rk), _cy = lerp(_hy, _sy, _rk);
         draw_beam(_sx, _sy, _cx, _cy, laser_w * (1 - _rk), 1 - _rk, laser_col_glow, laser_col, laser_col_hot);
+        draw_shield(_ox + shield_pos.x, _oy + shield_pos.y, shield_pos.dir, 1 - _rk);
     }
     else
     {
@@ -234,11 +238,14 @@ if (fin.st == "leap" || fin.st == "white")
         if (_l.stay)
         {
             var _yy = _l.y0 + ((_l.name == "Jevil") ? sin(t / 14) * 4 : 0);
-            draw_sprite_ext(_l.spr, sprite_get_number(_l.spr) - 1, _ox + _l.x0, _oy + _yy, _l.s, _l.s, 0, c_white, 1);
+            var _f = (_l[$ "anim"] == true) ? _l.f : 0;
+			draw_sprite_ext(_l.spr, _f, _ox + _x, _oy + _y, _l.s, _l.s, 0, c_white, 1);
             continue;
         }
         var _x = lerp(_l.x0, _l.x1, _l.k), _y = lerp(_l.y0, _l.y1, _l.k) - _l.h * 4 * _l.k * (1 - _l.k);
-        draw_sprite_ext(_l.spr, 0, _ox + _x, _oy + _y, _l.s, _l.s, 0, c_white, 1);
+        var _n = sprite_get_number(_l.spr);
+        var _img = (variable_struct_exists(_l, "anim") && _l.anim) ? min(_n - 1, floor(_l.k * _n)) : 0;
+        draw_sprite_ext(_l.spr, _img, _ox + _x, _oy + _y, _l.s, _l.s, 0, c_white, 1);
     }
     for (var i = 0; i < array_length(volley); i++)
     {

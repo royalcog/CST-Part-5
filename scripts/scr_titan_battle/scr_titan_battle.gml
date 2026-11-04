@@ -464,7 +464,12 @@ function scr_titan_battle3_start()
         susie_rescue   = false;
         auto_mouth     = true;
         turn_end_hook  = function(_turn) { return scr_titan_battle3_heal(); };
-        for (var i = 0; i < party_n; i++) if (names[i] == "Ralsei" && defs[i] != undefined) defs[i].idle = spr_ralsei_battle_idle_mad;
+        for (var i = 0; i < party_n; i++) if (names[i] == "Ralsei" && defs[i] != undefined)
+        {
+            defs[i].idle        = spr_ralsei_battle_idle_mad;
+            defs[i].ready_fight = spr_ralsei_attack_ready_serious;
+            defs[i].attack      = spr_ralsei_attack_serious;
+        }
         for (var i = 0; i < party_n; i++)
         {
             if (defs[i] == undefined) continue;

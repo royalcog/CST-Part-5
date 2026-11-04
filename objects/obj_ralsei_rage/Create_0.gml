@@ -441,8 +441,8 @@ ralsei_normal = function()
     {
         if (names[i] != "Ralsei" || defs[i] == undefined) continue;
         defs[i].idle        = other.ralsei_idle;
-        defs[i].ready_fight = spr_ralsei_attack_ready;
-        defs[i].attack      = spr_ralsei_attack;
+        defs[i].ready_fight = spr_ralsei_attack_ready_serious;   // (his attack stays mad, like his idle)
+        defs[i].attack      = spr_ralsei_attack_serious;
         defs[i].defend      = spr_ralsei_defend;
     }
     var _b = ralsei_box();
@@ -480,8 +480,8 @@ stat_boost = function()
 /// Ralsei hits the Titan for 999... and it heals it straight back
 ralsei_hit = function(_spd)
 {
-    swap(obj_ralsei, spr_ralsei_attack, 0);
-    play(obj_ralsei, 0, sprite_get_number(spr_ralsei_attack) - 1, _spd, hit_frame, function()
+    swap(obj_ralsei, spr_ralsei_attack_serious, 0);
+    play(obj_ralsei, 0, sprite_get_number(spr_ralsei_attack_serious) - 1, _spd, hit_frame, function()
     {
         audio_play_sound(snd_attack, 1, false);
         titan_hit(999);
@@ -792,7 +792,7 @@ face_all_right = function()
 ready_all = function()
 {
     swap(obj_susie,   spr_susie_attack_ready, 0);
-    swap(obj_ralsei,  spr_ralsei_attack_ready, 0);
+    swap(obj_ralsei,  spr_ralsei_attack_ready_serious, 0);
     pose(obj_queen,   spr_queen_pie_throw, 2);
     swap(obj_mewmew,  spr_pink_throw_bomb_corrupted, 0);
     swap(obj_spamton, spr_spamton_armsout_right, 0);
@@ -992,7 +992,14 @@ steps   = [];
 step_i  = 0;
 step_t  = 0;
 step_on = false;
-add = function(_run, _until = undefined, _wait = 0) { array_push(steps, until run: _run,: _until, wait: _wait }); }
+add = function(_run, _until = undefined, _wait = 0)
+{
+    var _st = {};
+    _st[$ "run"]   = _run;
+    _st[$ "until"] = _until;
+    _st[$ "wait"]  = _wait;
+    array_push(steps, _st);
+}
 
 // ---- 1. back to Ralsei: he gets up (slowly), turns to King, stomps
 add(function() { scene.pan_cam(cam_rage_x, cam_pan_time); }, function() { return !scene.cam_pan.on; }, 30);

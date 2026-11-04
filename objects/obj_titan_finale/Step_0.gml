@@ -60,13 +60,10 @@ if (final_made)
 dist += spd;
 gen();
 
-// Susie, and Ralsei doing what she did once he's got to where she was
+// Susie, and Ralsei (dodging on his own)
 move_member(susie, _jp, _jh);
-array_push(input_hist, { jp: _jp, jh: _jh });
-var _delay = round((susie_sx - ralsei_sx) / run_speed);
-var _rin = (array_length(input_hist) > _delay) ? input_hist[0] : { jp: false, jh: false };
-if (array_length(input_hist) > _delay) array_delete(input_hist, 0, 1);
-move_member(ralsei, _rin.jp, _rin.jh);
+var _rj = _running && white.a <= 0.5 && ralsei_jump();
+move_member(ralsei, _rj, false);
 if (_xp)
 {
     // X: whoever the Titan Spawn's coming for (or Susie)
@@ -301,7 +298,19 @@ switch (fin.st)
             {
                 var _a = allies[i];
                 var _y = segs[array_length(segs) - 1].y - _a.up;
-                if (_a.jump) array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _st.x - 70, y1: _st.y - 50, k: 0, h: 170, delay: 8, stay: false });
+                if (_a.jump)
+                {
+				if (_a.jump) array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _st.x - 70, y1: _st.y - 50, k: 0, h: 170, delay: 8, stay: false,
+                                anim: true, f: 0, thrown: false, col: dmg_cols[$ _a.name] });
+                    if (_a.name == "Pink")
+                    {
+                        // her bomb leaves her hand on frame 12 of her throw, partway through the leap
+                        var _rk = 12 / sprite_get_number(_a.atk);
+                        var _px = lerp(_a.x, _st.x - 70, _rk), _py = lerp(_y, _st.y - 50, _rk) - 170 * 4 * _rk * (1 - _rk);
+                        array_push(volley, { spr: spr_pinkbomb, col: c_white, x0: _px, y0: _py - 40, x1: _st.x, y1: _st.y,
+                                             k: 0, delay: 8 + _rk * jump_frames, rot: 0 });
+                    }
+                }
                 else
                 {
                     array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _a.x, y1: _y, k: 0, h: 0, delay: 0, stay: true });
@@ -317,12 +326,26 @@ switch (fin.st)
     {
         ts = lerp(1, slow_ts, min(1, fin.t / slow_in));
         box_k = max(0, box_k - 0.1);
-        for (var i = 0; i < array_length(leap); i++)
-        {
-            var _l = leap[i];
-            if (_l.delay > 0) _l.delay -= ts;
-            else _l.k = min(1, _l.k + ts / jump_frames);
-        }
+		for (var i = 0; i < array_length(leap); i++)
+		{
+		    var _l = leap[i];
+		    if (_l.delay > 0) { _l.delay -= ts; continue; }
+		    _l.k = min(1, _l.k + ts / jump_frames);
+		    // Pink: throwing her bomb as she goes up
+		    if (_l[$ "anim"] == true)
+		    {
+		        var _n = sprite_get_number(_l.spr);
+		        _l.f = min(_n - 1, _l.f + spd_of(_l.spr) * ts);
+		        if (!_l.thrown && _l.f >= min(pink_bomb_frame, _n - 1))
+		        {
+		            _l.thrown = true;
+		            var _lx = lerp(_l.x0, _l.x1, _l.k), _ly = lerp(_l.y0, _l.y1, _l.k) - _l.h * 4 * _l.k * (1 - _l.k);
+		            array_push(volley, { spr: -1, col: _l.col, x0: _lx + 16, y0: _ly - 40, x1: titan_near.x + irandom_range(-20, 20), y1: titan_near.y + irandom_range(-20, 20),
+		                                 k: 0, delay: 0, rot: 0 });
+		            audio_play_sound(snd_smallswing, 1, false);
+		        }
+		    }
+		}
         for (var i = 0; i < array_length(volley); i++)
         {
             var _v = volley[i];

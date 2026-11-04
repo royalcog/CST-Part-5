@@ -220,7 +220,14 @@ steps   = [];
 step_i  = 0;
 step_t  = 0;
 step_on = false;
-add = function(_run, _until = undefined, _wait = 0) { array_push(steps, until run: _run,: _until, wait: _wait }); }
+add = function(_run, _until = undefined, _wait = 0)
+{
+    var _st = {};
+    _st[$ "run"]   = _run;
+    _st[$ "until"] = _until;
+    _st[$ "wait"]  = _wait;
+    array_push(steps, _st);
+}
 
 // ---- Castle Town
 add(function()

@@ -228,6 +228,7 @@ face_voice = function(_spr)
 // --- a line (or a few) said in the panel before the first turn: { spr, img, text, on_start (optional function) } ---
 intro_lines = [];
 intro_wait  = 100;         // frames after the battle starts before the first line (the UI sliding in, then a second)
+heal_hold      = 70;       // frames after it heals itself back to full, before it sinks
 
 // --- "we're not attacking him": choosing protect_target for an attack makes Susie say protect_lines, then Rude Buster
 //     its row in the target list. that row's broken from then on (it can't be picked) ---
@@ -838,7 +839,7 @@ apply = function(_a)
                 case "deal":
                     global.party_guard = guard_mult;
                     audio_play_sound(snd_boost, 1, false);
-                    set_text("* Spamton made everyone a [[Deal of a Lifetime]]!\n* Damage taken this turn is [Halved]!");
+                    set_text("* Spamton made everyone a [[Deal of a Lifetime]]!\n* Damage taken this turn is halved!");
                 break;
                 case "chaos":
                     jevil_chaos(_d);
