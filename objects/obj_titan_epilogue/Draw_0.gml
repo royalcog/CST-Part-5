@@ -17,9 +17,19 @@ if (phase == "town")
     exit;
 }
 
-// ---------------------------------------------------------------- the Pipis
+// ---------------------------------------------------------------- the Pipis, their bursts, and the heads
 for (var i = 0; i < array_length(pipis); i++)
 {
     var _p = pipis[i];
     draw_sprite_ext(spr_pipis, 0, _p.x, _p.y, pipis_scale, pipis_scale, _p.rot, c_white, 1);
+}
+for (var i = 0; i < array_length(bursts); i++)
+{
+    var _b = bursts[i];
+    draw_sprite_ext(spr_titan_shockwave_bullet_explosion, _b.t / 3, _b.x, _b.y, 0.12, 0.12, 0, c_white, 1);
+}
+for (var i = 0; i < array_length(heads); i++)
+{
+    var _h = heads[i];
+    draw_sprite_ext(head_sprite, t / 8, _h.x, _h.y, head_scale, head_scale, 0, c_white, 1);
 }

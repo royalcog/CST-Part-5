@@ -113,6 +113,13 @@ switch (state)
             t = 0;
             scr_call_after_frames(function() { titan_reveal(); }, 30);
         }
+		
+        // debug (F8): straight into the second Titan battle (Ralsei & Queen)
+        if (variable_global_exists("debug_skip_titan2") && global.debug_skip_titan2)
+        {
+            global.debug_skip_titan2 = false;
+            debug_titan2();
+        }
     }
     break;
 	

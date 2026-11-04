@@ -1,8 +1,9 @@
 // after the Titan (scr_titan_epilogue_start makes it, once obj_titan_finale's damage numbers are done).
 //   "town": Castle Town. drawn over the tower top (so the tower top stays exactly as it was): Susie & Ralsei on their
 //           landed sprites, Pink hurt, Jevil tired. they talk, get up (Jevil doesn't), "Where are..."
-//   "top":  back up the tower: Queen & Spamton facing Lancer & King. Lancer moves, King talks, the Pipis come down one
-//           by one until he's buried, push him off the edge, he hangs there a second: "Damn it." black. the fall. the end.
+//   "top":  back up the tower: Queen & Spamton facing Lancer & King. Lancer moves, King talks, the Pipis rain down into
+//           a pile over him, burst into little Spamton heads, which make a wall that shoves him off the edge (it stops
+//           right at it). he hangs there a second: "Damn it." black. the fall. the end.
 depth = -9500;
 
 // ---------------------------------------------------------------- tuning: Castle Town (screen px, rm_three's view)
@@ -29,21 +30,31 @@ spamton_dy  = 6;
 lancer_dx   = 110;      // ...Lancer's, between them
 lancer_move = { dx: 130, dy: 100 };   // where he moves to (from King's feet)
 lancer_walk = 2;
-pipis_n     = 300;      // the most that come down...
-pipis_min   = 180;      // ...and at least this many (it stops once he's buried, after these)
-pipis_gap   = [24, 2];  // frames between each: at the start / by the end
-pipis_spread = 85;      // px either side of King's middle they land
-pipis_front = 8;        // px in front of his feet they pile up from (so the pile's in front of him)
-laugh_every = 75;       // frames between Spamton's laughs while they come down
-pipis_grav  = 0.35;
+pipis_n     = 160;      // how many come down
+pipis_gap   = [10, 1];  // frames between each: at the start / by the end...
+pipis_burst = 3;        // ...and over the last quarter, this many at a time
+pipis_spread = 70;      // px either side of King's middle they're dropped
+pipis_front = 8;        // px in front of his feet the pile starts (so it's in front of him)
+pipis_grav  = 0.4;
 pipis_scale = 2;
 pipis_half  = 11;       // px: half a Pipis' height (at 2x), for stacking
-col_w       = 6;        // the pile's columns, px
-cover_hold  = 50;       // frames buried before the push
-push_acc    = 0.04;     // the pile shoving him left...
-push_max    = 3.5;
+col_w       = 6;        // (the old pile's columns: unused now, but start_rain still sets them up)
+floor_spread = 12;      // px up/down from the floor line each one lands (so they scatter over the floor)
+pipis_bounce = 0.3;     // how much they bounce when they hit the floor
+pile_hold   = 40;       // frames the finished pile sits there before it bursts
+// the little Spamton heads they burst into
+head_sprite = spr_pipis;   // <- swap in the heads sprite
+head_scale  = 2;
+pop_rate    = 3;        // Pipis bursting a frame
+head_bounce = 0.4;
+wall_cols   = 3;        // the wall of heads: this many columns (the rest fly off)...
+wall_gap    = 16;       // ...its left side starting this far right of King (clear of Queen)
+form_time   = 50;       // frames the heads take to hop into the wall
+form_stagger = 1;       // frames between each one starting to hop
+push_acc    = 0.05;     // the wall shoving him left...
+push_max    = 3.5;      // (it stops dead at the edge)
 king_xs     = -2;       // his kneeling sprite faces left as drawn: -2 faces Queen & Spamton
-king_hang_lift = 24;    // px he pops up out of the pile, over the edge (still kneeling)
+king_hang_lift = 24;    // px he pops up over the edge (still kneeling)
 hang_time   = 70;       // frames he hangs there before "Damn it."
 end_hold    = 90;       // frames of black after the impact
 
@@ -60,10 +71,17 @@ raining  = false;
 rain_left = 0;
 dropped   = 0;
 next_drop = 0;
-covered  = false;
-pushing  = false;
 push_v   = 0;
 hanging  = false;
+pstate   = "";          // the Pipis: "rain" -> "hold" -> "pop" -> "settle" -> "form" -> "ready" -> "push" -> "hang"
+stage_t  = 0;
+heads    = [];          // { x, y, vx, vy, slot, x0, y0, away }
+bursts   = [];          // { x, y, t }
+wall_x   = 0;           // the wall's left side
+wall_rows = 0;
+head_w   = 0;
+head_h   = 0;
+floor_y  = 0;
 king_feet = { x: 0, y: 0 };
 cols     = [];
 cols_x0  = 0;
@@ -116,27 +134,30 @@ lancer_moves = function()
 }
 
 // --- the Pipis ---
-/// the pile's columns: they pile up from the floor just in front of him, so they cover him
+/// the pile's columns: it piles up from the floor just in front of him, so it covers him
 start_rain = function()
 {
     var _k = instance_find(obj_king, 0);
-    cols_x0 = _k.bbox_left - pipis_spread - 40;
-    var _n  = ceil((_k.bbox_right + pipis_spread + 40 - cols_x0) / col_w);
-    cols = array_create(_n, king_feet.y + pipis_front);
+    cols_x0 = _k.bbox_left - pipis_spread - 120;
+    var _n  = ceil((_k.bbox_right + pipis_spread + 120 - cols_x0) / col_w);
+    floor_y = king_feet.y + pipis_front;
+    cols = array_create(_n, floor_y);
     raining   = true;
     rain_left = pipis_n;
     dropped   = 0;
     next_drop = 20;
+    pstate    = "rain";
+    stage_t   = 0;
     with (obj_spamton) { image_xscale = -2; sprite_index = spr_spamton_armsout_right; }   // (arms out, facing them)
-    audio_play_sound(snd_spamtonlaugh, 1, false);
 }
 col_of = function(_x) { return clamp(floor((_x - cols_x0) / col_w), 0, array_length(cols) - 1); }
 drop_pipis = function()
 {
     var _k = instance_find(obj_king, 0);
     var _mid = (_k.bbox_left + _k.bbox_right) / 2;
-    array_push(pipis, { x: _mid + random_range(-pipis_spread, pipis_spread), y: camera_get_view_y(view_camera[0]) - 30,
-                        vy: 0, rot: random(360), vr: random_range(-6, 6), rest: false, gone: false });
+    array_push(pipis, { x: _mid + random_range(-pipis_spread, pipis_spread), y: camera_get_view_y(view_camera[0]) - 30 - random(40),
+                        fy: floor_y - pipis_half + random_range(-floor_spread, floor_spread),   // (where it'll land on the floor)
+                        vx: 0, vy: random(2), rot: random(360), vr: random_range(-6, 6), rest: false });
     dropped++;
     if (dropped mod 3 == 0) { var _s = audio_play_sound(snd_bombfall, 1, false, 0.15); audio_sound_pitch(_s, random_range(1.4, 2)); }
 }
@@ -146,17 +167,53 @@ land_sound = function()
     var _s = audio_play_sound(choose(snd_impact, snd_impact, snd_graze), 1, false, 0.3);
     audio_sound_pitch(_s, random_range(0.8, 1.5));
 }
-/// is he under them yet? (every column in front of him's above his head)
-is_buried = function()
+/// the top of the pile at _x (the highest of the columns a Pipis there covers)
+surface = function(_x)
+{
+    var _c = col_of(_x), _top = 99999;
+    for (var j = _c - 2; j <= _c + 2; j++) _top = min(_top, cols[clamp(j, 0, array_length(cols) - 1)]);
+    return _top;
+}
+/// is he out of sight under them? (the pile in front of him's up past his head all the way across)
+covers_king = function()
 {
     var _k = instance_find(obj_king, 0);
     for (var i = 0; i < array_length(cols); i++)
     {
         var _cx = cols_x0 + (i + 0.5) * col_w;
-        if (_cx >= _k.bbox_left + 10 && _cx <= _k.bbox_right - 10 && cols[i] > _k.bbox_top) return false;
+        if (_cx >= _k.bbox_left + 8 && _cx <= _k.bbox_right - 8 && cols[i] > _k.bbox_top + 4) return false;
     }
     return true;
 }
+/// one Pipis bursts into a little Spamton head
+pop_one = function(_sound)
+{
+    if (array_length(pipis) == 0) return;
+    var _i = irandom(array_length(pipis) - 1);
+    var _p = pipis[_i];
+    array_delete(pipis, _i, 1);
+    array_push(heads,  { x: _p.x, y: _p.y, vx: random_range(-2.5, 2.5), vy: random_range(-6, -2), slot: -1, x0: 0, y0: 0, away: false });
+    array_push(bursts, { x: _p.x, y: _p.y, t: 0 });
+    if (_sound) { var _s = audio_play_sound(snd_bomb, 1, false, 0.3); audio_sound_pitch(_s, random_range(1.3, 1.9)); }
+}
+/// every head gets a spot in the wall (to his right), the ones left over fly off
+form_wall = function()
+{
+    var _k = instance_find(obj_king, 0);
+    head_w    = sprite_get_width(head_sprite)  * head_scale;
+    head_h    = sprite_get_height(head_sprite) * head_scale;
+    wall_rows = ceil((floor_y - _k.bbox_top) / head_h) + 1;
+    wall_x    = _k.bbox_right + wall_gap;
+    for (var i = 0; i < array_length(heads); i++)
+    {
+        var _h = heads[i];
+        _h.x0 = _h.x; _h.y0 = _h.y;
+        if (i < wall_cols * wall_rows) _h.slot = i;
+        else { _h.away = true; _h.vx = random_range(-3, 3); _h.vy = random_range(-9, -6); }
+    }
+}
+slot_x = function(_slot) { return wall_x + (_slot div wall_rows) * head_w + head_w / 2; }
+slot_y = function(_slot) { return floor_y - (_slot mod wall_rows) * head_h - head_h / 2; }
 
 // ---------------------------------------------------------------- the steps
 steps   = [];
@@ -191,10 +248,11 @@ add(function()
     with (obj_lancer) image_speed = 0;
 }, undefined, 20);
 add(function() { create_textbox("self_28"); }, function() { return !instance_exists(obj_textbox); }, 20);
-add(function() { start_rain(); }, function() { return covered; }, cover_hold);
+add(function() { start_rain(); }, function() { return pstate == "ready"; }, 20);   // (rain, pile, burst, wall)
 add(function()
 {
-    pushing = true;
+    pstate  = "push";
+    stage_t = 0;
     audio_play_sound(snd_screenshake, 1, false);
 }, function() { return hanging; }, hang_time);
 add(function() { create_textbox("self_29"); }, function() { return !instance_exists(obj_textbox); });

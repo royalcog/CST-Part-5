@@ -895,7 +895,7 @@ script_b = function()
         R(function() { push_start(2, push_speed); }),
         U(function() { return push == undefined; }),
         S("ralsei", 54, "* If I just... keep going..."),
-        S("queen", 2, "* Ralsei Your Hands Are Shaking"),
+        S("queen", 2, "* Ralsei Your Body Is Glowing"),
         S("ralsei", 27, "* I'm FINE."),
         R(function() { clear(); push_start(3, push_speed * push_speed_mult * push_speed_mult); }),
         U(function() { return push == undefined; }),

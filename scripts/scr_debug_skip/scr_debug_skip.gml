@@ -23,3 +23,18 @@ function scr_debug_skip_to_tower_top(_to_battle = false, _to_titan = false)
 
     room_goto(rm_tower_top);   // (restarts it if you're already there)
 }
+
+/// debug (F8): straight into the second Titan battle (Ralsei & Queen, after the flashback): King sitting behind Queen's
+/// shield, Susie gone, everyone's HP where the first battle would've left it
+function scr_debug_skip_to_titan2()
+{
+    global.debug_skip_titan2 = true;                      // obj_tower_top_scene checks this
+    global.post_battle_hp = { Susie: { hp: 290, max_hp: 290 }, Ralsei: { hp: 210, max_hp: 210 }, Queen: { hp: 1510, max_hp: 1510 } };
+    global.titan_fight_hp = { titan: 6000, king: 1 };
+    global.plat_lock      = false;
+    global.cutscene_lock  = true;
+    with (obj_textbox) instance_destroy();
+    with (obj_cutscenefade) instance_destroy();
+    if (variable_global_exists("music")) audio_stop_sound(global.music);
+    room_goto(rm_tower_top);   // (restarts it if you're already there)
+}

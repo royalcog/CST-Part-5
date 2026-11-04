@@ -508,6 +508,40 @@ titan_open = function()
     if (instance_exists(titan)) titan.open();
 }
 
+/// debug (F8): everything as it is right before the second Titan battle (after the flashback), then it starts
+debug_titan2 = function()
+{
+    var _reveal_cam = cam_battle_x + (forward_cam_pan ? forward_cam_dist : 0);   // where the camera was when the Titan came up
+    var _cam        = _reveal_cam - ambush_pan_dist + fight_cam_dx;               // the fight's camera
+    global.titan_battle_cam_x = _cam;
+    global.cutscene_lock = true;
+    with (chair) instance_destroy();
+    // the Titan, already standing there (it puts itself where the camera is when it's made)
+    set_cam(_reveal_cam);
+    with (obj_titan_reveal) instance_destroy();
+    titan = instance_create_depth(0, 0, 25, obj_titan_reveal);
+    titan.skip_to_idle();
+    set_cam(_cam);
+    // King where he fought (Lancer by him), Susie gone, Ralsei & Queen at their battle spots
+    king   = place(obj_king,   spr_king_kneel_sad, _cam + king_fight.x,        king_fight.y);
+    lancer = place(obj_lancer, lancer_stand,       _cam + lancer_fight.x + 10, lancer_fight.y);
+    with (obj_susie) visible = false;
+    place(obj_ralsei, spr_ralsei_attack_ready_serious, _cam + party_land_x, ralsei_land_y);
+    place(obj_queen,  spr_queen_walk_right_unhappy,    _cam + party_land_x, queen_land_y);
+    state = "titan_battle";
+    // Ralsei's rage, past its cutscene: King sitting and shaking, Queen's shield in front of him
+    with (instance_create_depth(0, 0, -9000, obj_ralsei_rage))
+    {
+        step_i    = array_length(steps);
+        king_mode = "sit";
+        scene.pose_flip(obj_king, king_sit_sprite, king_sit_xs);
+        with (obj_king) image_speed = 0;
+        king_shake = { on: true, base: obj_king.x, amt: king_sit_shake };
+        shield_put();
+    }
+    scr_titan_battle2_start();
+}
+
 // ---------------------------------------------------------------- the ambush (after the Titan's wings open)
 // self_10 ("Are you guys ready?" ... Lancer: "I'm back!") -> everyone turns round -> self_11 (cut off) -> spades from the
 // Titan's side knock Susie & Ralsei down (Queen's shield catches hers) -> the camera pans left: Lancer, with King ->
