@@ -319,23 +319,27 @@ switch (fin.st)
     {
         ts = lerp(1, slow_ts, min(1, fin.t / slow_in));
         box_k = max(0, box_k - 0.1);
-            for (var i = 0; i < array_length(allies); i++)
+        for (var i = 0; i < array_length(leap); i++)
+        {
+            var _l = leap[i];
+            if (_l.delay > 0) { _l.delay -= ts; continue; }
+            if (_l[$ "anim"] == true)
             {
-                var _a = allies[i];
-                var _y = segs[array_length(segs) - 1].y - _a.up;
-                if (_a.jump)
+                // Pink: her throw plays from the start; she's off the ground once she's crouched, and the bomb goes on its frame
+                var _n = sprite_get_number(_l.spr);
+                _l.f = min(_n - 1, _l.f + spd_of(_l.spr) * ts);
+                if (_l.f >= pink_takeoff) _l.k = min(1, _l.k + ts / jump_frames);
+                if (!_l.thrown && _l.f >= pink_bomb_frame)
                 {
-                    // Pink: crouches into her throw, leaps with it, and lets the bomb go up in the air (see "leap")
-                    array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _st.x - 70, y1: _st.y - 50, k: 0, h: 170, delay: 0, stay: false,
-                                       anim: true, f: 0, thrown: false });
-                }
-                else
-                {
-                    array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _a.x, y1: _y, k: 0, h: 0, delay: 0, stay: true });
-                    array_push(volley, { spr: _a.shot, col: _a.col, x0: _a.x + 20, y0: _y - 50, x1: _st.x + irandom_range(-20, 20), y1: _st.y + irandom_range(-20, 20),
-                                         k: 0, delay: 6 + i * 6, rot: 0 });
+                    _l.thrown = true;
+                    var _lx = lerp(_l.x0, _l.x1, _l.k), _ly = lerp(_l.y0, _l.y1, _l.k) - _l.h * 4 * _l.k * (1 - _l.k);
+                    array_push(volley, { spr: spr_pinkbomb, col: c_white, x0: _lx + pink_bomb_at.x, y0: _ly + pink_bomb_at.y,
+                                         x1: titan_near.x, y1: titan_near.y, k: 0, delay: 0, rot: 0 });
+                    audio_play_sound(snd_smallswing, 1, false);
                 }
             }
+            else _l.k = min(1, _l.k + ts / jump_frames);
+        }
         for (var i = 0; i < array_length(volley); i++)
         {
             var _v = volley[i];
