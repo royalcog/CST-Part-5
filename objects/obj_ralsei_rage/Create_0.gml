@@ -884,7 +884,7 @@ script_b = function()
         R(function() { clear(); scene.pan_cam(cam_rage_x, cam_pan_time); }),
         U(function() { return !scene.cam_pan.on; }),
         W(20),
-        S("king", 3, "* Lancer. Help your father up.", { on_start: function() { king_shake.amt = 3; } }),
+        S("king", 3, "* Lancer.|* Help your father up.", { on_start: function() { king_shake.amt = 3; } }),
         S("lancer", 11, "* ...Don't move, Dad.", { on_start: function()
             { pose(obj_lancer, spr_lancer_battle, 2); scene.slide(obj_lancer, 10, 0, 10, 4); king_shake.amt = king_sit_shake; } }),
         R(function() { clear(); scene.pan_cam(battle_cam(), cam_pan_time); }),

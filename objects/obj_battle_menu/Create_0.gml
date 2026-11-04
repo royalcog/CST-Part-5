@@ -714,9 +714,10 @@ run_action = function(_a)
                     }
                     else if (_sp.effect == "cheer" || _sp.effect == "deal" || _sp.effect == "chaos")
                     {
-                        // the Freedom Gang's ACTs: what happened's said once it's happened (Z goes on)
+                        // the Freedom Gang's ACTs: it happens straight away, and its own line says who did what
+                        // (typed once, then Z goes on)
                         _a.wait_z = true;
-                        set_text("* " + _who + " used " + string_upper(_sp.name) + "!");
+                        set_text("");
                     }
                     else
                     {
@@ -753,6 +754,8 @@ run_action = function(_a)
                 _ready = _d.obj.image_speed == 0 || _a.t >= 90;
             else if (_a.kind == "spell" && _d.spell_anim != -1 && _d.obj.sprite_index == _d.spell_anim)
                 _ready = _d.obj.image_speed == 0 || _a.t >= 90;
+            else if (_a.kind == "spell" && (_a.spell.effect == "cheer" || _a.spell.effect == "deal" || _a.spell.effect == "chaos"))
+                _ready = true;   // (no animation to wait for)
             else _ready = _a.t >= 18;
             if (!_ready) break;
 

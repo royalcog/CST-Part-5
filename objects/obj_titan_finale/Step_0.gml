@@ -126,7 +126,7 @@ if (phase == "run")
         else
         {
             throw_orb();
-            if (random(1) < pair_chance) next_hazard = run_t + 28;   // (another right behind it)
+            if (random(1) < pair_chance) next_hazard = run_t + pair_gap;   // (another behind it, a jump apart)
         }
         if (next_hazard <= run_t) next_hazard = run_t + round(lerp(hazard_gap[0], hazard_gap[1], run_t / run_len));
     }
@@ -289,6 +289,7 @@ switch (fin.st)
         {
             // everyone goes for it
             fin.st = "leap"; fin.t = 0;
+            if (variable_global_exists("music")) audio_sound_gain(global.music, 0, round((white_up + white_stay) * 1000 / game_get_speed(gamespeed_fps)));
             audio_play_sound(snd_criticalswing, 1, false);
             audio_play_sound(snd_explosion, 1, false);
             do_shake(8, 30);

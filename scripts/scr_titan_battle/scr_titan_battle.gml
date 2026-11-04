@@ -442,6 +442,12 @@ function scr_titan_battle3_start()
             "* A new sense of freedom arises.",
             "* Susie cracks her knuckles.",
             "* Spamton is [Thrilled] to be here.",
+			"* Pink is ready to throw some claws.",
+			"* Jevil keeps dancing.",
+			"* Ralsei seems overly determined.",
+			"* Queen seems slightly less sustained.",
+			"* The darkness looms.",
+			"* Life is but a shadow.",
         ];
         facing_enabled = true;
         default_facing = 1;

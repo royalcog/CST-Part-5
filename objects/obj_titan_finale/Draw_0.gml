@@ -153,12 +153,11 @@ for (var i = 0; i < array_length(orbs); i++)
     var _tx = _o.wx - dist;
     if (!_o.landed)
     {
-        var _k  = _o.k;
-        var _x  = lerp(_o.sx0, _tx, _k), _y = lerp(_o.sy0, _o.y, _k) - sin(_k * pi) * 60;
-        // nose first along its arc
-        var _k2 = min(1, _k + 0.02);
-        var _x2 = lerp(_o.sx0, _tx, _k2), _y2 = lerp(_o.sy0, _o.y, _k2) - sin(_k2 * pi) * 60;
-        draw_fish(_ox + _x, _oy + _y, point_direction(_x, _y, _x2, _y2), lerp(0.3, fish_scale, _k), t * 0.22);
+        var _k = _o.k;
+        var _x = lerp(_o.sx0, _tx, _k), _y = lerp(_o.sy0, _o.y, _k) - sin(_k * pi) * 60;
+        // it comes out of the star nose-down, and turns as it comes until it's lying flat facing them when it lands
+        var _e = _k * _k * (3 - 2 * _k);
+        draw_fish(_ox + _x, _oy + _y, lerp(250, 180, _e), lerp(0.3, fish_scale, _e), t * 0.22, min(1, _k * orb_time / fish_in_time));
         if ((t div 4) mod 2 == 0)
         {
             draw_set_font(fnt_determination);

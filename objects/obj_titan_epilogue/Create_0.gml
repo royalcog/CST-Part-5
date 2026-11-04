@@ -235,7 +235,11 @@ add(function()
     for (var i = 0; i < array_length(people); i++) people[i].up_t = t + i * get_up_gap;
     if (variable_global_exists("music")) audio_stop_sound(global.music);
 }, undefined, get_up_gap * 3 + 30);
-add(function() { create_textbox("self_26"); }, function() { return !instance_exists(obj_textbox); }, 20);
+add(function()
+{
+    for (var i = 0; i < array_length(people); i++) if (people[i].name == "ralsei") people[i].up = spr_ralsei_walk_right_neutral;   // (he turns: "Wait...")
+    create_textbox("self_26");
+}, function() { return !instance_exists(obj_textbox); }, 20);
 add(function() { fade_to(1, fade_in); }, function() { return black.a >= 1; }, black_hold);
 
 // ---- back up the tower

@@ -81,15 +81,22 @@ hazard_start   = 330;      // frames into the run the attacks start
 run_len        = 3000;     // frames of attacks (50s), then the end
 hazard_gap     = [150, 100];// frames between attacks: at the start / by the end
 spawn_chance   = 0.25;     // how often it's a Titan Spawn (only one at a time)
-pair_chance    = 0.15;     // how often an orb has another right behind it
-orb_time       = 70;       // frames an orb takes from its star to the path...
-orb_land_sx    = 760;      // ...landing where the path's at this x on screen
-fish_scale     = 1;        // the Titan fish (head, 4 body pieces, tail), at this size...
-fish_swim      = 2.5;      // ...swimming at them along the path this fast once it's landed (px a frame)
-fish_hit_r     = 12;       // px around each piece that hurts
+pair_chance    = 0.15;     // how often a fish has another right behind it...
+pair_gap       = 55;       // ...this many frames later
+orb_time       = 70;       // frames a fish takes from its star to the path...
+orb_land_sx    = 760;      // ...landing (at the soonest) where the path's at this x on screen
+fish_scale     = 0.75;     // the Titan fish (head, 4 body pieces, tail), at this size...
+fish_swim      = 0;        // ...staying where it lands (so Ralsei, jumping where Susie did, clears it too)
+fish_hit_r     = 10;       // px around each piece that hurts
 fish_gap       = 22;       // its pieces' spacing (sprite px), like obj_plat_titanfish
 fish_tail_gap  = 20;
 fish_wave      = 4;        // px each piece wiggles
+fish_in        = 200;      // a low one lands at least this far onto a platform (past where a jump over the gap comes down)...
+fish_end       = 60;       // ...and this far short of its end (room to jump it, then the gap)
+fish_in_high   = 270;      // a high one (any jump touches it) only in the middle of a long platform, away from the jumps
+fish_end_high  = 140;
+fish_space     = 320;      // px between any two (more than a jump)
+fish_in_time   = 10;       // frames a new one takes to fade in at the star
 orb_low        = 22;       // px above the path a low orb sits (jump it)...
 orb_high       = 86;       // ...and a high one (stay down)
 high_chance    = 0.15;
@@ -419,17 +426,26 @@ far_star = function()
 }
 throw_orb = function()
 {
-    var _st = far_star();
-    var _wx = dist + orb_land_sx + run_speed * orb_time;   // (where that bit of path'll be when it lands)
-    var _g  = ground_at(_wx);
-    if (_g == -1)
+    var _st   = far_star();
+    var _want = dist + orb_land_sx + run_speed * orb_time;   // (the soonest bit of path it can get to in time)
+    // a spot it can be dodged from: the first one from there on that's far enough onto a platform and short of its end
+    var _place = function(_wx, _in, _end)
     {
-        // on the next platform instead
-        for (var i = 0; i < array_length(segs); i++) if (segs[i].x0 > _wx) { _wx = segs[i].x0 + 60; _g = segs[i].y; break; }
-        if (_g == -1) return;
-    }
+        for (var i = 0; i < array_length(segs); i++)
+        {
+            var _s = segs[i];
+            if (_s.x1 - _end < _wx) continue;
+            var _x = max(_wx, _s.x0 + _in);
+            if (_x <= _s.x1 - _end) return { x: _x, y: _s.y };
+        }
+        return undefined;
+    };
     var _high = random(1) < high_chance;
-    array_push(orbs, { wx: _wx, y: _g - (_high ? orb_high : orb_low), k: 0, sx0: _st.x, sy0: _st.y, high: _high, landed: false, done: false });
+    var _spot = _high ? _place(_want, fish_in_high, fish_end_high) : undefined;
+    if (_spot == undefined) { _high = false; _spot = _place(_want, fish_in, fish_end); }
+    if (_spot == undefined) return;
+    for (var i = 0; i < array_length(orbs); i++) if (abs(orbs[i].wx - _spot.x) < fish_space) return;   // (too close to another)
+    array_push(orbs, { wx: _spot.x, y: _spot.y - (_high ? orb_high : orb_low), k: 0, sx0: _st.x, sy0: _st.y, high: _high, landed: false, done: false });
     audio_play_sound(snd_spawn_attack, 1, false, 0.6);
 }
 /// piece _k of a fish (0 = head, 1-4 = body, 5 = tail) whose head's at (_hx, _hy), going _ang, at scale _s
@@ -441,20 +457,20 @@ fish_piece = function(_k, _hx, _hy, _ang, _s, _ph)
              y: _hy - lengthdir_y(_back, _ang) + lengthdir_y(_wig, _ang + 90) };
 }
 /// a whole fish (its sprites face right as drawn: anything going leftish is flipped instead of turned upside down)
-draw_fish = function(_hx, _hy, _ang, _s, _ph)
+draw_fish = function(_hx, _hy, _ang, _s, _ph, _al = 1)
 {
     var _left = (lengthdir_x(1, _ang) < 0);
     var _xs   = _left ? -_s : _s;
     var _a    = _left ? _ang - 180 : _ang;
     var _f    = t / 6;
     var _p    = fish_piece(5, _hx, _hy, _ang, _s, _ph);
-    draw_sprite_ext(spr_titanfish_tail, _f, _p.x, _p.y, _xs, _s, _a, c_white, 1);
+    draw_sprite_ext(spr_titanfish_tail, _f, _p.x, _p.y, _xs, _s, _a, c_white, _al);
     for (var k = 4; k >= 1; k--)
     {
         _p = fish_piece(k, _hx, _hy, _ang, _s, _ph);
-        draw_sprite_ext(spr_titanfish_body, _f + k, _p.x, _p.y, _xs, _s, _a, c_white, 1);
+        draw_sprite_ext(spr_titanfish_body, _f + k, _p.x, _p.y, _xs, _s, _a, c_white, _al);
     }
-    draw_sprite_ext(spr_titanfish_head, _f, _hx, _hy, _xs, _s, _a, c_white, 1);
+    draw_sprite_ext(spr_titanfish_head, _f, _hx, _hy, _xs, _s, _a, c_white, _al);
 }
 send_spawn = function()
 {
