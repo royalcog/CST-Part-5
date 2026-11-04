@@ -511,7 +511,7 @@ is_attack = function(_pending)
 /// run _steps (see `script` above), then _then() (it puts the battle back where it should be)
 start_script = function(_steps, _then)
 {
-    script = then steps: _steps, i: 0, started: false, t: 0,: _then, chain: noone };
+    script = { steps: _steps, i: 0, started: false, t: 0, then: _then, chain: noone };
     script_list = false;
     state = "scripted";
     t = 0;
