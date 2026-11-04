@@ -119,7 +119,7 @@ cast_update = function()
                 cast.done = true;
                 with (_r)
                 {
-                    sprite_index = spr_ralsei_battle_idle; image_index = 0; image_speed = 0.15;
+                    sprite_index = spr_ralsei_battle_idle_mad; image_index = 0; image_speed = 1;
                     if (variable_instance_exists(id, "last_sprite")) last_sprite = sprite_index;
                 }
             }

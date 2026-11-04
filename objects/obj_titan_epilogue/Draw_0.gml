@@ -31,5 +31,5 @@ for (var i = 0; i < array_length(bursts); i++)
 for (var i = 0; i < array_length(heads); i++)
 {
     var _h = heads[i];
-    draw_sprite_ext(head_sprite, t / 8, _h.x, _h.y, head_scale, head_scale, 0, c_white, 1);
+    draw_sprite_ext(head_sprite, t * spd_of(head_sprite) + i, _h.x, _h.y, head_scale, head_scale, 0, c_white, 1);
 }

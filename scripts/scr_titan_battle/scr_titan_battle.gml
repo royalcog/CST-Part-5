@@ -113,6 +113,7 @@ function scr_titan_battle_start()
             "* Ralsei is still thinking of a plan.",
             "* Defending seems like a good idea.",
         ];
+        first_flavor = "* The Castle Top is covered in darkness.";
         facing_enabled = true;
         susie_rescue   = true;   // anyone below 20% HP: Susie heals everyone to full
         auto_mouth     = true;   // everyone's bubbles go in front of their mouths
@@ -318,14 +319,16 @@ function scr_titan_battle2_start()
         turn_end_hook = function(_turn) { var _r = false; with (obj_ralsei_rage) _r = on_turn_end(_turn); return _r; };
         panel_ox = _panel_ox;
         flavor = [
-            "* The Titan looms over the Castle Top.",
+            "* The Titan looms over Castle Town",
             "* Ralsei's eyes burn.",
             "* Queen keeps one eye on King.",
         ];
+        first_flavor = "* Ralsei's eyes burn.";
         facing_enabled = true;
         default_facing = 1;      // at the Titan
         susie_rescue   = false;
         auto_mouth     = true;
+        for (var i = 0; i < party_n; i++) if (names[i] == "Ralsei" && defs[i] != undefined) defs[i].idle = spr_ralsei_battle_idle_mad;
         protect_target = noone;
 
         for (var i = 0; i < 3; i++)
@@ -375,12 +378,13 @@ function scr_party_init_six(_susie_hp, _ralsei_hp, _queen_hp)
     };
     array_push(_all, _back("Pink",    7000, obj_mewmew,  spr_mewmew_shocked_right_corrupted, spr_mewmew_idle_corrupted, -12, spr_pinkbox_empty,    spr_pinkbox_attack_empty,    make_color_rgb(255, 138, 144)));
     array_push(_all, _back("Jevil",   3500, obj_jevil,   spr_jevil_tired,                    spr_jevil_dance,           224, spr_jevilbox_empty,   spr_jevilbox_attack_empty,   make_color_rgb(109, 109, 192)));
+    with ({ e: _all[array_length(_all) - 1] }) { e.bar_offset_x += 1; e.hp_current_x += 1; e.hp_max_x += 1; }   // (his box's art is 1px right of the others')
     array_push(_all, _back("Spamton", 600,  obj_spamton, spr_spamton_hurt,                   spr_spamton_right,         460, spr_spamtonbox_empty, spr_spamtonbox_attack_empty, make_color_rgb(251, 242, 54)));
     scr_party_init(_all);
     with (obj_battle_ui_box) if (char_name == "Pink" || char_name == "Jevil" || char_name == "Spamton") takes_hits = false;
 }
 
-global.titan_battle3_song = sng_chaosguardian;   // (a placeholder: the 6-person battle gets its own song)
+global.titan_battle3_song = sng_needsomefriends;   // (already going since the Freedom Gang showed up: it carries on through)
 
 /// everyone's back: the 6-person Titan battle (obj_ralsei_rage starts it once they've readied up).
 /// front row (they take the hits): Susie, Ralsei, Queen. back row: Pink, Jevil, Spamton
@@ -397,7 +401,7 @@ function scr_titan_battle3_start()
     with (obj_UI) instance_destroy();
     instance_create_depth(0, 0, -100, obj_UI);
     scr_party_init_six(_hp.Susie, _hp.Ralsei, _hp.Queen);
-    with (obj_battle_ui_box) if (char_name == "Ralsei") cant_die = true;   // (a hit that'd down him goes to Susie or Queen)
+    with (obj_battle_ui_box) if (char_name == "Ralsei") { cant_die = true; body_idle_sprite = spr_ralsei_battle_idle_mad; }   // (a hit that'd down him goes to Susie or Queen)
     obj_UI.active_box = noone;
 
     // the front row centred on the screen, like the 3-person battle (the back row's lined up over it)
@@ -415,10 +419,16 @@ function scr_titan_battle3_start()
     scr_tp_init();
     global.tp.broken = true;
 
-    if (variable_global_exists("music")) audio_stop_sound(global.music);
-    global.song  = { sound: global.titan_battle3_song, beats: 9999 };
-    global.music = audio_play_sound(global.titan_battle3_song, 2, true, 1);
-    global.song_start = current_time;
+    // the song: if it's already playing (it is: it started when the Freedom Gang showed up) it just keeps going
+    var _playing = variable_global_exists("music") && global.music != noone && audio_is_playing(global.music)
+                && variable_global_exists("song") && is_struct(global.song) && global.song.sound == global.titan_battle3_song;
+    if (!_playing)
+    {
+        if (variable_global_exists("music") && global.music != noone) audio_stop_sound(global.music);
+        global.song  = { sound: global.titan_battle3_song, beats: 9999 };
+        global.music = audio_play_sound(global.titan_battle3_song, 2, true, 1);
+        global.song_start = current_time;
+    }
 
     with (obj_battle_target) instance_destroy();
     var _titan = scr_battle_target_make(obj_titan_reveal, {
@@ -449,6 +459,7 @@ function scr_titan_battle3_start()
 			"* The darkness looms.",
 			"* Life is but a shadow.",
         ];
+        first_flavor = "* A new sense of freedom arises.";
         facing_enabled = true;
         default_facing = 1;
         susie_rescue   = false;

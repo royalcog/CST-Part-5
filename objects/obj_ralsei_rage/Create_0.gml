@@ -97,6 +97,7 @@ battle_pan_time = 120;
 party_walk      = 3;
 draw_speed      = 0.25;    // frames of spr_ralsei_battle_intro_serious a frame
 ready_hold      = 30;
+ralsei_idle     = spr_ralsei_battle_idle_mad;   // his battle idle from the second battle on (played at its own speed)
 //  5. in the battle: after attack 4 (script_a: the stat boost), attack 5, then script_b (999 isn't enough, the standoff,
 //     Pink's bomb, the Freedom Gang, Susie's back) and the 6-person battle (scr_titan_battle3_start)
 boost_speed     = 0.25;    // frames of spr_ralsei_spell a frame (the stat boost)
@@ -433,12 +434,13 @@ ralsei_box = function()
     return _b;
 }
 /// out of his serious sprites for the rest of it
+/// out of his serious sprites for the rest of it (his idle stays the mad one)
 ralsei_normal = function()
 {
     with (obj_battle_menu) for (var i = 0; i < party_n; i++)
     {
         if (names[i] != "Ralsei" || defs[i] == undefined) continue;
-        defs[i].idle        = spr_ralsei_battle_idle;
+        defs[i].idle        = other.ralsei_idle;
         defs[i].ready_fight = spr_ralsei_attack_ready;
         defs[i].attack      = spr_ralsei_attack;
         defs[i].defend      = spr_ralsei_defend;
@@ -446,13 +448,13 @@ ralsei_normal = function()
     var _b = ralsei_box();
     if (_b != noone) with (_b)
     {
-        body_idle_sprite = spr_ralsei_battle_idle;
+        body_idle_sprite = other.ralsei_idle;
         defending = false;   // (his DEFEND from before attack 4 is over)
         // a hurt flash still going would put back the pose he was in when he got hit (his serious defend): cancel it
         if (body_hurt_timer > 0 && instance_exists(body_inst)) body_inst.x = body_saved.x;
         body_hurt_timer = 0;
     }
-    swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
+    swap(obj_ralsei, ralsei_idle, 1);
 }
 /// Ralsei turns all his stats to 999
 stat_boost = function()
@@ -669,8 +671,8 @@ bomb_start = function()
 /// Ralsei's up, and he and Queen turn round
 turn_round = function()
 {
-    pose(obj_ralsei, spr_ralsei_battle_idle, -2);
-    with (obj_ralsei) image_speed = 0.15;
+    pose(obj_ralsei, ralsei_idle, -2);
+    with (obj_ralsei) image_speed = 1;
     pose(obj_queen, spr_queen_walk_left_unhappy, 2);
     with (obj_queen_shield) if (state == "build" || state == "up") { state = "down"; t = 0; }
 }
@@ -862,7 +864,7 @@ script_a = function()
         R(function() { clear(); stat_boost(); }),
         U(function() { return anim_done(obj_ralsei); }),
         W(30),
-        R(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }),
+        R(function() { swap(obj_ralsei, ralsei_idle, 1); }),
         S("queen", 27, "* Sick"),
     ];
 }
@@ -873,7 +875,7 @@ script_b = function()
         // 999... and it heals right back
         R(function() { clear(); ralsei_hit(hit_speed); }),
         U(function() { return anim_done(obj_ralsei); }),
-        R(function() { swap(obj_ralsei, spr_ralsei_battle_idle, 0.15); }),
+        R(function() { swap(obj_ralsei, ralsei_idle, 1); }),
         W(heal_delay + 50),
         S("ralsei", 52, "* ...Why isn't it working?"),
         S("ralsei", 53, "* It's..."),

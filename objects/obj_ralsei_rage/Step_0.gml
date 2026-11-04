@@ -255,7 +255,7 @@ titan_glow = max(0, titan_glow - 0.02);
 if (push != undefined && anim_done(obj_ralsei))
 {
     push.t++;
-    if (push.t == 1) swap(obj_ralsei, spr_ralsei_battle_idle, 0.15);
+    if (push.t == 1) swap(obj_ralsei, ralsei_idle, 1);
     if (push.left <= 0)
     {
         if (push.t >= push_end_wait) push = undefined;

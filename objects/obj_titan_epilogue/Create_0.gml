@@ -43,7 +43,7 @@ floor_spread = 12;      // px up/down from the floor line each one lands (so the
 pipis_bounce = 0.3;     // how much they bounce when they hit the floor
 pile_hold   = 40;       // frames the finished pile sits there before it bursts
 // the little Spamton heads they burst into
-head_sprite = spr_pipis;   // <- swap in the heads sprite
+head_sprite = spr_spamton_head;
 head_scale  = 2;
 pop_rate    = 3;        // Pipis bursting a frame
 head_bounce = 0.4;

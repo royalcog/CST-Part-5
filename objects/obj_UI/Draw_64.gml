@@ -37,16 +37,19 @@ if (use_party_boxes)
             // Deltarune's "selection matrix": on this person's turn, lines in their colour slide inward from both
             // sides of the button row and fade. drawn on its black, then the row's redrawn over them with black
             // keyed out, so they pass behind the buttons
-            var _bw = _w * _scale_x * frame_scale;
-            var _bh = _button_h * _scale_y * frame_scale;
-            var _k  = _bw / 213;   // Deltarune's box is 213 wide
+            // (measured from the box's own edges in its art: the Queen-style boxes have an 11px margin on the left)
+            var _bl  = sprite_get_bbox_left(_frame), _br = sprite_get_bbox_right(_frame) + 1;
+            var _bx0 = _sx + _bl * _scale_x * frame_scale;
+            var _bw  = (_br - _bl) * _scale_x * frame_scale;
+            var _bh  = _button_h * _scale_y * frame_scale;
+            var _k   = _bw / 213;   // Deltarune's box is 213 wide
             draw_set_colour(bar_fill_color);
             for (var i = 0; i < 12; i++)
             {
                 var _a = sin((sel_siner + i * 10 * pi) / 60);
                 if (cos((sel_siner + i * 10 * pi) / 60) >= 0 || _a <= 0) continue;
-                var _lx = _sx + (31 - _a * 30) * _k;    // 1 at the edge -> 31 as it fades
-                var _rx = _sx + (181 + _a * 30) * _k;   // 211 -> 181 on the right
+                var _lx = _bx0 + (31 - _a * 30) * _k;    // 1 at the edge -> 31 as it fades
+                var _rx = _bx0 + (181 + _a * 30) * _k;   // 211 -> 181 on the right
                 draw_set_alpha(_a);
                 draw_rectangle(_lx - 1, _ry, _lx, _ry + _bh, false);
                 draw_rectangle(_rx - 1, _ry, _rx, _ry + _bh, false);

@@ -32,6 +32,7 @@ flavor     = [
 	"* Queen seems oddly sustained.",
 	"* Don't think what you don't deserve to think about.",
 ];
+first_flavor = undefined;   // a battle's own opening line (its first turn); after that it's a random one from flavor
 col_orange = make_color_rgb(255, 160, 64);
 col_grey   = make_color_rgb(128, 128, 128);
 col_strip  = make_color_rgb(51, 32, 51);    // the dark purple line along the top of Deltarune's panel

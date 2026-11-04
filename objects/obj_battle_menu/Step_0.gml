@@ -151,7 +151,7 @@ switch (state)
         with (obj_battle_ui_box) defending = false;
         for (var i = 0; i < party_n; i++) if (alive_member(i)) scr_bm_idle(defs[i]);
 
-        set_text(flavor[irandom(array_length(flavor) - 1)]);
+        set_text((turn == 0 && first_flavor != undefined) ? first_flavor : flavor[irandom(array_length(flavor) - 1)]);
         var _first = next_chooser(0);
         if (_first == -1) { state = "enemy_turn"; t = 0; break; }   // nobody can act
         begin_choosing(_first);
