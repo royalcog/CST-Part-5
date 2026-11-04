@@ -249,7 +249,7 @@ function scr_titan_battle2_start()
     with (obj_battle_ui_box)
     {
         if (char_name == "Susie") instance_destroy();
-        else if (char_name == "Ralsei") { body_idle_sprite = spr_ralsei_battle_idle_mad; _ralsei_box = id; }
+        else if (char_name == "Ralsei") { body_idle_sprite = spr_ralsei_battle_idle_mad; _ralsei_box = id; cant_die = true; }
     }
     obj_UI.active_box = _ralsei_box;
 
@@ -428,7 +428,6 @@ function scr_titan_battle3_start()
             { talk: [], attack: scr_start_titan_final },
         ];
         rounds_loop_from = 3;
-        rounds_loop_from = 0;
         flavor = [
             "* A new sense of freedom arises.",
             "* Susie cracks her knuckles.",
@@ -438,6 +437,7 @@ function scr_titan_battle3_start()
         default_facing = 1;
         susie_rescue   = false;
         auto_mouth     = true;
+        turn_end_hook  = function(_turn) { return scr_titan_battle3_heal(); };
         for (var i = 0; i < party_n; i++)
         {
             if (defs[i] == undefined) continue;
@@ -487,4 +487,42 @@ function scr_titan_epilogue_start()
 {
     with (obj_titan_finale) instance_destroy();
     instance_create_depth(0, 0, -9500, obj_titan_epilogue);
+}
+
+/// the 6-person battle: after an enemy turn where anyone got hurt, Susie & Ralsei heal everyone back to full
+/// (its turn_end_hook: true while it's doing it, then it carries on to the next turn)
+function scr_titan_battle3_heal()
+{
+    var _hurt = false;
+    with (obj_battle_ui_box) if (hp < max_hp) _hurt = true;
+    if (!_hurt) return false;
+    start_script([
+        { run: function()
+            {
+                // Susie's heal (it faces left as drawn) and Ralsei's spell
+                with (obj_susie)  { sprite_index = spr_susie_heal;   last_sprite = sprite_index; image_index = 0; image_speed = 1; anim_loop = false; image_xscale = -2; }
+                with (obj_ralsei) { sprite_index = spr_ralsei_spell; last_sprite = sprite_index; image_index = 0; image_speed = 1; anim_loop = false; image_xscale = 2; }
+                audio_play_sound(snd_spell_pacify, 1, false);
+            } },
+        { wait: 30 },
+        { run: function()
+            {
+                with (obj_battle_ui_box) if (hp < max_hp)
+                {
+                    scr_bm_heal(id, max_hp - hp);   // (back up if they were down)
+                    if (body != noone && instance_exists(body))
+                    {
+                        var _f = instance_create_depth(0, 0, body.depth - 1, obj_heal_flash);
+                        _f.target   = body;
+                        _f.duration = 40;
+                    }
+                }
+            } },
+        { say: { spr: -1, img: 0, text: "* Susie and Ralsei healed everyone!", voice: noone, auto: 40 } },
+    ], function()
+    {
+        for (var i = 0; i < party_n; i++) if (defs[i] != undefined) { scr_bm_idle(defs[i]); face_member(i, default_facing); }
+        turn++; state = "turn_start"; t = 0;
+    });
+    return true;
 }

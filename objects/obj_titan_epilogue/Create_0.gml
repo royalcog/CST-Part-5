@@ -9,12 +9,13 @@ depth = -9500;
 town_sprite = spr_castle_town;
 town_at     = { x: 431.5, y: -192 };   // where rm_three has it (its origin), from the screen's top-left
 music_out   = 2000;     // ms the run's song fades out over
+town_wait   = 240;      // frames of black after the Titan's gone, before Castle Town fades in
 fade_in     = 60;       // frames for each fade from / to black
 black_hold  = 40;
 people = [
-    { name: "susie",  spr: spr_susie_landed,               up: spr_susie_walk_down_neutral,  x: 290, y: 315, bob: 0 },
-    { name: "ralsei", spr: spr_ralsei_fall_wince,          up: spr_ralsei_walk_down_neutral, x: 385, y: 318, bob: 0 },
-    { name: "pink",   spr: spr_mewmew_very_hurt_corrupted, up: spr_mewmew_idle_corrupted,    x: 480, y: 312, bob: 0 },
+    { name: "susie",  spr: spr_susie_landed,               up: spr_susie_walk_right_neutral,   x: 290, y: 315, bob: 0 },   // (they face each other)
+    { name: "ralsei", spr: spr_ralsei_fall_wince,          up: spr_ralsei_walk_left_neutral,   x: 385, y: 318, bob: 0 },
+    { name: "pink",   spr: spr_mewmew_very_hurt_corrupted, up: spr_mewmew_walkright_corrupted, x: 480, y: 312, bob: 0 },   // (her overworld idle)
     { name: "jevil",  spr: spr_jevil_tired,                up: spr_jevil_tired,              x: 580, y: 262, bob: 4 }   // (stays tired, floating)
 ];
 get_up_gap  = 18;       // frames between each one getting up
@@ -28,9 +29,12 @@ spamton_dy  = 6;
 lancer_dx   = 110;      // ...Lancer's, between them
 lancer_move = { dx: 130, dy: 100 };   // where he moves to (from King's feet)
 lancer_walk = 2;
-pipis_n     = 90;       // the most that come down (it stops once he's buried)
-pipis_gap   = [28, 3];  // frames between each: at the start / by the end
-pipis_spread = 70;      // px either side of King's middle they land
+pipis_n     = 300;      // the most that come down...
+pipis_min   = 180;      // ...and at least this many (it stops once he's buried, after these)
+pipis_gap   = [24, 2];  // frames between each: at the start / by the end
+pipis_spread = 85;      // px either side of King's middle they land
+pipis_front = 8;        // px in front of his feet they pile up from (so the pile's in front of him)
+laugh_every = 75;       // frames between Spamton's laughs while they come down
 pipis_grav  = 0.35;
 pipis_scale = 2;
 pipis_half  = 11;       // px: half a Pipis' height (at 2x), for stacking
@@ -38,9 +42,8 @@ col_w       = 6;        // the pile's columns, px
 cover_hold  = 50;       // frames buried before the push
 push_acc    = 0.04;     // the pile shoving him left...
 push_max    = 3.5;
-king_hang_spr = spr_king_hurt;
-king_hang_xs  = -2;     // (his battle sprites face left as drawn: -2 faces them)
-king_hang_lift = 24;    // px he pops up out of the pile, over the edge
+king_xs     = -2;       // his kneeling sprite faces left as drawn: -2 faces Queen & Spamton
+king_hang_lift = 24;    // px he pops up out of the pile, over the edge (still kneeling)
 hang_time   = 70;       // frames he hangs there before "Damn it."
 end_hold    = 90;       // frames of black after the impact
 
@@ -55,6 +58,7 @@ for (var i = 0; i < array_length(people); i++) { people[i].up_t = -1; people[i].
 pipis    = [];
 raining  = false;
 rain_left = 0;
+dropped   = 0;
 next_drop = 0;
 covered  = false;
 pushing  = false;
@@ -80,8 +84,7 @@ draw_feet = function(_spr, _img, _x, _y)
 setup_top = function()
 {
     phase = "top";
-    depth = -2150;   // (the Pipis in front of King and everyone)
-    with (obj_ralsei_rage) { king_shake.on = false; }
+    with (obj_ralsei_rage) { king_shake.on = false; shield = undefined; }   // (and Queen's shield's gone from him)
     with (obj_queen_shield) instance_destroy();
     with (obj_susie)  visible = false;   // (they're in Castle Town)
     with (obj_ralsei) visible = false;
@@ -91,10 +94,13 @@ setup_top = function()
     scene.set_cam(cam_top_x);
     var _k = instance_find(obj_king, 0);
     if (_k == noone) return;
+    scene.pose_flip(obj_king, spr_king_kneel_sad, king_xs);   // (facing them)
+    with (_k) image_speed = 0;
+    depth = _k.depth - 20;   // (the Pipis in front of him)
     king_feet = scr_get_feet(_k);
     scene.pose_flip(obj_queen,   spr_queen_walk_left_unhappy, 2);
     scene.pose_flip(obj_spamton, spr_spamton_left, 2);
-    scene.pose_flip(obj_lancer,  spr_lancer_right, 2);
+    scene.pose_flip(obj_lancer,  spr_lancer_right_sad, 2);
     with (obj_queen)   { visible = true; image_speed = 0; }
     with (obj_spamton) { visible = true; image_speed = 0; }
     with (obj_lancer)  { visible = true; image_speed = 0; }
@@ -105,25 +111,21 @@ setup_top = function()
 lancer_moves = function()
 {
     arrived = 0;
-    scr_walk_feet_to(obj_lancer, spr_lancer_left, spr_lancer_right, spr_lancer_up, spr_lancer_down,
+    scr_walk_feet_to(obj_lancer, spr_lancer_left_sad, spr_lancer_right_sad, spr_lancer_up, spr_lancer_dt_unhappy,
         king_feet.x + lancer_move.dx, king_feet.y + lancer_move.dy, lancer_walk, function() { arrived = 1; });
 }
 
 // --- the Pipis ---
-/// the pile's columns: the floor around King, and the top of King where he is
+/// the pile's columns: they pile up from the floor just in front of him, so they cover him
 start_rain = function()
 {
     var _k = instance_find(obj_king, 0);
     cols_x0 = _k.bbox_left - pipis_spread - 40;
     var _n  = ceil((_k.bbox_right + pipis_spread + 40 - cols_x0) / col_w);
-    cols = array_create(_n, king_feet.y);
-    for (var i = 0; i < _n; i++)
-    {
-        var _cx = cols_x0 + (i + 0.5) * col_w;
-        if (_cx >= _k.bbox_left + 6 && _cx <= _k.bbox_right - 6) cols[i] = _k.bbox_top + 12;
-    }
+    cols = array_create(_n, king_feet.y + pipis_front);
     raining   = true;
     rain_left = pipis_n;
+    dropped   = 0;
     next_drop = 20;
     with (obj_spamton) { image_xscale = -2; sprite_index = spr_spamton_armsout_right; }   // (arms out, facing them)
     audio_play_sound(snd_spamtonlaugh, 1, false);
@@ -135,8 +137,16 @@ drop_pipis = function()
     var _mid = (_k.bbox_left + _k.bbox_right) / 2;
     array_push(pipis, { x: _mid + random_range(-pipis_spread, pipis_spread), y: camera_get_view_y(view_camera[0]) - 30,
                         vy: 0, rot: random(360), vr: random_range(-6, 6), rest: false, gone: false });
+    dropped++;
+    if (dropped mod 3 == 0) { var _s = audio_play_sound(snd_bombfall, 1, false, 0.15); audio_sound_pitch(_s, random_range(1.4, 2)); }
 }
-/// is he under them yet? (every column over him's above his head)
+/// one landing (a little different every time)
+land_sound = function()
+{
+    var _s = audio_play_sound(choose(snd_impact, snd_impact, snd_graze), 1, false, 0.3);
+    audio_sound_pitch(_s, random_range(0.8, 1.5));
+}
+/// is he under them yet? (every column in front of him's above his head)
 is_buried = function()
 {
     var _k = instance_find(obj_king, 0);
@@ -159,7 +169,7 @@ add = function(_run, _until = undefined, _wait = 0) { array_push(steps, { run: _
 add(function()
 {
     if (variable_global_exists("music")) audio_sound_gain(global.music, 0, music_out);
-}, undefined, 40);
+}, undefined, town_wait);
 add(function() { fade_to(0, fade_in); }, function() { return black.a <= 0; }, 50);
 add(function() { create_textbox("self_25"); }, function() { return !instance_exists(obj_textbox); }, 20);
 add(function()
@@ -177,7 +187,7 @@ add(function() { create_textbox("self_27"); }, function() { return !instance_exi
 add(function() { lancer_moves(); }, function() { return arrived == 1; }, 10);
 add(function()
 {
-    scene.pose_flip(obj_lancer, spr_lancer_up, 2);
+    scene.pose_flip(obj_lancer, spr_lancer_left_sad, 2);   // (still sad, watching his dad)
     with (obj_lancer) image_speed = 0;
 }, undefined, 20);
 add(function() { create_textbox("self_28"); }, function() { return !instance_exists(obj_textbox); }, 20);

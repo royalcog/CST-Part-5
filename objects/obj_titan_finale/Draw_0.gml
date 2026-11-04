@@ -44,11 +44,12 @@ if (_qa > 0)
     var _qx = _ox + lerp(queen_from.x, queen_to.x, _e);
     var _qy = _oy + lerp(queen_from.y, queen_to.y, _e) + sin(t / 20) * queen_bob;
     draw_sprite_ext(spr_jevil_dance, t * spd_of(spr_jevil_dance), _qx + jevil_trail.x * _qs, _qy + jevil_trail.y * _qs + sin(t / 14) * 3 * _qs, _qs, _qs, 0, c_white, _qa);
-    var _top = _qy - sprite_get_yoffset(spr_queen_chair) * _qs;
+    // the chair with Queen in it, its flame under it, then Pink & Spamton sitting on its arms
+    var _top = _qy - sprite_get_yoffset(spr_queen_chair_lookdown) * _qs;
     draw_sprite_ext(spr_queen_chair_flame, t * spd_of(spr_queen_chair_flame), _qx, _top + sprite_get_yoffset(spr_queen_chair_flame) * _qs, _qs, _qs, 0, c_white, _qa);
-    draw_sprite_ext(spr_queen_chair, 0, _qx, _qy, _qs, _qs, 0, c_white, _qa);
-    draw_sprite_ext(spr_mewmew_idle_corrupted, t * spd_of(spr_mewmew_idle_corrupted), _qx + arm_l.x * _qs, _qy + arm_l.y * _qs, _qs, _qs, 0, c_white, _qa);
-    draw_sprite_ext(spr_spamton_right, 0, _qx + arm_r.x * _qs, _qy + arm_r.y * _qs, _qs, _qs, 0, c_white, _qa);
+    draw_sprite_ext(spr_queen_chair_lookdown, 0, _qx, _qy, _qs, _qs, 0, c_white, _qa);
+    draw_feet(spr_mewmew_idle_corrupted, t * spd_of(spr_mewmew_idle_corrupted), _qx + arm_l.x * _qs, _qy + arm_l.y * _qs, _qs, _qa);
+    draw_feet(spr_spamton_right, 0, _qx + arm_r.x * _qs, _qy + arm_r.y * _qs, _qs, _qa);
 }
 draw_rows(queen_z, 1, _ox, _oy);
 
@@ -185,7 +186,7 @@ if (fin.st == "charge" || fin.st == "laser" || fin.st == "press")
         var _g = fin.t / laser_charge;
         gpu_set_blendmode(bm_add);
         draw_set_alpha(_g);
-        draw_circle_colour(_sx, _sy, 20 + 50 * _g, c_white, c_black, false);
+        draw_circle_colour(_sx, _sy, (20 + 50 * _g) * laser_w / 14, c_white, c_black, false);
         draw_set_alpha(1);
         gpu_set_blendmode(bm_normal);
     }
@@ -201,23 +202,56 @@ if (fin.st == "charge" || fin.st == "laser" || fin.st == "press")
     }
 }
 
-// everyone going for it (slow motion)
+// knocked out: the laser's shoved back into its star, which flashes
+if (fin.st == "leap" && fin.t < retract + 20)
+{
+    var _sx = _ox + _ns.x, _sy = _oy + _ns.y;
+    if (fin.t < retract)
+    {
+        var _rk = fin.t / retract;
+        var _fx = _ox + susie.sx + 46, _fy = _oy + susie.y - 46;
+        var _cx = lerp(lerp(_fx, _sx, 0.85), _sx, _rk), _cy = lerp(lerp(_fy, _sy, 0.85), _sy, _rk);
+        draw_beam(_sx, _sy, _cx, _cy, laser_w * (1 - _rk), 1 - _rk, laser_col_glow, laser_col, laser_col_hot);
+    }
+    else
+    {
+        var _fk = 1 - (fin.t - retract) / 20;
+        gpu_set_blendmode(bm_add);
+        draw_set_alpha(_fk);
+        draw_circle_colour(_sx, _sy, 120 * (1.2 - _fk), c_white, c_black, false);
+        draw_set_alpha(1);
+        gpu_set_blendmode(bm_normal);
+    }
+}
+
+// everyone going for it (slow motion): Susie, Ralsei & Pink leap; the rest fire from where they are
 if (fin.st == "leap" || fin.st == "white")
 {
     for (var i = 0; i < array_length(leap); i++)
     {
         var _l = leap[i];
-        if (variable_struct_exists(_l, "beam"))
+        if (_l.stay)
         {
-            // the ones without a jump attack from where they are
-            draw_sprite_ext(_l.spr, sprite_get_number(_l.spr) - 1, _ox + _l.x0, _oy + _l.y0, _l.s, _l.s, 0, c_white, 1);
-            var _bk = min(1, fin.t / 30);
-            draw_beam(_ox + _l.x0 + 30, _oy + _l.y0 - 50, lerp(_ox + _l.x0 + 30, _ox + _ns.x, _bk), lerp(_oy + _l.y0 - 50, _oy + _ns.y, _bk),
-                      8, 1, c_orange, parry_col, c_white);
+            var _yy = _l.y0 + ((_l.name == "Jevil") ? sin(t / 14) * 4 : 0);
+            draw_sprite_ext(_l.spr, sprite_get_number(_l.spr) - 1, _ox + _l.x0, _oy + _yy, _l.s, _l.s, 0, c_white, 1);
             continue;
         }
         var _x = lerp(_l.x0, _l.x1, _l.k), _y = lerp(_l.y0, _l.y1, _l.k) - _l.h * 4 * _l.k * (1 - _l.k);
         draw_sprite_ext(_l.spr, 0, _ox + _x, _oy + _y, _l.s, _l.s, 0, c_white, 1);
+    }
+    for (var i = 0; i < array_length(volley); i++)
+    {
+        var _v = volley[i];
+        if (_v.delay > 0 || _v.k >= 1) continue;
+        var _x = _ox + lerp(_v.x0, _v.x1, _v.k), _y = _oy + lerp(_v.y0, _v.y1, _v.k) - sin(_v.k * pi) * 60;
+        if (_v.spr == -1)
+        {
+            gpu_set_blendmode(bm_add);
+            draw_circle_colour(_x, _y, 18, _v.col, c_black, false);
+            draw_circle_colour(_x, _y, 8, c_white, _v.col, false);
+            gpu_set_blendmode(bm_normal);
+        }
+        else draw_sprite_ext(_v.spr, 0, _x, _y, 2, 2, _v.rot, c_white, 1);
     }
 }
 

@@ -30,6 +30,7 @@ var _k = instance_find(obj_king, 0);
 if (raining && _k != noone)
 {
     next_drop--;
+    if (t mod laugh_every == 0 && rain_left > 0) audio_play_sound(snd_spamtonlaugh, 1, false, 0.7);   // (he's loving this)
     if (next_drop <= 0 && rain_left > 0 && !covered)
     {
         drop_pipis();
@@ -45,7 +46,7 @@ if (raining && _k != noone)
         _p.vy += pipis_grav;
         _p.y  += _p.vy;
         _p.rot += _p.vr;
-        // land on the pile (or him, or the floor): the lowest of the columns it covers
+        // land on the pile (or the floor): the lowest of the columns it covers
         var _c = col_of(_p.x), _top = 99999;
         for (var j = _c - 2; j <= _c + 2; j++) _top = min(_top, cols[clamp(j, 0, array_length(cols) - 1)]);
         if (_p.y >= _top - pipis_half)
@@ -58,10 +59,10 @@ if (raining && _k != noone)
                 var _jj = clamp(j, 0, array_length(cols) - 1);
                 cols[_jj] = min(cols[_jj], _p.y - pipis_half + 6);
             }
-            if (i mod 3 == 0) audio_play_sound(snd_impact, 1, false, 0.25);
+            land_sound();
         }
     }
-    if (!covered && (is_buried() || rain_left <= 0) && _settled) { covered = true; raining = false; }
+    if (!covered && ((is_buried() && dropped >= pipis_min) || rain_left <= 0) && _settled) { covered = true; raining = false; }
 }
 
 // ---------------------------------------------------------------- the push: the pile (and him) off the edge
@@ -69,6 +70,7 @@ if (pushing && !hanging && _k != noone)
 {
     push_v = max(-push_max, push_v - push_acc);
     _k.x += push_v;
+    if (t mod 10 == 0) { var _rs = audio_play_sound(snd_impact, 1, false, 0.35); audio_sound_pitch(_rs, random_range(0.5, 0.7)); }   // (the pile grinding along)
     for (var i = 0; i < array_length(pipis); i++)
     {
         var _p = pipis[i];
@@ -81,8 +83,7 @@ if (pushing && !hanging && _k != noone)
     {
         // out of the pile, over nothing. he stays up there
         hanging = true;
-        scene.pose_flip(obj_king, king_hang_spr, king_hang_xs);
-        with (_k) { image_speed = 0; y -= other.king_hang_lift; }
+        with (_k) y -= other.king_hang_lift;   // (still in his kneeling pose)
         audio_play_sound(snd_impact, 1, false);
     }
 }

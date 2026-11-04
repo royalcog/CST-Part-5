@@ -103,8 +103,8 @@ queen_from     = { x: -120, y: 175, s: 0.3 };   // on screen; s: its scale (x2, 
 queen_to       = { x: 470,  y: 215, s: 0.75 };
 queen_z        = 0.45;
 queen_bob      = 4;
-arm_l          = { x: -24, y: -4 };   // Pink, on the chair's left arm (chair sprite px from its origin)
-arm_r          = { x: 24,  y: -4 };   // Spamton, on the right
+arm_l          = { x: -20, y: 3 };    // Pink's feet, on the chair's left arm (chair sprite px from its origin)
+arm_r          = { x: 21,  y: 3 };    // Spamton's, on the right
 jevil_trail    = { x: -46, y: -22 };  // Jevil, flying behind it
 // the end
 final_sink     = 120;      // frames the far Titan takes to sink away
@@ -116,7 +116,9 @@ titan_near     = { x: 760, y: 190 };   // its star, once it's up at the edge
 near_rise      = 160;      // frames it takes to rise...
 near_rise_dist = 420;      // ...from this far down
 laser_charge   = 50;
-laser_w        = 14;
+laser_w        = 30;
+defend_gap     = 45;       // px Ralsei steps in to, behind Susie, when they put their defends up
+retract        = 14;       // frames the laser takes to be knocked back into its star
 laser_col_glow = make_colour_rgb(90, 40, 200);
 laser_col      = make_colour_rgb(170, 110, 255);
 laser_col_hot  = make_colour_rgb(230, 215, 255);
@@ -127,13 +129,16 @@ defend_ralsei  = spr_ralsei_defend;
 parry_susie    = spr_susie_attack_ready;    // (placeholders until there are parry sprites)
 parry_ralsei   = spr_ralsei_attack_ready;
 allies_gap     = 40;       // frames between each of the four appearing behind them
-// who appears behind them (screen x, px above the path), their pose, and how they go for it
+// who appears behind them, bunched up right behind (screen x, px above the path), their pose, and how they go for
+// it: Pink jumps with Susie & Ralsei; the others stay where they are and fire something at it (shot: a sprite, or -1
+// for a ball of light in their colour)
 allies = [
-    { name: "Queen",   x: 175, up: 0,  spr: spr_queen_walk_right_unhappy, s: 2, jump: false, atk: spr_queen_pie_throw,          shield: true },
-    { name: "Pink",    x: 120, up: 0,  spr: spr_mewmew_idle_corrupted,    s: 2, jump: true,  atk: spr_pink_throw_bomb_corrupted, shield: false },
-    { name: "Spamton", x: 70,  up: 0,  spr: spr_spamton_right,            s: 2, jump: false, atk: spr_spamton_armsout_right,     shield: false },
-    { name: "Jevil",   x: 30,  up: 40, spr: spr_jevil_dance,              s: 2, jump: true,  atk: spr_jevil_dance,               shield: false }
+    { name: "Queen",   x: 240, up: 0,  spr: spr_queen_walk_right_unhappy, s: 2, jump: false, atk: spr_queen_pie_throw,           shot: -1,        col: make_colour_rgb(111, 209, 255), shield: true },
+    { name: "Pink",    x: 200, up: 0,  spr: spr_mewmew_idle_corrupted,    s: 2, jump: true,  atk: spr_pink_throw_bomb_corrupted, shot: -1,        col: c_white,                        shield: false },
+    { name: "Spamton", x: 165, up: 0,  spr: spr_spamton_right,            s: 2, jump: false, atk: spr_spamton_armsout_right,     shot: spr_pipis, col: c_white,                        shield: false },
+    { name: "Jevil",   x: 210, up: 80, spr: spr_jevil_dance,              s: 2, jump: false, atk: spr_jevil_dance,               shot: spr_spade, col: c_white,                        shield: false }
 ];
+volley_frames  = 40;       // the ones who stay: how long their shots take to get to it
 box_in         = 30;       // frames the PRESS box takes to come up
 press_add      = 0.055;    // each Z fills it this much...
 press_decay    = 0.0025;   // ...and it drains this much a frame
@@ -207,7 +212,8 @@ press_on = false;
 box_k    = 0;
 ally_k   = array_create(array_length(allies), 0);
 ts       = 1;           // time's speed (the slow motion)
-leap     = [];          // everyone going for it: { name, spr, s, x0, y0, x1, y1, k, h, delay }
+leap     = [];          // everyone going for it: { name, spr, s, x0, y0, x1, y1, k, h, delay, stay }
+volley   = [];          // the shots from the ones who stay: { spr, col, x0, y0, x1, y1, k, delay, rot }
 dmg_list = [];          // { name, amount, x, y, t }
 dmg_t    = 0;
 
@@ -217,6 +223,12 @@ spd_of   = function(_spr) { return sprite_get_speed(_spr) / game_get_speed(games
 do_shake = function(_amt, _time) { shake.amt = max(shake.amt, _amt); shake.t = max(shake.t, _time); }
 view_x = function() { return camera_get_view_x(view_camera[0]) + shake.x; }
 view_y = function() { return camera_get_view_y(view_camera[0]) + shake.y; }
+/// _spr's frame _img with the bottom-middle of its canvas on (_x, _y) (whatever its origin is), at scale _s
+draw_feet = function(_spr, _img, _x, _y, _s, _a = 1)
+{
+    draw_sprite_ext(_spr, _img, _x + (sprite_get_xoffset(_spr) - sprite_get_width(_spr) / 2) * _s,
+                    _y + (sprite_get_yoffset(_spr) - sprite_get_height(_spr)) * _s, _s, _s, 0, c_white, _a);
+}
 
 /// a tile of the castle's tileset with its top-left at (_x, _y)
 tile = function(_ti, _x, _y)

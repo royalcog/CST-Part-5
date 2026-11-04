@@ -11,6 +11,18 @@ function scr_party_damage(_amount)
     if (array_length(_candidates) == 0) return _result; // whole party's down
 
     var _target = _candidates[irandom(array_length(_candidates) - 1)];
+    // someone who can't go down right now (Ralsei, in the second Titan battle): a hit that would down them goes to
+    // somebody else instead (Queen)
+    if (variable_instance_exists(_target, "cant_die") && _target.cant_die && _target.hp - _amount < 1)
+    {
+        var _others = [];
+        for (var i = 0; i < array_length(_candidates); i++)
+        {
+            var _c = _candidates[i];
+            if (_c != _target && !(variable_instance_exists(_c, "cant_die") && _c.cant_die)) array_push(_others, _c);
+        }
+        if (array_length(_others) > 0) _target = _others[irandom(array_length(_others) - 1)];
+    }
     _result.box = _target;
 	
     // Queen's DEFEND shield takes it instead
@@ -30,6 +42,7 @@ function scr_party_damage(_amount)
         if (variable_global_exists("party_guard")) _amount = ceil(_amount * global.party_guard);   // Spamton's Deal
         hp -= _amount;
         hurt_timer = hurt_flash_time;
+        if (variable_instance_exists(id, "cant_die") && cant_die && hp < 1) hp = 1;   // (nobody else to take it: they hang on at 1)
 
         if (hp <= 0)
         {

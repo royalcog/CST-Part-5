@@ -101,6 +101,8 @@ ready_hold      = 30;
 //     Pink's bomb, the Freedom Gang, Susie's back) and the 6-person battle (scr_titan_battle3_start)
 boost_speed     = 0.25;    // frames of spr_ralsei_spell a frame (the stat boost)
 boost_frame     = 6;
+boost_to        = 999;     // his stats go to this (his box's HP and max HP count up to it)
+boost_count     = 60;      // frames the count-up takes
 hit_speed       = 0.3;     // frames of spr_ralsei_attack a frame (the first 999)
 hit_frame       = 4;       // the frame it lands
 heal_delay      = 30;      // frames after a hit the Titan heals it back
@@ -230,6 +232,7 @@ jevil_tp     = undefined;   // { t, x, y, moved, back }
 ysort        = false;
 lancer_watch = false;   // Lancer's turned round (shocked) at Susie: he turns back once she's past him
 ralsei_shake = undefined;   // { base, t } while he's shaking in his defend
+boost_hp     = undefined;   // { t, hp0, max0 } while his HP counts up
 
 // ---------------------------------------------------------------- helpers
 feet = function(_o) { return scr_get_feet(instance_find(_o, 0)); }
@@ -464,7 +467,12 @@ stat_boost = function()
         _f.target      = obj_ralsei;
         _f.duration    = 40;
         _f.flash_color = c_yellow;
-        head_popup(obj_ralsei, "999", c_yellow, noone);
+        head_popup(obj_ralsei, string(boost_to), c_yellow, noone);
+        // his box counts up to it, and his attack goes up with it
+        var _b = ralsei_box();
+        if (_b != noone) boost_hp = { t: 0, hp0: _b.hp, max0: _b.max_hp };
+        with (obj_battle_menu) for (var i = 0; i < party_n; i++)
+            if (names[i] == "Ralsei" && defs[i] != undefined) defs[i].at = other.boost_to;
     });
 }
 /// Ralsei hits the Titan for 999... and it heals it straight back

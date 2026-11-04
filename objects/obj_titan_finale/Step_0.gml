@@ -239,8 +239,9 @@ switch (fin.st)
     }
     break;
 
-    case "charge":   // its star glows; they put their defends up
+    case "charge":   // its star glows; they put their defends up (Ralsei steps in right behind her)
         if (fin.t == 1) { susie.pose = "defend"; ralsei.pose = "defend"; susie.fx = 0; ralsei.fx = 0; }
+        ralsei.sx = approach(ralsei.sx, susie.sx - defend_gap, 2);
         if (fin.t >= laser_charge)
         {
             fin.st = "laser"; fin.t = 0;
@@ -283,15 +284,21 @@ switch (fin.st)
             audio_play_sound(snd_criticalswing, 1, false);
             audio_play_sound(snd_explosion, 1, false);
             do_shake(8, 30);
+            // Susie, Ralsei & Pink leap at it; the others stay where they are and fire at it
             var _st = { x: titan_near.x, y: titan_near.y };
-            array_push(leap, { name: "Susie",  spr: spr_susie_clash_jump,   s: battle_s, x0: susie.sx,  y0: susie.y,  x1: _st.x - 30, y1: _st.y + 10, k: 0, h: 120, delay: 0 });
-            array_push(leap, { name: "Ralsei", spr: spr_plat_ralsei_jump,   s: 2,        x0: ralsei.sx, y0: ralsei.y, x1: _st.x - 50, y1: _st.y - 30, k: 0, h: 150, delay: 4 });
+            array_push(leap, { name: "Susie",  spr: spr_susie_clash_jump, s: battle_s, x0: susie.sx,  y0: susie.y,  x1: _st.x - 30, y1: _st.y + 10, k: 0, h: 120, delay: 0, stay: false });
+            array_push(leap, { name: "Ralsei", spr: spr_plat_ralsei_jump, s: 2,        x0: ralsei.sx, y0: ralsei.y, x1: _st.x - 50, y1: _st.y - 30, k: 0, h: 150, delay: 4, stay: false });
             for (var i = 0; i < array_length(allies); i++)
             {
                 var _a = allies[i];
                 var _y = segs[array_length(segs) - 1].y - _a.up;
-                if (_a.jump) array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _st.x - 70 - i * 20, y1: _st.y - 60 + i * 30, k: 0, h: 170, delay: 8 + i * 4 });
-                else         array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _a.x, y1: _y, k: 0, h: 0, delay: 0, beam: true });
+                if (_a.jump) array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _st.x - 70, y1: _st.y - 50, k: 0, h: 170, delay: 8, stay: false });
+                else
+                {
+                    array_push(leap, { name: _a.name, spr: _a.atk, s: _a.s, x0: _a.x, y0: _y, x1: _a.x, y1: _y, k: 0, h: 0, delay: 0, stay: true });
+                    array_push(volley, { spr: _a.shot, col: _a.col, x0: _a.x + 20, y0: _y - 50, x1: _st.x + irandom_range(-20, 20), y1: _st.y + irandom_range(-20, 20),
+                                         k: 0, delay: 6 + i * 6, rot: 0 });
+                }
             }
         }
     }
@@ -306,6 +313,13 @@ switch (fin.st)
             var _l = leap[i];
             if (_l.delay > 0) _l.delay -= ts;
             else _l.k = min(1, _l.k + ts / jump_frames);
+        }
+        for (var i = 0; i < array_length(volley); i++)
+        {
+            var _v = volley[i];
+            if (_v.delay > 0) _v.delay -= ts;
+            else _v.k = min(1, _v.k + ts / volley_frames);
+            _v.rot += 12 * ts;
         }
         white.to = 1; white.spd = 1 / white_up;
         if (white.a >= 1) { fin.st = "white"; fin.t = 0; }

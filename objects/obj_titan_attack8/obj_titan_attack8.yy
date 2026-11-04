@@ -14,8 +14,8 @@
     "path":"folders/Battle System/Objects/Attacks/Titan/Objects/Attack 8.yy",
   },
   "parentObjectId":{
-    "name":"obj_titanspawn_attack4",
-    "path":"objects/obj_titanspawn_attack4/obj_titanspawn_attack4.yy",
+    "name":"obj_titan_attack4",
+    "path":"objects/obj_titan_attack4/obj_titan_attack4.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,

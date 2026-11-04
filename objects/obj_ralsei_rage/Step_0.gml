@@ -217,6 +217,22 @@ if (jevil_tp != undefined)
     }
 }
 
+// ---------------------------------------------------------------- the stat boost: his HP counting up in his box
+if (boost_hp != undefined)
+{
+    boost_hp.t++;
+    var _k = min(1, boost_hp.t / boost_count);
+    _k = 1 - (1 - _k) * (1 - _k);
+    var _b = ralsei_box();
+    if (_b != noone)
+    {
+        _b.max_hp = round(lerp(boost_hp.max0, boost_to, _k));
+        _b.hp     = round(lerp(boost_hp.hp0,  boost_to, _k));
+        if (boost_hp.t mod 4 == 0) audio_play_sound(snd_menumove, 1, false, 0.4);
+    }
+    if (_k >= 1) boost_hp = undefined;
+}
+
 // ---------------------------------------------------------------- after the battle
 // stay drawn just in front of everyone (the shield over King, the red glow on Ralsei)
 if (fb.sa <= 0 && shield != undefined)
