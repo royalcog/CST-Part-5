@@ -44,7 +44,7 @@ function scr_game_text(_text_id)
 				scr_call_on_page(function() { with (obj_queen) scr_set_sprite_keep_feet(id, spr_queen_walk_left_unhappy); }, 1, global.page_number - 1);
 			scr_text("* ...", "lancer", 4);
 			scr_text("* Don't Worry He's Just Taking A Nap", "queen", 0);
-			scr_text("* Anyways Is This That Titan Thing Your Were Talking About", "queen", 15);
+			scr_text("* Anyways Is This That Titan Thing You Were Talking About", "queen", 15);
 				scr_call_on_page(function() { with (obj_queen) scr_set_sprite_keep_feet(id, spr_queen_walk_up); }, 1, global.page_number - 1);
 			scr_text("* ...Yes.", "ralsei", 38);
 			scr_text("* Crap", "queen", 3);
